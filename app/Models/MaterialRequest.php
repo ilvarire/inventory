@@ -22,4 +22,19 @@ class MaterialRequest extends Model
     {
         return $this->hasMany(MaterialRequestItem::class);
     }
+
+    public function chef()
+    {
+        return $this->belongsTo(User::class, 'chef_id');
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 }

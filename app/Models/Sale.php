@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sale extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'section_id',
         'sales_user_id',
@@ -21,6 +23,16 @@ class Sale extends Model
     public function items()
     {
         return $this->hasMany(SaleItem::class);
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
+
+    public function salesUser()
+    {
+        return $this->belongsTo(User::class, 'sales_user_id');
     }
 }
 

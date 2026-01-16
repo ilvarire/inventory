@@ -20,4 +20,10 @@ class SaleItem extends Model
     {
         return $this->belongsTo(Sale::class);
     }
+
+    public function preparedInventory()
+    {
+        return $this->belongsTo(PreparedInventory::class, 'source_id')
+            ->where('source_type', 'prepared_inventory');
+    }
 }

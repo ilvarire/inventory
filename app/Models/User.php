@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \Illuminate\Database\Eloquent\SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -50,6 +50,76 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /**
+     * Check if user has a specific role
+     */
+    public function hasRole(string $roleName): bool
+    {
+        return $this->role && $this->role->name === $roleName;
+    }
+
+    /**
+     * Check if user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('Admin');
+    }
+
+    /**
+     * Check if user is a manager
+     */
+    public function isManager(): bool
+    {
+        return $this->hasRole('Manager');
+    }
+
+    /**
+     * Check if user is a chef
+     */
+    public function isChef(): bool
+    {
+        return $this->hasRole('Chef');
+    }
+
+    /**
+     * Check if user is a store keeper
+     */
+    public function isStoreKeeper(): bool
+    {
+        return $this->hasRole('Store Keeper');
+    }
+
+    /**
+     * Check if user is in procurement
+     */
+    public function isProcurement(): bool
+    {
+        return $this->hasRole('Procurement');
+    }
+
+    /**
+     * Check if user is in sales
+     */
+    public function isSales(): bool
+    {
+        return $this->hasRole('Frontline Sales');
+    }
+
+    /**
+     * Check if user can access a specific section
+     */
+    public function canAccessSection(?int $sectionId): bool
+    {
+        // Admin and Manager can access all sections
+        if ($this->isAdmin() || $this->isManager()) {
+            return true;
+        }
+
+        // Section-specific users can only access their section
+        return $this->section_id === $sectionId;
+    }
 
     /**
      * Get the attributes that should be cast.

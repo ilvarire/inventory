@@ -1,8 +1,11 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use App\Jobs\CheckLowStockJob;
+use App\Jobs\CheckExpiringItemsJob;
+use App\Jobs\CheckHighWastageJob;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Schedule jobs to run daily
+Schedule::job(new CheckLowStockJob)->dailyAt('08:00');
+Schedule::job(new CheckExpiringItemsJob)->dailyAt('08:30');
+Schedule::job(new CheckHighWastageJob)->dailyAt('09:00');

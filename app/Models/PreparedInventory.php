@@ -23,4 +23,9 @@ class PreparedInventory extends Model
     {
         return $this->belongsTo(ProductionLog::class);
     }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
 }

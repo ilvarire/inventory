@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductionLog extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'recipe_version_id',
         'section_id',

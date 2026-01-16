@@ -23,4 +23,9 @@ class ProductionMaterial extends Model
     {
         return $this->belongsTo(ProcurementItem::class, 'procurement_item_id');
     }
+
+    public function rawMaterial()
+    {
+        return $this->belongsTo(RawMaterial::class);
+    }
 }

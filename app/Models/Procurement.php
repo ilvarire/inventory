@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Procurement extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'procurement_user_id',
         'supplier_id',

@@ -13,4 +13,14 @@ class MaterialRequestItem extends Model
         'raw_material_id',
         'quantity'
     ];
+
+    public function materialRequest()
+    {
+        return $this->belongsTo(MaterialRequest::class);
+    }
+
+    public function rawMaterial()
+    {
+        return $this->belongsTo(RawMaterial::class);
+    }
 }

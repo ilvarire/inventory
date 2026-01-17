@@ -30,7 +30,7 @@ class UserSeeder extends Seeder
         $grillsSection = Section::where('name', 'Grills')->first();
 
         // Create Admin user from environment variables
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => env('ADMIN_EMAIL', 'admin@inventory.com')],
             [
                 'name' => env('ADMIN_NAME', 'System Administrator'),

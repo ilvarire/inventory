@@ -43,6 +43,13 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
         Route::post('/{user}/toggle-status', [UserController::class, 'toggleStatus'])->middleware('throttle.custom:api.write');
     });
 
+    // Supplier routes
+    Route::prefix('suppliers')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\SupplierController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\V1\SupplierController::class, 'store'])
+            ->middleware(['role:Procurement,Admin', 'throttle.custom:api.write']);
+    });
+
     // Procurement routes
     Route::prefix('procurements')->group(function () {
         Route::get('/', [ProcurementController::class, 'index']);

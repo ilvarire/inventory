@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'section.access' => \App\Http\Middleware\SectionAccessMiddleware::class,
+            'throttle.custom' => \App\Http\Middleware\CustomThrottle::class,
         ]);
 
         //

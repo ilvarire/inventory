@@ -44,11 +44,27 @@
 -   **Professional Branding** - Consistent company styling
 -   **Configurable** - Enable/disable globally or by type
 
+### ✅ API Rate Limiting ⭐ NEW
+
+-   **Comprehensive Protection** - All endpoints protected
+-   **Tiered Limits** - Different limits by endpoint type
+-   **Role-Based** - Higher limits for Admin/Manager
+-   **Standard Headers** - X-RateLimit-\* headers on all responses
+-   **Violation Logging** - Track and monitor abuse attempts
+-   **Configurable** - Adjust limits via environment variables
+-   **Redis Support** - Distributed rate limiting for production
+-   **Rate Limits:**
+    -   Read Operations: 60-300 requests/min
+    -   Write Operations: 60-120 requests/min
+    -   Reports: 30-60 requests/min
+    -   Exports: 10-20 requests/min
+    -   Authentication: 3-5 attempts/min
+
 ---
 
 ## Complete System Overview
 
-### Total Deliverables: 115+ Files
+### Total Deliverables: 120+ Files
 
 #### Controllers (10)
 
@@ -88,13 +104,14 @@
 -   ExpensePolicy
 -   WastePolicy
 
-#### Services (5)
+#### Services (6)
 
 -   InventoryService
 -   CostingService
 -   ReportingService
 -   **NotificationService** (Enhanced with email sending) ⭐ UPDATED
 -   **ExportService** ⭐ NEW
+-   **RateLimitService** ⭐ NEW
 
 #### Mailable Classes (5) ⭐ NEW
 
@@ -118,10 +135,11 @@
 -   ExpenseObserver
 -   WasteObserver
 
-#### Middleware (2)
+#### Middleware (3)
 
 -   RoleMiddleware
 -   SectionAccessMiddleware
+-   **CustomThrottle** ⭐ NEW
 
 #### Database
 
@@ -212,6 +230,21 @@
 -   Error handling and retry logic
 -   Both email and database logging
 
+### ✅ API Rate Limiting ⭐ NEW
+
+-   Comprehensive protection against abuse and DDoS
+-   Tiered limits by endpoint type:
+    -   Read operations: 60-300 requests/min
+    -   Write operations: 60-120 requests/min
+    -   Reports: 30-60 requests/min
+    -   Exports: 10-20 requests/min
+-   Role-based limits (higher for Admin/Manager)
+-   Standard rate limit headers (X-RateLimit-\*)
+-   Automatic violation logging
+-   Redis support for distributed systems
+-   Configurable via environment variables
+-   Protection against brute force attacks
+
 ### ✅ Performance Optimized
 
 -   40+ database indexes
@@ -270,11 +303,11 @@ See **QUICK_START.md** for:
 **Optional Enhancements:**
 
 -   Write automated tests (PHPUnit)
--   Add API rate limiting
 -   Create admin dashboard frontend
 -   Set up CI/CD pipeline
 -   Add SMS/Slack notification channels
 -   Implement user notification preference UI
+-   Add IP whitelisting/blacklisting for rate limits
 
 ---
 
@@ -297,6 +330,14 @@ See **QUICK_START.md** for:
 -   ✅ Added notification configuration system
 -   ✅ Implemented queue-based email processing
 -   ✅ Added user notification preference support
+-   ✅ **Implemented API Rate Limiting** ⭐ NEW
+-   ✅ Created RateLimitService for rate limit management
+-   ✅ Created CustomThrottle middleware
+-   ✅ Applied tiered rate limits to all API endpoints
+-   ✅ Added rate limit headers to all responses
+-   ✅ Implemented violation logging
+-   ✅ Added Redis support for distributed systems
+-   ✅ Updated API documentation with rate limit info
 -   ✅ Updated API documentation
 -   ✅ Enhanced data protection
 

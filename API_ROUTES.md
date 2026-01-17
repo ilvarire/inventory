@@ -10,6 +10,59 @@ All routes require `auth:sanctum` middleware unless specified as public.
 
 ---
 
+## Rate Limiting
+
+All API endpoints are protected by rate limiting to prevent abuse and ensure fair usage.
+
+### Rate Limits by Endpoint Type
+
+| Endpoint Type                      | Guest  | User    | Admin/Manager |
+| ---------------------------------- | ------ | ------- | ------------- |
+| Authentication (Login)             | 5/min  | N/A     | N/A           |
+| Authentication (Register)          | 3/hour | N/A     | N/A           |
+| Read Operations (GET)              | 60/min | 120/min | 300/min       |
+| Write Operations (POST/PUT/DELETE) | N/A    | 60/min  | 120/min       |
+| Reports                            | N/A    | 30/min  | 60/min        |
+| Exports (Excel/PDF)                | N/A    | 10/min  | 20/min        |
+
+### Rate Limit Headers
+
+All API responses include rate limit information in headers:
+
+```http
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1642435200
+```
+
+### Rate Limit Exceeded Response
+
+When you exceed the rate limit, you'll receive a 429 status code:
+
+```http
+HTTP/1.1 429 Too Many Requests
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1642435260
+Retry-After: 60
+
+{
+    "message": "Too many requests. Please try again later.",
+    "retry_after": 60,
+    "limit": 60
+}
+```
+
+### Best Practices
+
+1. **Monitor Headers**: Check `X-RateLimit-Remaining` to avoid hitting limits
+2. **Implement Backoff**: Use exponential backoff when rate limited
+3. **Cache Responses**: Cache GET responses to reduce API calls
+4. **Batch Requests**: Group multiple operations when possible
+5. **Respect Retry-After**: Wait the specified time before retrying
+
+---
+
 ## Authentication
 
 ### User Info

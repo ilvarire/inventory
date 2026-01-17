@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             SectionSeeder::class,
+            UserSeeder::class,
         ]);
 
         // Optionally create test users

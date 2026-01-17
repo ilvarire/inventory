@@ -137,5 +137,27 @@ Route::prefix('v1')->middleware(['auth:sanctum'])->group(function () {
         Route::get('/expenses', [ReportController::class, 'expenseReport'])
             ->middleware('role:Manager,Admin');
         Route::get('/top-selling', [ReportController::class, 'topSelling']);
+
+        // Export routes
+        Route::get('/sales/export/excel', [ReportController::class, 'exportSalesExcel']);
+        Route::get('/sales/export/pdf', [ReportController::class, 'exportSalesPdf']);
+
+        Route::get('/profit-loss/export/excel', [ReportController::class, 'exportProfitLossExcel'])
+            ->middleware('role:Manager,Admin');
+        Route::get('/profit-loss/export/pdf', [ReportController::class, 'exportProfitLossPdf'])
+            ->middleware('role:Manager,Admin');
+
+        Route::get('/waste/export/excel', [ReportController::class, 'exportWasteExcel']);
+        Route::get('/waste/export/pdf', [ReportController::class, 'exportWastePdf']);
+
+        Route::get('/expenses/export/excel', [ReportController::class, 'exportExpensesExcel'])
+            ->middleware('role:Manager,Admin');
+        Route::get('/expenses/export/pdf', [ReportController::class, 'exportExpensesPdf'])
+            ->middleware('role:Manager,Admin');
+
+        Route::get('/inventory-health/export/excel', [ReportController::class, 'exportInventoryHealthExcel']);
+        Route::get('/inventory-health/export/pdf', [ReportController::class, 'exportInventoryHealthPdf']);
+
+        Route::get('/top-selling/export/excel', [ReportController::class, 'exportTopSellingExcel']);
     });
 });

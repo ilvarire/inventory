@@ -9,6 +9,13 @@ use App\Models\{
     User,
     NotificationLog
 };
+use App\Mail\{
+    LowStockAlert,
+    ExpiryAlert,
+    HighWastageAlert,
+    PendingApprovalAlert,
+    ApprovalStatusChanged
+};
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
@@ -19,7 +26,8 @@ class NotificationService
      */
     public function sendLowStockAlert(RawMaterial $material): void
     {
-        $message = "Low stock alert: {$material->name} is below minimum quantity. Current stock: {$this->getStockBalance($material->id)}, Minimum: {$material->min_quantity}";
+        $currentStock = $this->getStockBalance($material->id);
+        $message = "Low stock alert: {$material->name} is below minimum quantity. Current stock: {$currentStock}, Minimum: {$material->min_quantity}";
 
         // Log notification
         $this->logNotification('low_stock', $message);
@@ -31,10 +39,13 @@ class NotificationService
 
         foreach ($recipients as $recipient) {
             try {
-                // In production, send actual email
-                // Mail::to($recipient->email)->send(new LowStockAlert($material));
+                if ($this->shouldSendEmail($recipient, 'low_stock')) {
+                    Mail::to($recipient->email)->queue(
+                        new LowStockAlert($material, $currentStock)
+                    );
 
-                Log::info("Low stock alert sent to {$recipient->email} for {$material->name}");
+                    Log::info("Low stock alert sent to {$recipient->email} for {$material->name}");
+                }
             } catch (\Exception $e) {
                 Log::error("Failed to send low stock alert: " . $e->getMessage());
             }
@@ -47,7 +58,7 @@ class NotificationService
     public function sendExpiryAlert(ProcurementItem $batch): void
     {
         $daysUntilExpiry = now()->diffInDays($batch->expiry_date);
-        $expiryDateFormatted = $batch->expiry_date ? $batch->expiry_date->format('Y-m-d') : 'N/A';
+        $expiryDateFormatted = $batch->expiry_date?->format('Y-m-d') ?? 'N/A';
         $message = "Expiry alert: {$batch->rawMaterial->name} (Batch #{$batch->id}) expires in {$daysUntilExpiry} days on {$expiryDateFormatted}";
 
         // Log notification
@@ -60,7 +71,13 @@ class NotificationService
 
         foreach ($recipients as $recipient) {
             try {
-                Log::info("Expiry alert sent to {$recipient->email} for batch #{$batch->id}");
+                if ($this->shouldSendEmail($recipient, 'expiry_alert')) {
+                    Mail::to($recipient->email)->queue(
+                        new ExpiryAlert($batch)
+                    );
+
+                    Log::info("Expiry alert sent to {$recipient->email} for batch #{$batch->id}");
+                }
             } catch (\Exception $e) {
                 Log::error("Failed to send expiry alert: " . $e->getMessage());
             }
@@ -70,9 +87,9 @@ class NotificationService
     /**
      * Send high wastage alert
      */
-    public function sendHighWastageAlert(Section $section, float $threshold): void
+    public function sendHighWastageAlert(Section $section, float $threshold, float $actualWastage = 0, float $costImpact = 0): void
     {
-        $message = "High wastage alert: {$section->name} has exceeded wastage threshold of {$threshold}";
+        $message = "High wastage alert: {$section->name} has exceeded wastage threshold of {$threshold}%";
 
         // Log notification
         $this->logNotification('high_wastage', $message);
@@ -84,7 +101,13 @@ class NotificationService
 
         foreach ($recipients as $recipient) {
             try {
-                Log::info("High wastage alert sent to {$recipient->email} for {$section->name}");
+                if ($this->shouldSendEmail($recipient, 'high_wastage')) {
+                    Mail::to($recipient->email)->queue(
+                        new HighWastageAlert($section, $threshold, $actualWastage, $costImpact)
+                    );
+
+                    Log::info("High wastage alert sent to {$recipient->email} for {$section->name}");
+                }
             } catch (\Exception $e) {
                 Log::error("Failed to send high wastage alert: " . $e->getMessage());
             }
@@ -94,7 +117,7 @@ class NotificationService
     /**
      * Send pending approval alert
      */
-    public function sendPendingApprovalAlert(User $manager, string $type, int $id): void
+    public function sendPendingApprovalAlert(User $manager, string $type, int $id, ?User $requester = null, array $details = []): void
     {
         $message = "Pending approval: {$type} #{$id} requires your approval";
 
@@ -102,10 +125,68 @@ class NotificationService
         $this->logNotification('pending_approval', $message, $manager);
 
         try {
-            Log::info("Pending approval alert sent to {$manager->email} for {$type} #{$id}");
+            if ($this->shouldSendEmail($manager, 'pending_approval')) {
+                Mail::to($manager->email)->queue(
+                    new PendingApprovalAlert($type, $id, $requester ?? auth()->user(), $details)
+                );
+
+                Log::info("Pending approval alert sent to {$manager->email} for {$type} #{$id}");
+            }
         } catch (\Exception $e) {
             Log::error("Failed to send pending approval alert: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Send approval status changed notification
+     */
+    public function sendApprovalStatusChanged(User $requester, string $type, int $id, string $status, User $approver, ?string $notes = null): void
+    {
+        $message = "Approval status changed: {$type} #{$id} has been {$status}";
+
+        // Log notification
+        $this->logNotification('approval_status', $message, $requester);
+
+        try {
+            if ($this->shouldSendEmail($requester, 'approval_status')) {
+                Mail::to($requester->email)->queue(
+                    new ApprovalStatusChanged($type, $id, $status, $approver, $notes)
+                );
+
+                Log::info("Approval status notification sent to {$requester->email} for {$type} #{$id}");
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to send approval status notification: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Check if email should be sent to user
+     */
+    protected function shouldSendEmail(User $user, string $type): bool
+    {
+        // Check if notifications are globally enabled
+        if (!config('notifications.enabled', true)) {
+            return false;
+        }
+
+        // Check if user has email notifications enabled (if column exists)
+        if (isset($user->email_notifications_enabled) && !$user->email_notifications_enabled) {
+            return false;
+        }
+
+        // Check user-specific notification preferences (if column exists)
+        if (isset($user->notification_preferences)) {
+            $preferences = is_string($user->notification_preferences)
+                ? json_decode($user->notification_preferences, true)
+                : $user->notification_preferences;
+
+            if (is_array($preferences) && isset($preferences[$type]) && !$preferences[$type]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -707,6 +707,156 @@ Query Parameters:
 
 ---
 
+## Report Exports
+
+All export endpoints return file downloads (Excel or PDF format).
+
+### Export Sales Report (Excel)
+
+```http
+GET /api/v1/reports/sales/export/excel
+Authorization: Bearer {token}
+
+Query Parameters:
+- start_date (required)
+- end_date (required)
+- section_id (optional)
+```
+
+Returns: Excel file download (`sales_report_YYYY-MM-DD_HHMMSS.xlsx`)
+
+### Export Sales Report (PDF)
+
+```http
+GET /api/v1/reports/sales/export/pdf
+Authorization: Bearer {token}
+
+Query Parameters:
+- start_date (required)
+- end_date (required)
+- section_id (optional)
+```
+
+Returns: PDF file download (`sales_report_YYYY-MM-DD_HHMMSS.pdf`)
+
+### Export Profit & Loss (Excel)
+
+```http
+GET /api/v1/reports/profit-loss/export/excel
+Authorization: Bearer {token}
+Roles: Manager, Admin
+
+Query Parameters:
+- start_date (required)
+- end_date (required)
+- section_id (optional)
+```
+
+Returns: Excel file download (`profit_loss_YYYY-MM-DD_HHMMSS.xlsx`)
+
+### Export Profit & Loss (PDF)
+
+```http
+GET /api/v1/reports/profit-loss/export/pdf
+Authorization: Bearer {token}
+Roles: Manager, Admin
+
+Query Parameters:
+- start_date (required)
+- end_date (required)
+- section_id (optional)
+```
+
+Returns: PDF file download (`profit_loss_YYYY-MM-DD_HHMMSS.pdf`)
+
+### Export Waste Report (Excel)
+
+```http
+GET /api/v1/reports/waste/export/excel
+Authorization: Bearer {token}
+
+Query Parameters:
+- start_date (required)
+- end_date (required)
+```
+
+Returns: Excel file download (`waste_report_YYYY-MM-DD_HHMMSS.xlsx`)
+
+### Export Waste Report (PDF)
+
+```http
+GET /api/v1/reports/waste/export/pdf
+Authorization: Bearer {token}
+
+Query Parameters:
+- start_date (required)
+- end_date (required)
+```
+
+Returns: PDF file download (`waste_report_YYYY-MM-DD_HHMMSS.pdf`)
+
+### Export Expense Report (Excel)
+
+```http
+GET /api/v1/reports/expenses/export/excel
+Authorization: Bearer {token}
+Roles: Manager, Admin
+
+Query Parameters:
+- start_date (required)
+- end_date (required)
+```
+
+Returns: Excel file download (`expense_report_YYYY-MM-DD_HHMMSS.xlsx`)
+
+### Export Expense Report (PDF)
+
+```http
+GET /api/v1/reports/expenses/export/pdf
+Authorization: Bearer {token}
+Roles: Manager, Admin
+
+Query Parameters:
+- start_date (required)
+- end_date (required)
+```
+
+Returns: PDF file download (`expense_report_YYYY-MM-DD_HHMMSS.pdf`)
+
+### Export Inventory Health (Excel)
+
+```http
+GET /api/v1/reports/inventory-health/export/excel
+Authorization: Bearer {token}
+```
+
+Returns: Excel file download (`inventory_health_YYYY-MM-DD_HHMMSS.xlsx`)
+
+### Export Inventory Health (PDF)
+
+```http
+GET /api/v1/reports/inventory-health/export/pdf
+Authorization: Bearer {token}
+```
+
+Returns: PDF file download (`inventory_health_YYYY-MM-DD_HHMMSS.pdf`)
+
+### Export Top Selling Items (Excel)
+
+```http
+GET /api/v1/reports/top-selling/export/excel
+Authorization: Bearer {token}
+
+Query Parameters:
+- start_date (optional)
+- end_date (optional)
+- limit (optional, default: 10)
+```
+
+Returns: Excel file download (`top_selling_items_YYYY-MM-DD_HHMMSS.xlsx`)
+
+---
+
 ## Response Format
 
 ### Success Response

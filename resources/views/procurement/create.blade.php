@@ -182,7 +182,7 @@
                     async fetchMaterials() {
                         try {
                             // Fetch all materials via inventory endpoint
-                            const response = await API.get('/inventory');
+                            const response = await API.get('/raw-materials');
                             this.materials = response.data || response;
                         } catch (error) {
                             console.error('Failed to load materials:', error);

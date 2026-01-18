@@ -15,7 +15,7 @@ class RawMaterialController extends Controller
      */
     public function index(Request $request)
     {
-        $query = RawMaterial::with('supplier');
+        $query = RawMaterial::query();
 
         // Search by name
         if ($request->has('search')) {
@@ -53,11 +53,11 @@ class RawMaterialController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:raw_materials,name',
-            'unit' => 'required|in:kg,liter,piece,gram,ml',
+            'unit' => 'required|string|max:50',
             'category' => 'nullable|string|max:255',
             'min_quantity' => 'required|numeric|min:0',
             'reorder_quantity' => 'required|numeric|min:0|gt:min_quantity',
-            'preferred_supplier_id' => 'nullable|exists:suppliers,id',
+            'preferred_supplier_id' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -71,7 +71,7 @@ class RawMaterialController extends Controller
 
         return response()->json([
             'message' => 'Raw material created successfully',
-            'data' => $rawMaterial->load('supplier')
+            'data' => $rawMaterial
         ], 201);
     }
 
@@ -83,7 +83,6 @@ class RawMaterialController extends Controller
         $this->authorize('view', $rawMaterial);
 
         $rawMaterial->load([
-            'supplier',
             'batches' => function ($query) {
                 $query->latest()->limit(10);
             },
@@ -119,11 +118,11 @@ class RawMaterialController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255|unique:raw_materials,name,' . $rawMaterial->id,
-            'unit' => 'sometimes|required|in:kg,liter,piece,gram,ml',
+            'unit' => 'sometimes|required|string|max:50',
             'category' => 'nullable|string|max:255',
             'min_quantity' => 'sometimes|required|numeric|min:0',
             'reorder_quantity' => 'sometimes|required|numeric|min:0',
-            'preferred_supplier_id' => 'nullable|exists:suppliers,id',
+            'preferred_supplier_id' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -149,7 +148,7 @@ class RawMaterialController extends Controller
 
         return response()->json([
             'message' => 'Raw material updated successfully',
-            'data' => $rawMaterial->load('supplier')
+            'data' => $rawMaterial
         ]);
     }
 

@@ -137,11 +137,11 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-sm text-gray-600 dark:text-gray-400"
-                                        x-text="material.supplier?.name || 'No supplier'"></p>
+                                        x-text="material.preferred_supplier_id || 'No supplier'"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <div class="flex items-center gap-3">
-                                        @can('update', App\Models\RawMaterial::class)
+                                        @if(in_array(auth()->user()->role->name, ['Admin', 'Manager', 'Store Keeper']))
                                             <button @click="openEditModal(material)" class="text-brand-500 hover:text-brand-600"
                                                 title="Edit">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,9 +149,9 @@
                                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </button>
-                                        @endcan
+                                        @endif
 
-                                        @can('delete', App\Models\RawMaterial::class)
+                                        @if(in_array(auth()->user()->role->name, ['Admin', 'Manager']))
                                             <button @click="confirmDelete(material)" class="text-red-500 hover:text-red-600"
                                                 title="Delete">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,7 +159,7 @@
                                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
                                             </button>
-                                        @endcan
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -212,15 +212,10 @@
                             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                 Unit <span class="text-red-500">*</span>
                             </label>
-                            <select x-model="form.unit" required
-                                class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white">
-                                <option value="">Select Unit</option>
-                                <option value="kg">Kilogram (kg)</option>
-                                <option value="liter">Liter</option>
-                                <option value="piece">Piece</option>
-                                <option value="gram">Gram</option>
-                                <option value="ml">Milliliter (ml)</option>
-                            </select>
+                            <input type="text" x-model="form.unit" required placeholder="e.g., kg, liter, piece, dozen"
+                                class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white" />
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Common units: kg, liter, piece, gram,
+                                ml, dozen, box, bag</p>
                             <p x-show="formErrors.unit" class="mt-1 text-sm text-red-600" x-text="formErrors.unit"></p>
                         </div>
 
@@ -256,13 +251,11 @@
                             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                 Preferred Supplier
                             </label>
-                            <select x-model="form.preferred_supplier_id"
-                                class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white">
-                                <option value="">No Preferred Supplier</option>
-                                <template x-for="supplier in suppliers" :key="supplier.id">
-                                    <option :value="supplier.id" x-text="supplier.name"></option>
-                                </template>
-                            </select>
+                            <input type="text" x-model="form.preferred_supplier_id"
+                                placeholder="e.g., Fresh Farms Ltd, Ocean Catch Seafood"
+                                class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white" />
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter the name of your preferred
+                                supplier</p>
                         </div>
                     </div>
 
@@ -290,7 +283,6 @@
                     error: '',
                     materials: [],
                     categories: [],
-                    suppliers: [],
                     filters: {
                         search: '',
                         category: '',
@@ -313,8 +305,7 @@
                     async init() {
                         await Promise.all([
                             this.fetchMaterials(),
-                            this.fetchCategories(),
-                            this.fetchSuppliers()
+                            this.fetchCategories()
                         ]);
                     },
 
@@ -343,15 +334,6 @@
                             this.categories = await API.get('/raw-materials/categories');
                         } catch (error) {
                             console.error('Categories fetch error:', error);
-                        }
-                    },
-
-                    async fetchSuppliers() {
-                        try {
-                            const response = await API.get('/suppliers');
-                            this.suppliers = response.data || response;
-                        } catch (error) {
-                            console.error('Suppliers fetch error:', error);
                         }
                     },
 

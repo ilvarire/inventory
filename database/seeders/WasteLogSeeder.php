@@ -22,9 +22,9 @@ class WasteLogSeeder extends Seeder
                 'raw_material_id' => rand(1, 29),
                 'quantity' => rand(1, 10),
                 'reason' => ['spoilage', 'expired', 'damaged', 'overproduction'][rand(0, 3)],
-                'notes' => 'Routine waste disposal',
+                'cost_amount' => rand(100, 5000),
                 'logged_by' => $users[$sectionIndex],
-                'waste_date' => Carbon::now()->subDays(rand(1, 30)),
+                'approved_by' => 2, // Manager
             ]);
         }
     }

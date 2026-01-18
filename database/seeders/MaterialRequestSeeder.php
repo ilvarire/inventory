@@ -18,15 +18,12 @@ class MaterialRequestSeeder extends Seeder
         foreach ($sections as $index => $sectionId) {
             // Create 3 requests per section
             for ($i = 0; $i < 3; $i++) {
-                $status = ['pending', 'approved', 'fulfilled'][rand(0, 2)];
+                $status = ['pending', 'approved', 'rejected'][rand(0, 2)];
 
                 $request = MaterialRequest::create([
+                    'chef_id' => $chefIds[$index],
                     'section_id' => $sectionId,
-                    'requested_by' => $chefIds[$index],
                     'status' => $status,
-                    'request_date' => Carbon::now()->subDays(rand(1, 15)),
-                    'needed_by' => Carbon::now()->addDays(rand(1, 7)),
-                    'notes' => 'Regular kitchen supplies needed',
                 ]);
 
                 // Add 2-4 items per request
@@ -35,9 +32,7 @@ class MaterialRequestSeeder extends Seeder
                     MaterialRequestItem::create([
                         'material_request_id' => $request->id,
                         'raw_material_id' => rand(1, 29),
-                        'quantity_requested' => rand(5, 50),
-                        'quantity_approved' => $status !== 'pending' ? rand(5, 50) : null,
-                        'quantity_fulfilled' => $status === 'fulfilled' ? rand(5, 50) : null,
+                        'quantity' => rand(5, 50),
                     ]);
                 }
             }

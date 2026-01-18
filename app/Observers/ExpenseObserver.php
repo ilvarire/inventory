@@ -15,9 +15,9 @@ class ExpenseObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'created',
-            'model_type' => Expense::class,
-            'model_id' => $expense->id,
-            'changes' => json_encode($expense->toArray()),
+            'entity_type' => Expense::class,
+            'entity_id' => $expense->id,
+            'after' => json_encode($expense->toArray()),
         ]);
     }
 
@@ -29,9 +29,10 @@ class ExpenseObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'updated',
-            'model_type' => Expense::class,
-            'model_id' => $expense->id,
-            'changes' => json_encode($expense->getChanges()),
+            'entity_type' => Expense::class,
+            'entity_id' => $expense->id,
+            'before' => json_encode($expense->getOriginal()),
+            'after' => json_encode($expense->getChanges()),
         ]);
     }
 }

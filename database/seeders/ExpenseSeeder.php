@@ -26,13 +26,12 @@ class ExpenseSeeder extends Seeder
             $descriptions = $expenseTypes[$category];
 
             Expense::create([
+                'manager_id' => $managerId,
                 'section_id' => $sections[rand(0, 3)],
-                'category' => $category,
+                'type' => $category,
                 'description' => $descriptions[rand(0, count($descriptions) - 1)],
                 'amount' => rand(5000, 50000),
                 'expense_date' => Carbon::now()->subDays(rand(1, 30)),
-                'recorded_by' => $managerId,
-                'receipt_number' => 'RCP-' . str_pad($i + 1, 5, '0', STR_PAD_LEFT),
             ]);
         }
     }

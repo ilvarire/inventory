@@ -15,9 +15,9 @@ class ProductionObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'created',
-            'model_type' => ProductionLog::class,
-            'model_id' => $production->id,
-            'changes' => json_encode($production->toArray()),
+            'entity_type' => ProductionLog::class,
+            'entity_id' => $production->id,
+            'after' => json_encode($production->toArray()),
         ]);
     }
 
@@ -29,9 +29,10 @@ class ProductionObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'updated',
-            'model_type' => ProductionLog::class,
-            'model_id' => $production->id,
-            'changes' => json_encode($production->getChanges()),
+            'entity_type' => ProductionLog::class,
+            'entity_id' => $production->id,
+            'before' => json_encode($production->getOriginal()),
+            'after' => json_encode($production->getChanges()),
         ]);
     }
 }

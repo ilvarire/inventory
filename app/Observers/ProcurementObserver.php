@@ -15,9 +15,9 @@ class ProcurementObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'created',
-            'model_type' => Procurement::class,
-            'model_id' => $procurement->id,
-            'changes' => json_encode($procurement->toArray()),
+            'entity_type' => Procurement::class,
+            'entity_id' => $procurement->id,
+            'after' => json_encode($procurement->toArray()),
         ]);
     }
 
@@ -29,9 +29,10 @@ class ProcurementObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'updated',
-            'model_type' => Procurement::class,
-            'model_id' => $procurement->id,
-            'changes' => json_encode($procurement->getChanges()),
+            'entity_type' => Procurement::class,
+            'entity_id' => $procurement->id,
+            'before' => json_encode($procurement->getOriginal()),
+            'after' => json_encode($procurement->getChanges()),
         ]);
     }
 
@@ -43,9 +44,9 @@ class ProcurementObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'deleted',
-            'model_type' => Procurement::class,
-            'model_id' => $procurement->id,
-            'changes' => json_encode($procurement->toArray()),
+            'entity_type' => Procurement::class,
+            'entity_id' => $procurement->id,
+            'before' => json_encode($procurement->toArray()),
         ]);
     }
 }

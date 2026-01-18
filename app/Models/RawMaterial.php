@@ -26,6 +26,12 @@ class RawMaterial extends Model
         return $this->hasMany(ProcurementItem::class);
     }
 
+    // Alias for batches - used in reporting and reorder services
+    public function procurementItems()
+    {
+        return $this->hasMany(ProcurementItem::class);
+    }
+
     public function inventoryMovements()
     {
         return $this->hasMany(InventoryMovement::class);

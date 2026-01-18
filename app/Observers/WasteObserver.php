@@ -15,9 +15,9 @@ class WasteObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'created',
-            'model_type' => WasteLog::class,
-            'model_id' => $waste->id,
-            'changes' => json_encode($waste->toArray()),
+            'entity_type' => WasteLog::class,
+            'entity_id' => $waste->id,
+            'after' => json_encode($waste->toArray()),
         ]);
     }
 
@@ -29,9 +29,10 @@ class WasteObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'updated',
-            'model_type' => WasteLog::class,
-            'model_id' => $waste->id,
-            'changes' => json_encode($waste->getChanges()),
+            'entity_type' => WasteLog::class,
+            'entity_id' => $waste->id,
+            'before' => json_encode($waste->getOriginal()),
+            'after' => json_encode($waste->getChanges()),
         ]);
     }
 }

@@ -105,6 +105,14 @@
                                         Expiring Items
                                     </a>
                                 </li>
+                                @if(in_array($userRole, ['Admin', 'Manager', 'Store Keeper']))
+                                    <li>
+                                        <a href="{{ route('raw-materials.index') }}"
+                                            class="menu-dropdown-item group {{ request()->routeIs('raw-materials.*') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                            Manage Materials
+                                        </a>
+                                    </li>
+                                @endif
                             </ul>
                         </div>
                     </li>

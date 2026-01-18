@@ -15,9 +15,9 @@ class SaleObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'created',
-            'model_type' => Sale::class,
-            'model_id' => $sale->id,
-            'changes' => json_encode($sale->toArray()),
+            'entity_type' => Sale::class,
+            'entity_id' => $sale->id,
+            'after' => json_encode($sale->toArray()),
         ]);
     }
 
@@ -29,9 +29,9 @@ class SaleObserver
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'deleted',
-            'model_type' => Sale::class,
-            'model_id' => $sale->id,
-            'changes' => json_encode($sale->toArray()),
+            'entity_type' => Sale::class,
+            'entity_id' => $sale->id,
+            'before' => json_encode($sale->toArray()),
         ]);
     }
 }

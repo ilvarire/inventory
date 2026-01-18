@@ -59,7 +59,10 @@ const API = {
     async get(endpoint, params = {}) {
         await this.initCsrf(); // Ensure CSRF cookie is set
 
-        const url = new URL(`${this.baseURL}${endpoint}`);
+        const url = new URL(
+            `${this.baseURL}${endpoint}`,
+            window.location.origin,
+        );
         Object.keys(params).forEach((key) => {
             if (params[key] !== null && params[key] !== undefined) {
                 url.searchParams.append(key, params[key]);
@@ -155,7 +158,10 @@ const API = {
      * Download file (for exports)
      */
     async download(endpoint, params = {}, filename = "download") {
-        const url = new URL(`${this.baseURL}${endpoint}`);
+        const url = new URL(
+            `${this.baseURL}${endpoint}`,
+            window.location.origin,
+        );
         Object.keys(params).forEach((key) => {
             if (params[key] !== null && params[key] !== undefined) {
                 url.searchParams.append(key, params[key]);

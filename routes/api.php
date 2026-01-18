@@ -50,7 +50,21 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
             ->middleware(['role:Procurement,Admin', 'throttle.custom:api.write']);
     });
 
-    // Procurement routes
+    // Raw Materials routes
+    Route::prefix('raw-materials')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\RawMaterialController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\V1\RawMaterialController::class, 'store'])
+            ->middleware(['role:Admin,Manager,Store Keeper', 'throttle.custom:api.write']);
+        Route::get('/categories', [\App\Http\Controllers\Api\V1\RawMaterialController::class, 'categories']);
+        Route::get('/units', [\App\Http\Controllers\Api\V1\RawMaterialController::class, 'units']);
+        Route::get('/{rawMaterial}', [\App\Http\Controllers\Api\V1\RawMaterialController::class, 'show']);
+        Route::put('/{rawMaterial}', [\App\Http\Controllers\Api\V1\RawMaterialController::class, 'update'])
+            ->middleware(['role:Admin,Manager,Store Keeper', 'throttle.custom:api.write']);
+        Route::delete('/{rawMaterial}', [\App\Http\Controllers\Api\V1\RawMaterialController::class, 'destroy'])
+            ->middleware(['role:Admin,Manager', 'throttle.custom:api.write']);
+    });
+
+    // Inventory routes
     Route::prefix('procurements')->group(function () {
         Route::get('/', [ProcurementController::class, 'index']);
         Route::post('/', [ProcurementController::class, 'store'])

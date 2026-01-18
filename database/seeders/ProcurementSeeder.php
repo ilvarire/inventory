@@ -20,7 +20,7 @@ class ProcurementSeeder extends Seeder
                 'procurement_user_id' => $procurementUserId,
                 'supplier_id' => rand(1, 6), // Random supplier
                 'purchase_date' => Carbon::now()->subDays(rand(1, 30)),
-                'status' => 'completed',
+                'status' => 'received',
             ]);
 
             // Add 2-5 items per procurement

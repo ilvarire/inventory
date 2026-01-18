@@ -69,6 +69,13 @@ Route::middleware('auth')->group(function () {
         })->name('movements');
     });
 
+    // Raw Materials
+    Route::prefix('raw-materials')->name('raw-materials.')->group(function () {
+        Route::get('/', function () {
+            return view('raw-materials.index');
+        })->name('index');
+    });
+
     // Procurement
     Route::prefix('procurement')->name('procurement.')->group(function () {
         Route::get('/', function () {

@@ -124,7 +124,7 @@ class InventoryController extends Controller
      */
     public function lowStock()
     {
-        $materials = RawMaterial::all()->filter(function ($material) {
+        $materials = RawMaterial::with('supplier')->get()->filter(function ($material) {
             return $this->inventoryService->checkLowStock($material->id);
         })->map(function ($material) {
             $stockBalance = $this->inventoryService->getStockBalance($material->id);
@@ -133,10 +133,12 @@ class InventoryController extends Controller
                 'id' => $material->id,
                 'name' => $material->name,
                 'unit' => $material->unit,
+                'category' => $material->category,
                 'current_stock' => $stockBalance,
                 'min_quantity' => $material->min_quantity,
                 'reorder_quantity' => $material->reorder_quantity,
                 'deficit' => $material->min_quantity - $stockBalance,
+                'supplier' => $material->supplier,
             ];
         })->values();
 

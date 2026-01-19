@@ -23,13 +23,7 @@
                         <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                             Supplier <span class="text-red-500">*</span>
                         </label>
-                        <select x-model="form.supplier_id" required
-                            class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white">
-                            <option value="">Select Supplier</option>
-                            <template x-for="supplier in suppliers" :key="supplier.id">
-                                <option :value="supplier.id" x-text="supplier.name"></option>
-                            </template>
-                        </select>
+                        <input type="text" x-model="form.supplier_id" required placeholder="Enter supplier name" class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white" />
                     </div>
 
                     <div>
@@ -152,7 +146,6 @@
             function newProcurement() {
                 return {
                     loading: false,
-                    suppliers: [],
                     materials: [],
                     form: {
                         supplier_id: '',
@@ -164,19 +157,8 @@
 
                     async init() {
                         await Promise.all([
-                            this.fetchSuppliers(),
                             this.fetchMaterials()
                         ]);
-                    },
-
-                    async fetchSuppliers() {
-                        try {
-                            const response = await API.get('/suppliers');
-                            this.suppliers = response.data || response;
-                        } catch (error) {
-                            console.error('Failed to load suppliers:', error);
-                            showError('Failed to load suppliers list');
-                        }
                     },
 
                     async fetchMaterials() {

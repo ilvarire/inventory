@@ -41,12 +41,12 @@
                         </p>
                         <div class="mt-4 flex items-center gap-4">
                             <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium" :class="{
-                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': material.quantity >
-                                            material.reorder_level,
-                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': material
-                                            .quantity <= material.reorder_level && material.quantity > 0,
-                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': material.quantity <= 0
-                                    }"
+                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': material.quantity >
+                                                    material.reorder_level,
+                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': material
+                                                    .quantity <= material.reorder_level && material.quantity > 0,
+                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': material.quantity <= 0
+                                            }"
                                 x-text="material.quantity > material.reorder_level ? 'In Stock' : (material.quantity > 0 ? 'Low Stock' : 'Out of Stock')">
                             </span>
                             <span class="text-sm text-gray-600 dark:text-gray-400">
@@ -156,7 +156,32 @@
                         this.error = '';
 
                         try {
-                            this.material = await API.get(`/materials/${materialId}`);
+                            const response = await API.get(`/inventory/${materialId}`);
+
+                            // Map the API response to the format expected by the view
+                            this.material = {
+                                id: response.material.id,
+                                name: response.material.name,
+                                sku: response.material.id, // Using ID as SKU since SKU field doesn't exist
+                                unit: response.material.unit,
+                                category: response.material.category,
+                                quantity: response.current_stock,
+                                reorder_level: response.material.reorder_quantity,
+                                min_quantity: response.material.min_quantity,
+                                unit_cost: 0, // Will be calculated from batches if available
+                                storage_location: response.material.storage_location || 'N/A',
+                                supplier: response.material.preferred_supplier_id || 'N/A',
+                                created_at: response.material.created_at,
+                                updated_at: response.material.updated_at
+                            };
+
+                            // Calculate average unit cost from batches if available
+                            if (response.batches && response.batches.length > 0) {
+                                const totalCost = response.batches.reduce((sum, batch) => sum + (batch.unit_cost * batch.available), 0);
+                                const totalQuantity = response.batches.reduce((sum, batch) => sum + batch.available, 0);
+                                this.material.unit_cost = totalQuantity > 0 ? totalCost / totalQuantity : 0;
+                            }
+
                         } catch (error) {
                             console.error('Material fetch error:', error);
                             this.error = error.message || 'Failed to load material details';

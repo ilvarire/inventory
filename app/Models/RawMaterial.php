@@ -16,7 +16,11 @@ class RawMaterial extends Model
         // reorder_email_sent_at (nullable)
     ];
 
-    // Note: preferred_supplier_id is now a text field (supplier name), not a foreign key
+    // Relationship to Supplier model
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class, 'preferred_supplier_id');
+    }
 
     public function batches()
     {

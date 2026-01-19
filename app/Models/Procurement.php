@@ -15,6 +15,26 @@ class Procurement extends Model
         'status'
     ];
 
+    protected $appends = ['reference_number', 'total_cost'];
+
+    /**
+     * Get the procurement reference number.
+     */
+    public function getReferenceNumberAttribute()
+    {
+        return 'PRO-' . str_pad($this->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get the total cost of the procurement.
+     */
+    public function getTotalCostAttribute()
+    {
+        return $this->items->sum(function ($item) {
+            return $item->quantity * $item->unit_cost;
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'procurement_user_id');

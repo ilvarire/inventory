@@ -48,8 +48,7 @@
                         class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white">
                         <option value="">All Statuses</option>
                         <option value="pending">Pending</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
+                        <option value="received">Received</option>
                     </select>
                 </div>
 
@@ -111,14 +110,11 @@
                                         <a :href="`/procurement/${procurement.id}`"
                                             x-text="procurement.reference_number"></a>
                                     </h5>
-                                    <p class="text-sm text-gray-500" x-text="formatDate(procurement.procurement_date)"></p>
+                                    <p class="text-sm text-gray-500" x-text="formatDate(procurement.purchase_date)"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white font-medium"
-                                        x-text="procurement.supplier?.name || 'N/A'"></p>
-                                    <p class="text-xs text-gray-500"
-                                        x-text="procurement.supplier?.rating ? 'Rating: ' + procurement.supplier.rating + '/5' : ''">
-                                    </p>
+                                        x-text="procurement.supplier_id || 'N/A'"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white font-medium"
@@ -126,10 +122,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'completed',
-                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending',
-                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': procurement.status === 'cancelled'
-                                        }" x-text="capitalize(procurement.status)"></span>
+                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
+                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
+                                                }" x-text="capitalize(procurement.status)"></span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-sm text-gray-600 dark:text-gray-400"

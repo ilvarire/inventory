@@ -91,21 +91,21 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium" :class="{
-                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': movement
-                                                    .type === 'in',
-                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': movement.type ===
-                                                    'out',
-                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400': movement
-                                                    .type === 'adjustment'
-                                            }" x-text="movement.type.toUpperCase()">
+                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': movement
+                                                                .type === 'in',
+                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': movement.type ===
+                                                                'out',
+                                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400': movement
+                                                                .type === 'adjustment'
+                                                        }" x-text="movement.type.toUpperCase()">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="font-medium" :class="{
-                                                'text-green-600 dark:text-green-400': movement.type === 'in',
-                                                'text-red-600 dark:text-red-400': movement.type === 'out',
-                                                'text-blue-600 dark:text-blue-400': movement.type === 'adjustment'
-                                            }">
+                                                            'text-green-600 dark:text-green-400': movement.type === 'in',
+                                                            'text-red-600 dark:text-red-400': movement.type === 'out',
+                                                            'text-blue-600 dark:text-blue-400': movement.type === 'adjustment'
+                                                        }">
                                         <span x-text="movement.type === 'out' ? '-' : '+'"></span>
                                         <span x-text="movement.quantity"></span>
                                         <span x-text="material.unit"></span>
@@ -215,7 +215,16 @@
 
                     async fetchMaterial() {
                         try {
-                            this.material = await API.get(`/materials/${materialId}`);
+                            const response = await API.get(`/inventory/${materialId}`);
+
+                            // Map the API response to the format expected by the view
+                            this.material = {
+                                id: response.material.id,
+                                name: response.material.name,
+                                sku: response.material.id, // Using ID as SKU
+                                unit: response.material.unit,
+                                quantity: response.current_stock
+                            };
                         } catch (error) {
                             console.error('Material fetch error:', error);
                         }
@@ -226,8 +235,21 @@
                         this.error = '';
 
                         try {
-                            const response = await API.get(`/materials/${materialId}/movements?page=${page}`);
-                            this.movements = response.data;
+                            const response = await API.get(`/inventory/${materialId}/movements?page=${page}`);
+
+                            // Map the movements data to the format expected by the view
+                            this.movements = (response.data || []).map(movement => ({
+                                id: movement.id,
+                                type: movement.movement_type, // Map movement_type to type
+                                quantity: movement.quantity,
+                                balance_after: movement.balance_after,
+                                reference_type: movement.reference_type,
+                                reference_id: movement.reference_id,
+                                user: movement.performer, // Map performer to user
+                                notes: movement.notes,
+                                created_at: movement.created_at
+                            }));
+
                             this.pagination = {
                                 current_page: response.current_page,
                                 last_page: response.last_page,

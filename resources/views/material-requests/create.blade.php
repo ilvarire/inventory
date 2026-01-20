@@ -31,13 +31,21 @@
                         <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
                             Section <span class="text-red-500">*</span>
                         </label>
-                        <select x-model="formData.section_id" required
-                            class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 active:border-brand-500 disabled:cursor-default disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-brand-500">
-                            <option value="">Select Section</option>
-                            <template x-for="section in sections" :key="section.id">
-                                <option :value="section.id" x-text="section.name"></option>
-                            </template>
-                        </select>
+                        @if(auth()->user()->isChef())
+                            <!-- Chef: Read-only section (their own section) -->
+                            <input type="text" :value="userSectionName" readonly
+                                class="w-full rounded border border-gray-300 bg-gray-100 px-5 py-3 text-gray-900 outline-none cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                            <input type="hidden" x-model="formData.section_id" />
+                        @else
+                            <!-- Admin: Dropdown to select any section -->
+                            <select x-model="formData.section_id" required
+                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 active:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-brand-500">
+                                <option value="">Select Section</option>
+                                <template x-for="section in sections" :key="section.id">
+                                    <option :value="section.id" x-text="section.name"></option>
+                                </template>
+                            </select>
+                        @endif
                     </div>
 
                     <!-- Materials Section -->
@@ -66,6 +74,13 @@
                                         <input type="number" x-model="item.quantity" required min="0.01" step="0.01"
                                             placeholder="Qty"
                                             class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 active:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                                    </div>
+
+                                    <!-- Unit Display (Read-only) -->
+                                    <div class="w-24">
+                                        <input type="text" :value="getUnit(item.raw_material_id)" readonly
+                                            placeholder="Unit"
+                                            class="w-full rounded border border-gray-300 bg-gray-100 px-5 py-3 text-gray-900 outline-none cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                                     </div>
 
                                     <!-- Remove Button -->
@@ -131,6 +146,8 @@
                     error: '',
                     sections: [],
                     materials: [],
+                    userSectionId: {{ auth()->user()->section_id ?? 'null' }},
+                    userSectionName: '{{ auth()->user()->section->name ?? "" }}',
                     formData: {
                         section_id: '',
                         items: [{
@@ -141,14 +158,19 @@
                     },
 
                     async init() {
-                        await this.fetchSections();
+                        // Auto-set section for Chef
+                        @if(auth()->user()->isChef())
+                            this.formData.section_id = this.userSectionId;
+                        @endif
+
+                                                        await this.fetchSections();
                         await this.fetchMaterials();
                     },
 
                     async fetchSections() {
                         try {
                             const response = await API.get('/sections');
-                            this.sections = response.data || [];
+                            this.sections = response.data || response || [];
                         } catch (error) {
                             console.error('Failed to fetch sections:', error);
                         }
@@ -156,8 +178,8 @@
 
                     async fetchMaterials() {
                         try {
-                            const response = await API.get('/inventory');
-                            this.materials = response.data || [];
+                            const response = await API.get('/raw-materials-list');
+                            this.materials = response.data || response || [];
                         } catch (error) {
                             console.error('Failed to fetch materials:', error);
                         }
@@ -174,6 +196,12 @@
                         this.formData.items.splice(index, 1);
                     },
 
+                    getUnit(materialId) {
+                        if (!materialId) return '';
+                        const material = this.materials.find(m => m.id == materialId);
+                        return material ? material.unit : '';
+                    },
+
                     async submitRequest() {
                         this.loading = true;
                         this.error = '';
@@ -182,7 +210,7 @@
                             const response = await API.post('/material-requests', this.formData);
 
                             // Redirect to the new request details page
-                            window.location.href = '/material-requests/' + response.id;
+                            window.location.href = '/material-requests/' + (response.data?.id || response.id);
                         } catch (error) {
                             console.error('Submit error:', error);
                             this.error = error.message || 'Failed to submit request';

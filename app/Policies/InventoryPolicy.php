@@ -12,8 +12,8 @@ class InventoryPolicy
      */
     public function viewAny(User $user): bool
     {
-        // All authenticated users can view inventory
-        return true;
+        // Only Procurement, Store Keeper, Manager, and Admin can view inventory
+        return $user->isProcurement() || $user->isStoreKeeper() || $user->isManager() || $user->isAdmin();
     }
 
     /**

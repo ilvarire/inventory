@@ -62,7 +62,7 @@ class MaterialRequestPolicy
      */
     public function fulfill(User $user): bool
     {
-        // Only Store Keeper, Manager, and Admin can fulfill requests
-        return $user->isStoreKeeper() || $user->isManager() || $user->isAdmin();
+        // Only Manager and Admin can fulfill requests
+        return $user->isManager() || $user->isAdmin();
     }
 }

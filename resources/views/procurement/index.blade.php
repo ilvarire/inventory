@@ -122,9 +122,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
-                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
-                                                }" x-text="capitalize(procurement.status)"></span>
+                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
+                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
+                                                                        }" x-text="capitalize(procurement.status)"></span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-sm text-gray-600 dark:text-gray-400"
@@ -141,6 +141,32 @@
                                                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                         </a>
+
+                                        <!-- Approval buttons for pending procurements (Manager/Admin only) -->
+                                        @if(auth()->user()->isManager() || auth()->user()->isAdmin())
+                                            <template x-if="procurement.status === 'pending'">
+                                                <div class="flex items-center gap-2">
+                                                    <button @click="approveProcurement(procurement)"
+                                                        class="text-green-600 hover:text-green-700 dark:text-green-400"
+                                                        title="Approve">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </button>
+                                                    <button @click="rejectProcurement(procurement)"
+                                                        class="text-red-600 hover:text-red-700 dark:text-red-400"
+                                                        title="Reject">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -164,6 +190,67 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination -->
+            <div x-show="pagination.total > pagination.per_page"
+                class="flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-800 sm:px-6">
+                <div class="flex flex-1 justify-between sm:hidden">
+                    <button @click="changePage(pagination.current_page - 1)" :disabled="pagination.current_page === 1"
+                        class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                        Previous
+                    </button>
+                    <button @click="changePage(pagination.current_page + 1)"
+                        :disabled="pagination.current_page === pagination.last_page"
+                        class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                        Next
+                    </button>
+                </div>
+                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                            Showing
+                            <span class="font-medium" x-text="pagination.from"></span>
+                            to
+                            <span class="font-medium" x-text="pagination.to"></span>
+                            of
+                            <span class="font-medium" x-text="pagination.total"></span>
+                            results
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                            <button @click="changePage(pagination.current_page - 1)"
+                                :disabled="pagination.current_page === 1"
+                                class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 disabled:opacity-50 dark:ring-gray-700 dark:hover:bg-gray-800">
+                                <span class="sr-only">Previous</span>
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <!-- Page number display -->
+                            <span
+                                class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
+                                Page <span x-text="pagination.current_page"></span> of <span
+                                    x-text="pagination.last_page"></span>
+                            </span>
+
+                            <button @click="changePage(pagination.current_page + 1)"
+                                :disabled="pagination.current_page === pagination.last_page"
+                                class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 disabled:opacity-50 dark:ring-gray-700 dark:hover:bg-gray-800">
+                                <span class="sr-only">Next</span>
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -174,6 +261,14 @@
                     loading: true,
                     error: '',
                     procurements: [],
+                    pagination: {
+                        current_page: 1,
+                        last_page: 1,
+                        per_page: 15,
+                        total: 0,
+                        from: 0,
+                        to: 0
+                    },
                     filters: {
                         search: '',
                         status: '',
@@ -184,24 +279,45 @@
                         await this.fetchProcurements();
                     },
 
-                    async fetchProcurements() {
+                    async fetchProcurements(page = 1) {
                         this.loading = true;
                         this.error = '';
 
                         try {
-                            const params = {};
+                            const params = { page };
                             if (this.filters.search) params.search = this.filters.search;
                             if (this.filters.status) params.status = this.filters.status;
                             if (this.filters.date) params.date = this.filters.date;
 
+                            console.log('Fetching procurements with params:', params);
                             const response = await API.get('/procurements', params);
-                            this.procurements = response.data || response;
+                            console.log('Procurements response:', response);
+
+                            // Handle paginated response
+                            this.procurements = response.data || [];
+                            this.pagination = {
+                                current_page: response.current_page || 1,
+                                last_page: response.last_page || 1,
+                                per_page: response.per_page || 15,
+                                total: response.total || 0,
+                                from: response.from || 0,
+                                to: response.to || 0
+                            };
+
+                            console.log('Procurements array:', this.procurements);
+                            console.log('Pagination:', this.pagination);
                         } catch (error) {
                             console.error('Procurement fetch error:', error);
                             this.error = error.message || 'Failed to load procurements';
                             showError(this.error);
                         } finally {
                             this.loading = false;
+                        }
+                    },
+
+                    async changePage(page) {
+                        if (page >= 1 && page <= this.pagination.last_page) {
+                            await this.fetchProcurements(page);
                         }
                     },
 
@@ -214,11 +330,52 @@
 
                     formatDate(date) {
                         if (!date) return 'N/A';
+
+                        // For date-only strings (YYYY-MM-DD), parse as local date to avoid timezone issues
+                        if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            const [year, month, day] = date.split('-');
+                            return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                        }
+
+                        // For datetime strings, use normal parsing
                         return new Date(date).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric'
                         });
+                    },
+
+                    async approveProcurement(procurement) {
+                        if (!confirm(`Approve procurement ${procurement.reference_number}?`)) return;
+
+                        try {
+                            const response = await API.post(`/procurements/${procurement.id}/approve`);
+                            showSuccess(response.message || 'Procurement approved successfully');
+                            await this.fetchProcurements(this.pagination.current_page);
+                        } catch (error) {
+                            console.error('Approval error:', error);
+                            showError(error.message || 'Failed to approve procurement');
+                        }
+                    },
+
+                    async rejectProcurement(procurement) {
+                        const reason = prompt(`Reject procurement ${procurement.reference_number}?\n\nPlease provide a reason:`);
+                        if (!reason || reason.trim() === '') return;
+
+                        try {
+                            const response = await API.post(`/procurements/${procurement.id}/reject`, {
+                                rejection_reason: reason.trim()
+                            });
+                            showSuccess(response.message || 'Procurement rejected');
+                            await this.fetchProcurements(this.pagination.current_page);
+                        } catch (error) {
+                            console.error('Rejection error:', error);
+                            showError(error.message || 'Failed to reject procurement');
+                        }
                     },
 
                     capitalize(string) {

@@ -58,67 +58,69 @@
                         </a>
                     </li>
 
-                    <!-- Inventory (All Roles) -->
-                    <li>
-                        <a href="#" @click.prevent="selected = (selected === 'Inventory' ? '':'Inventory')"
-                            class="menu-item group"
-                            :class="(selected === 'Inventory') || {{ request()->routeIs('inventory.*') ? 'true' : 'false' }} ? 'menu-item-active' : 'menu-item-inactive'">
-                            <svg :class="(selected === 'Inventory') || {{ request()->routeIs('inventory.*') ? 'true' : 'false' }} ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                                width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M20 7L12 3L4 7M20 7L12 11M20 7V17L12 21M12 11L4 7M12 11V21M4 7V17L12 21"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">
-                                Inventory
-                            </span>
-                            <svg class="menu-item-arrow"
-                                :class="[(selected === 'Inventory') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'xl:hidden' : '' ]"
-                                width="20" height="20" viewBox="0 0 20 20" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="currentColor"
-                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </a>
+                    <!-- Inventory (Procurement, Store Keeper, Manager, Admin) -->
+                    @if(in_array($userRole, ['Procurement', 'Store Keeper', 'Manager', 'Admin']))
+                        <li>
+                            <a href="#" @click.prevent="selected = (selected === 'Inventory' ? '':'Inventory')"
+                                class="menu-item group"
+                                :class="(selected === 'Inventory') || {{ request()->routeIs('inventory.*') ? 'true' : 'false' }} ? 'menu-item-active' : 'menu-item-inactive'">
+                                <svg :class="(selected === 'Inventory') || {{ request()->routeIs('inventory.*') ? 'true' : 'false' }} ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+                                    width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20 7L12 3L4 7M20 7L12 11M20 7V17L12 21M12 11L4 7M12 11V21M4 7V17L12 21"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                                <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">
+                                    Inventory
+                                </span>
+                                <svg class="menu-item-arrow"
+                                    :class="[(selected === 'Inventory') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'xl:hidden' : '' ]"
+                                    width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="currentColor"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </a>
 
-                        <!-- Dropdown -->
-                        <div class="translate transform overflow-hidden"
-                            :class="(selected === 'Inventory') ? 'block' :'hidden'">
-                            <ul :class="sidebarToggle ? 'xl:hidden' : 'flex'"
-                                class="menu-dropdown mt-2 flex flex-col gap-1 pl-9">
-                                <li>
-                                    <a href="{{ route('inventory.index') }}"
-                                        class="menu-dropdown-item group {{ request()->routeIs('inventory.index') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
-                                        All Materials
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('inventory.low-stock') }}"
-                                        class="menu-dropdown-item group {{ request()->routeIs('inventory.low-stock') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
-                                        Low Stock
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('inventory.expiring') }}"
-                                        class="menu-dropdown-item group {{ request()->routeIs('inventory.expiring') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
-                                        Expiring Items
-                                    </a>
-                                </li>
-                                @if(in_array($userRole, ['Admin', 'Manager', 'Store Keeper']))
+                            <!-- Dropdown -->
+                            <div class="translate transform overflow-hidden"
+                                :class="(selected === 'Inventory') ? 'block' :'hidden'">
+                                <ul :class="sidebarToggle ? 'xl:hidden' : 'flex'"
+                                    class="menu-dropdown mt-2 flex flex-col gap-1 pl-9">
                                     <li>
-                                        <a href="{{ route('raw-materials.index') }}"
-                                            class="menu-dropdown-item group {{ request()->routeIs('raw-materials.*') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
-                                            Manage Materials
+                                        <a href="{{ route('inventory.index') }}"
+                                            class="menu-dropdown-item group {{ request()->routeIs('inventory.index') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                            All Materials
                                         </a>
                                     </li>
-                                @endif
-                            </ul>
-                        </div>
-                    </li>
+                                    <li>
+                                        <a href="{{ route('inventory.low-stock') }}"
+                                            class="menu-dropdown-item group {{ request()->routeIs('inventory.low-stock') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                            Low Stock
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('inventory.expiring') }}"
+                                            class="menu-dropdown-item group {{ request()->routeIs('inventory.expiring') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                            Expiring Items
+                                        </a>
+                                    </li>
+                                    @if(in_array($userRole, ['Admin', 'Manager', 'Store Keeper']))
+                                        <li>
+                                            <a href="{{ route('raw-materials.index') }}"
+                                                class="menu-dropdown-item group {{ request()->routeIs('raw-materials.*') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                                Manage Materials
+                                            </a>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </li>
+                    @endif
 
-                    <!-- Procurement (Procurement, Admin only) -->
-                    @if(in_array($userRole, ['Procurement', 'Admin']))
+                    <!-- Procurement (Procurement, Manager, Admin) -->
+                    @if(in_array($userRole, ['Procurement', 'Manager', 'Admin']))
                         <li>
                             <a href="{{ route('procurement.index') }}"
                                 class="menu-item group {{ request()->routeIs('procurement.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
@@ -139,22 +141,24 @@
                         </li>
                     @endif
 
-                    <!-- Material Requests -->
-                    <li>
-                        <a href="{{ route('material-requests.index') }}"
-                            class="menu-item group {{ request()->routeIs('material-requests.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
-                            <svg class="{{ request()->routeIs('material-requests.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
-                                width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H18.5001C19.7427 20.75 20.7501 19.7426 20.7501 18.5V5.5C20.7501 4.25736 19.7427 3.25 18.5001 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H18.5001C18.9143 4.75 19.2501 5.08579 19.2501 5.5V18.5C19.2501 18.9142 18.9143 19.25 18.5001 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V5.5ZM6.25005 9.7143C6.25005 9.30008 6.58583 8.9643 7.00005 8.9643L17 8.96429C17.4143 8.96429 17.75 9.30008 17.75 9.71429C17.75 10.1285 17.4143 10.4643 17 10.4643L7.00005 10.4643C6.58583 10.4643 6.25005 10.1285 6.25005 9.7143ZM6.25005 14.2857C6.25005 13.8715 6.58583 13.5357 7.00005 13.5357H17C17.4143 13.5357 17.75 13.8715 17.75 14.2857C17.75 14.6999 17.4143 15.0357 17 15.0357H7.00005C6.58583 15.0357 6.25005 14.6999 6.25005 14.2857Z"
-                                    fill="currentColor" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">
-                                Material Requests
-                            </span>
-                        </a>
-                    </li>
+                    <!-- Material Requests (Chef, Store Keeper, Manager, Admin) -->
+                    @if(in_array($userRole, ['Chef', 'Store Keeper', 'Manager', 'Admin']))
+                        <li>
+                            <a href="{{ route('material-requests.index') }}"
+                                class="menu-item group {{ request()->routeIs('material-requests.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                                <svg class="{{ request()->routeIs('material-requests.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                                    width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H18.5001C19.7427 20.75 20.7501 19.7426 20.7501 18.5V5.5C20.7501 4.25736 19.7427 3.25 18.5001 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H18.5001C18.9143 4.75 19.2501 5.08579 19.2501 5.5V18.5C19.2501 18.9142 18.9143 19.25 18.5001 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V5.5ZM6.25005 9.7143C6.25005 9.30008 6.58583 8.9643 7.00005 8.9643L17 8.96429C17.4143 8.96429 17.75 9.30008 17.75 9.71429C17.75 10.1285 17.4143 10.4643 17 10.4643L7.00005 10.4643C6.58583 10.4643 6.25005 10.1285 6.25005 9.7143ZM6.25005 14.2857C6.25005 13.8715 6.58583 13.5357 7.00005 13.5357H17C17.4143 13.5357 17.75 13.8715 17.75 14.2857C17.75 14.6999 17.4143 15.0357 17 15.0357H7.00005C6.58583 15.0357 6.25005 14.6999 6.25005 14.2857Z"
+                                        fill="currentColor" />
+                                </svg>
+                                <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">
+                                    Material Requests
+                                </span>
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- Recipes (Chef, Manager, Admin) -->
                     @if(in_array($userRole, ['Chef', 'Manager', 'Admin']))
@@ -235,23 +239,25 @@
                         </li>
                     @endif
 
-                    <!-- Waste Management -->
-                    <li>
-                        <a href="{{ route('waste.index') }}"
-                            class="menu-item group {{ request()->routeIs('waste.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
-                            <svg class="{{ request()->routeIs('waste.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
-                                width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">
-                                Waste Logs
-                            </span>
-                        </a>
-                    </li>
+                    <!-- Waste Management (Chef, Manager, Admin) -->
+                    @if(in_array($userRole, ['Chef', 'Manager', 'Admin']))
+                        <li>
+                            <a href="{{ route('waste.index') }}"
+                                class="menu-item group {{ request()->routeIs('waste.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                                <svg class="{{ request()->routeIs('waste.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                                    width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                                <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">
+                                    Waste Logs
+                                </span>
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- Reports (Manager, Admin only) -->
                     @if(in_array($userRole, ['Manager', 'Admin']))

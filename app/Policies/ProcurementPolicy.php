@@ -51,4 +51,13 @@ class ProcurementPolicy
         // Only Admin can delete procurements
         return $user->isAdmin();
     }
+
+    /**
+     * Determine if the user can approve/reject the procurement.
+     */
+    public function approve(User $user, Procurement $procurement): bool
+    {
+        // Only Manager and Admin can approve/reject procurements
+        return $user->isManager() || $user->isAdmin();
+    }
 }

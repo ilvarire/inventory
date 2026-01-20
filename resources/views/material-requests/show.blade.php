@@ -41,11 +41,12 @@
                                 Request <span x-text="'#' + request.id"></span>
                             </h3>
                             <span :class="{
-                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': request.status === 'pending',
-                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': request.status === 'approved',
-                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': request.status === 'fulfilled',
-                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': request.status === 'rejected'
-                                    }" class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
+                                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': request.status === 'pending',
+                                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': request.status === 'approved',
+                                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': request.status === 'fulfilled',
+                                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': request.status === 'rejected'
+                                                            }"
+                                class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
                                 x-text="request.status">
                             </span>
                         </div>
@@ -55,7 +56,8 @@
                         <div class="grid grid-cols-2 gap-5">
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Requester</p>
-                                <p class="mt-1 font-medium text-gray-900 dark:text-white" x-text="request.user?.name">
+                                <p class="mt-1 font-medium text-gray-900 dark:text-white"
+                                    x-text="request.chef?.name || 'N/A'">
                                 </p>
                             </div>
                             <div>
@@ -128,11 +130,6 @@
             <!-- Actions Sidebar -->
             <div class="space-y-6">
                 <!-- Action Buttons -->
-                @php
-                    $user = json_decode(json_encode(session('user')));
-                    $userRole = $user->role->name ?? 'Guest';
-                @endphp
-
                 <div
                     class="rounded-sm border border-gray-200 bg-white shadow-default dark:border-gray-800 dark:bg-gray-900">
                     <div class="border-b border-gray-200 px-7 py-4 dark:border-gray-800">
@@ -141,7 +138,7 @@
 
                     <div class="p-7 space-y-3">
                         <!-- Approve Button (Manager/Admin only, Pending status) -->
-                        @if(in_array($userRole, ['Manager', 'Admin']))
+                        @if(auth()->check() && (auth()->user()->isManager() || auth()->user()->isAdmin()))
                             <button x-show="request.status === 'pending'" @click="approveRequest" :disabled="actionLoading"
                                 class="w-full rounded-md bg-green-500 px-4 py-3 text-white hover:bg-green-600 disabled:opacity-50">
                                 <span x-show="!actionLoading">Approve Request</span>
@@ -155,8 +152,8 @@
                             </button>
                         @endif
 
-                        <!-- Fulfill Button (Store Keeper/Admin only, Approved status) -->
-                        @if(in_array($userRole, ['Store Keeper', 'Admin']))
+                        <!-- Fulfill Button (Manager/Admin only, Approved status) -->
+                        @if(auth()->check() && (auth()->user()->isManager() || auth()->user()->isAdmin()))
                             <button x-show="request.status === 'approved'" @click="fulfillRequest" :disabled="actionLoading"
                                 class="w-full rounded-md bg-brand-500 px-4 py-3 text-white hover:bg-brand-600 disabled:opacity-50">
                                 <span x-show="!actionLoading">Mark as Fulfilled</span>

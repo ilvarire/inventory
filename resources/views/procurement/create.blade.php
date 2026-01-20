@@ -23,7 +23,8 @@
                         <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                             Supplier <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" x-model="form.supplier_id" required placeholder="Enter supplier name" class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white" />
+                        <input type="text" x-model="form.supplier_id" required placeholder="Enter supplier name"
+                            class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white" />
                     </div>
 
                     <div>
@@ -209,9 +210,15 @@
 
                     async submit() {
                         this.loading = true;
+                        console.log('Submitting procurement:', this.form);
                         try {
-                            await API.post('/procurements', this.form);
-                            window.location.href = "{{ route('procurement.index') }}";
+                            const response = await API.post('/procurements', this.form);
+                            console.log('Procurement created successfully:', response);
+                            showSuccess('Procurement created successfully!');
+                            // Wait a moment before redirecting to ensure user sees the success message
+                            setTimeout(() => {
+                                window.location.href = "{{ route('procurement.index') }}";
+                            }, 1000);
                         } catch (error) {
                             console.error('Submission error:', error);
                             showError(error.message || 'Failed to create procurement');

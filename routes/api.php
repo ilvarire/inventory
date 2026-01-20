@@ -64,12 +64,21 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
             ->middleware(['role:Admin,Manager', 'throttle.custom:api.write']);
     });
 
+    // Public raw materials list (for material requests - all authenticated users)
+    Route::get('/raw-materials-list', function () {
+        return response()->json(\App\Models\RawMaterial::select('id', 'name', 'unit', 'category')->get());
+    });
+
     // Inventory routes
     Route::prefix('procurements')->group(function () {
         Route::get('/', [ProcurementController::class, 'index']);
         Route::post('/', [ProcurementController::class, 'store'])
             ->middleware(['role:Procurement,Admin', 'throttle.custom:api.write']);
         Route::get('/{procurement}', [ProcurementController::class, 'show']);
+        Route::post('/{procurement}/approve', [ProcurementController::class, 'approve'])
+            ->middleware(['role:Manager,Admin', 'throttle.custom:api.write']);
+        Route::post('/{procurement}/reject', [ProcurementController::class, 'reject'])
+            ->middleware(['role:Manager,Admin', 'throttle.custom:api.write']);
     });
 
     // Inventory routes
@@ -79,6 +88,11 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
         Route::get('/expiring', [InventoryController::class, 'expiring']);
         Route::get('/{material}', [InventoryController::class, 'show']);
         Route::get('/{material}/movements', [InventoryController::class, 'movements']);
+    });
+
+    // Sections route (for dropdowns)
+    Route::get('/sections', function () {
+        return response()->json(\App\Models\Section::all());
     });
 
     // Material Request routes

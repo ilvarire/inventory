@@ -39,7 +39,8 @@ class ProcurementController extends Controller
             $query->where('status', $request->status);
         }
 
-        $procurements = $query->orderBy('purchase_date', 'desc')
+        $procurements = $query->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate($request->get('per_page', 15));
 
         return response()->json($procurements);
@@ -66,42 +67,53 @@ class ProcurementController extends Controller
         try {
             DB::beginTransaction();
 
+            // Determine status based on user role
+            // Admin can create procurements that are immediately received
+            // Procurement users create pending procurements that need approval
+            $status = auth()->user()->isAdmin() ? 'received' : 'pending';
+
             // Create procurement
             $procurement = Procurement::create([
                 'procurement_user_id' => auth()->id(),
                 'supplier_id' => $validated['supplier_id'],
                 'purchase_date' => $validated['purchase_date'],
-                'status' => 'received',
+                'status' => $status,
             ]);
 
             // Create procurement items (batches)
             foreach ($validated['items'] as $item) {
-                $procurementItem = ProcurementItem::create([
+                ProcurementItem::create([
                     'procurement_id' => $procurement->id,
                     'raw_material_id' => $item['raw_material_id'],
                     'quantity' => $item['quantity'],
                     'unit_cost' => $item['unit_cost'],
-                    'received_quantity' => 0, // Will be updated as materials are issued
+                    'received_quantity' => 0, // Will be updated when approved/issued
                     'quality_note' => $item['quality_note'] ?? null,
                     'expiry_date' => $item['expiry_date'] ?? null,
                 ]);
+            }
 
-                // Create inventory movement for procurement
-                InventoryMovement::create([
-                    'raw_material_id' => $item['raw_material_id'],
-                    'procurement_item_id' => $procurementItem->id,
-                    'from_location' => 'supplier',
-                    'to_location' => 'store',
-                    'quantity' => $item['quantity'],
-                    'movement_type' => 'procurement',
-                    'performed_by' => auth()->id(),
-                ]);
+            // If Admin created it as 'received', create inventory movements immediately
+            if ($status === 'received') {
+                foreach ($procurement->items as $item) {
+                    InventoryMovement::create([
+                        'raw_material_id' => $item->raw_material_id,
+                        'procurement_item_id' => $item->id,
+                        'from_location' => 'supplier',
+                        'to_location' => 'store',
+                        'quantity' => $item->quantity,
+                        'movement_type' => 'procurement',
+                        'performed_by' => auth()->id(),
+                    ]);
+                }
             }
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Procurement created successfully',
+                'message' => $status === 'received'
+                    ? 'Procurement created and received successfully'
+                    : 'Procurement created successfully. Awaiting approval.',
                 'data' => $procurement->load(['items.rawMaterial'])
             ], 201);
 
@@ -121,5 +133,84 @@ class ProcurementController extends Controller
         $procurement->load(['user', 'items.rawMaterial']);
 
         return response()->json($procurement);
+    }
+
+    /**
+     * Approve a pending procurement.
+     */
+    public function approve(Procurement $procurement)
+    {
+        $this->authorize('approve', $procurement);
+
+        if ($procurement->status !== 'pending') {
+            return response()->json([
+                'message' => 'Only pending procurements can be approved'
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Update procurement status
+            $procurement->update([
+                'status' => 'received',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+
+            // Create inventory movements for all items
+            foreach ($procurement->items as $item) {
+                InventoryMovement::create([
+                    'raw_material_id' => $item->raw_material_id,
+                    'procurement_item_id' => $item->id,
+                    'from_location' => 'supplier',
+                    'to_location' => 'store',
+                    'quantity' => $item->quantity,
+                    'movement_type' => 'procurement',
+                    'performed_by' => auth()->id(),
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Procurement approved successfully',
+                'data' => $procurement->fresh(['items.rawMaterial', 'approver'])
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Reject a pending procurement.
+     */
+    public function reject(Request $request, Procurement $procurement)
+    {
+        $this->authorize('approve', $procurement);
+
+        if ($procurement->status !== 'pending') {
+            return response()->json([
+                'message' => 'Only pending procurements can be rejected'
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'rejection_reason' => 'required|string|max:500'
+        ]);
+
+        $procurement->update([
+            'status' => 'rejected',
+            'rejection_reason' => $validated['rejection_reason'],
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Procurement rejected',
+            'data' => $procurement->fresh(['items.rawMaterial', 'approver'])
+        ]);
     }
 }

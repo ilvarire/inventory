@@ -23,6 +23,7 @@ class InventoryController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', RawMaterial::class);
         $query = RawMaterial::with(['supplier', 'batches']);
 
         // Filter by category
@@ -60,6 +61,7 @@ class InventoryController extends Controller
      */
     public function show(RawMaterial $material)
     {
+        $this->authorize('viewAny', RawMaterial::class);
         $stockBalance = $this->inventoryService->getStockBalance($material->id);
         $isLowStock = $this->inventoryService->checkLowStock($material->id);
 
@@ -97,6 +99,7 @@ class InventoryController extends Controller
      */
     public function movements(RawMaterial $material, Request $request)
     {
+        $this->authorize('viewAny', RawMaterial::class);
         $query = $material->inventoryMovements()
             ->with(['performer', 'approver', 'batch']);
 
@@ -124,6 +127,7 @@ class InventoryController extends Controller
      */
     public function lowStock()
     {
+        $this->authorize('viewAny', RawMaterial::class);
         $materials = RawMaterial::with('supplier')->get()->filter(function ($material) {
             return $this->inventoryService->checkLowStock($material->id);
         })->map(function ($material) {
@@ -150,6 +154,7 @@ class InventoryController extends Controller
      */
     public function expiring(Request $request)
     {
+        $this->authorize('viewAny', RawMaterial::class);
         $days = $request->get('days', 7);
 
         $expiringBatches = ProcurementItem::whereNotNull('expiry_date')

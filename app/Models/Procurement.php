@@ -12,10 +12,18 @@ class Procurement extends Model
         'procurement_user_id',
         'supplier_id',
         'purchase_date',
-        'status'
+        'status',
+        'approved_by',
+        'approved_at',
+        'rejection_reason'
     ];
 
     protected $appends = ['reference_number', 'total_cost'];
+
+    protected $casts = [
+        'approved_at' => 'datetime',
+        'purchase_date' => 'date',
+    ];
 
     /**
      * Get the procurement reference number.
@@ -40,9 +48,9 @@ class Procurement extends Model
         return $this->belongsTo(User::class, 'procurement_user_id');
     }
 
-    public function supplier()
+    public function approver()
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function items()

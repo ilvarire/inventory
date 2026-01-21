@@ -27,8 +27,8 @@
             <div class="p-7">
                 <form @submit.prevent="submitRecipe">
                     <!-- Recipe Name -->
-                    <div class="mb-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Recipe Name <span class="text-red-500">*</span>
                         </label>
                         <input type="text" x-model="formData.name" required placeholder="Enter recipe name"
@@ -37,21 +37,29 @@
 
                     <!-- Section & Yield -->
                     <div class="mb-5.5 grid grid-cols-1 gap-5.5 md:grid-cols-3">
-                        <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Section <span class="text-red-500">*</span>
                             </label>
-                            <select x-model="formData.section_id" required
-                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                <option value="">Select Section</option>
-                                <template x-for="section in sections" :key="section.id">
-                                    <option :value="section.id" x-text="section.name"></option>
-                                </template>
-                            </select>
+                            @if(auth()->user()->isChef())
+                                <!-- Chef: Read-only section (their own section) -->
+                                <input type="text" :value="userSectionName" readonly
+                                    class="w-full rounded border border-gray-300 bg-gray-100 px-5 py-3 text-gray-900 outline-none cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                                <input type="hidden" x-model="formData.section_id" />
+                            @else
+                                <!-- Admin/Manager: Dropdown to select any section -->
+                                <select x-model="formData.section_id" required
+                                    class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                    <option value="">Select Section</option>
+                                    <template x-for="section in sections" :key="section.id">
+                                        <option :value="section.id" x-text="section.name"></option>
+                                    </template>
+                                </select>
+                            @endif
                         </div>
 
-                        <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Expected Yield <span class="text-red-500">*</span>
                             </label>
                             <input type="number" x-model="formData.expected_yield" required min="1" step="0.01"
@@ -59,8 +67,8 @@
                                 class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                         </div>
 
-                        <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Yield Unit <span class="text-red-500">*</span>
                             </label>
                             <input type="text" x-model="formData.yield_unit" required placeholder="e.g., pieces, kg"
@@ -69,8 +77,8 @@
                     </div>
 
                     <!-- Description -->
-                    <div class="mb-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Description
                         </label>
                         <textarea x-model="formData.description" rows="3" placeholder="Brief description of the recipe"
@@ -91,23 +99,27 @@
 
                         <div class="space-y-3">
                             <template x-for="(ingredient, index) in formData.ingredients" :key="index">
-                                <div class="grid grid-cols-12 gap-3">
-                                    <div class="col-span-6">
+                                <div class="w-full flex flex-row gap-3 items-center justify-center">
+                                    <div class="w-1/2">
                                         <select x-model="ingredient.raw_material_id" required
                                             class="w-full rounded border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                                             <option value="">Select Material</option>
                                             <template x-for="material in materials" :key="material.id">
-                                                <option :value="material.id"
-                                                    x-text="material.name + ' (' + material.unit + ')'"></option>
+                                                <option :value="material.id" x-text="material.name"></option>
                                             </template>
                                         </select>
                                     </div>
-                                    <div class="col-span-5">
+                                    <div class="w-1/6">
                                         <input type="number" x-model="ingredient.quantity" required min="0.01" step="0.01"
                                             placeholder="Quantity"
                                             class="w-full rounded border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                                     </div>
-                                    <div class="col-span-1 flex items-center">
+                                    <div class="w-1/6">
+                                        <input type="text" :value="getUnit(ingredient.raw_material_id)" readonly
+                                            placeholder="Unit"
+                                            class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 outline-none cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                                    </div>
+                                    <div class="w-1/6 flex items-center">
                                         <button type="button" @click="removeIngredient(index)"
                                             x-show="formData.ingredients.length > 1"
                                             class="text-red-500 hover:text-red-600">
@@ -123,8 +135,8 @@
                     </div>
 
                     <!-- Instructions -->
-                    <div class="mb-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mb-5.5 mt-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Instructions
                         </label>
                         <textarea x-model="formData.instructions" rows="5"
@@ -163,6 +175,8 @@
                     error: '',
                     sections: [],
                     materials: [],
+                    userSectionId: {{ auth()->user()->section_id ?? 'null' }},
+                    userSectionName: '{{ auth()->user()->section->name ?? "" }}',
                     formData: {
                         name: '',
                         section_id: '',
@@ -177,14 +191,19 @@
                     },
 
                     async init() {
-                        await this.fetchSections();
+                        // Auto-set section for Chef
+                        @if(auth()->user()->isChef())
+                            this.formData.section_id = this.userSectionId;
+                        @endif
+
+                                                                                                                                                                await this.fetchSections();
                         await this.fetchMaterials();
                     },
 
                     async fetchSections() {
                         try {
                             const response = await API.get('/sections');
-                            this.sections = response.data || [];
+                            this.sections = response.data || response || [];
                         } catch (error) {
                             console.error('Failed to fetch sections:', error);
                         }
@@ -192,8 +211,8 @@
 
                     async fetchMaterials() {
                         try {
-                            const response = await API.get('/inventory');
-                            this.materials = response.data || [];
+                            const response = await API.get('/raw-materials-list');
+                            this.materials = response.data || response || [];
                         } catch (error) {
                             console.error('Failed to fetch materials:', error);
                         }
@@ -210,13 +229,19 @@
                         this.formData.ingredients.splice(index, 1);
                     },
 
+                    getUnit(materialId) {
+                        if (!materialId) return '';
+                        const material = this.materials.find(m => m.id == materialId);
+                        return material ? material.unit : '';
+                    },
+
                     async submitRecipe() {
                         this.loading = true;
                         this.error = '';
 
                         try {
                             const response = await API.post('/recipes', this.formData);
-                            window.location.href = '/recipes/' + response.id;
+                            window.location.href = '/recipes/' + (response.data?.id || response.id);
                         } catch (error) {
                             console.error('Submit error:', error);
                             this.error = error.message || 'Failed to create recipe';

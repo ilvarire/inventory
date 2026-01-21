@@ -19,7 +19,13 @@ class RecipeController extends Controller
         $this->authorize('viewAny', Recipe::class);
 
         $user = auth()->user();
-        $query = Recipe::with(['section', 'creator', 'versions']);
+        $query = Recipe::with([
+            'section',
+            'creator',
+            'versions' => function ($q) {
+                $q->latest()->with('items.rawMaterial')->limit(1);
+            }
+        ]);
 
         // Chef can only see recipes from their section
         if ($user->isChef()) {
@@ -57,6 +63,13 @@ class RecipeController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'section_id' => 'required|exists:sections,id',
+            'description' => 'nullable|string',
+            'expected_yield' => 'required|numeric|min:0.01',
+            'yield_unit' => 'required|string|max:50',
+            'instructions' => 'nullable|string',
+            'ingredients' => 'required|array|min:1',
+            'ingredients.*.raw_material_id' => 'required|exists:raw_materials,id',
+            'ingredients.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
         // Ensure chef can only create recipes for their section
@@ -66,17 +79,47 @@ class RecipeController extends Controller
             ], 403);
         }
 
-        $recipe = Recipe::create([
-            'name' => $validated['name'],
-            'section_id' => $validated['section_id'],
-            'created_by' => auth()->id(),
-            'status' => 'draft',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'message' => 'Recipe created successfully',
-            'data' => $recipe
-        ], 201);
+            $recipe = Recipe::create([
+                'name' => $validated['name'],
+                'section_id' => $validated['section_id'],
+                'description' => $validated['description'] ?? null,
+                'expected_yield' => $validated['expected_yield'],
+                'yield_unit' => $validated['yield_unit'],
+                'instructions' => $validated['instructions'] ?? null,
+                'created_by' => auth()->id(),
+                'status' => 'draft',
+            ]);
+
+            // Create initial version with ingredients
+            $recipeVersion = RecipeVersion::create([
+                'recipe_id' => $recipe->id,
+                'version_number' => 1,
+                'created_by' => auth()->id(),
+                'effective_date' => now(),
+            ]);
+
+            foreach ($validated['ingredients'] as $ingredient) {
+                RecipeItem::create([
+                    'recipe_version_id' => $recipeVersion->id,
+                    'raw_material_id' => $ingredient['raw_material_id'],
+                    'quantity_required' => $ingredient['quantity'],
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Recipe created successfully',
+                'data' => $recipe->load('versions.items.rawMaterial')
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     /**

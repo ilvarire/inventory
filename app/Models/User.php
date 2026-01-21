@@ -64,6 +64,11 @@ class User extends Authenticatable
      */
     public function hasRole(string $roleName): bool
     {
+        // Ensure role is loaded
+        if (!$this->relationLoaded('role')) {
+            $this->load('role');
+        }
+
         return $this->role && $this->role->name === $roleName;
     }
 

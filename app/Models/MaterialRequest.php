@@ -11,11 +11,14 @@ class MaterialRequest extends Model
         'section_id',
         'status',
         'approved_by',
-        'approved_at'
+        'approved_at',
+        'fulfilled_by',
+        'fulfilled_at'
     ];
 
     protected $casts = [
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
+        'fulfilled_at' => 'datetime'
     ];
 
     public function items()
@@ -36,5 +39,10 @@ class MaterialRequest extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function fulfiller()
+    {
+        return $this->belongsTo(User::class, 'fulfilled_by');
     }
 }

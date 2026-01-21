@@ -12,7 +12,11 @@ class Recipe extends Model
         'name',
         'section_id',
         'created_by',
-        'status'
+        'status',
+        'description',
+        'expected_yield',
+        'yield_unit',
+        'instructions'
     ];
 
     public function section()

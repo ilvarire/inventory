@@ -10,6 +10,7 @@
     <title>@yield('title', 'Dashboard') | Inventory Management System</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link href="{{ asset('css/admin.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 </head>
 
 <body x-data="{ 
@@ -30,6 +31,19 @@
         class="fixed left-0 top-0 z-999999 flex h-screen w-screen items-center justify-center bg-white dark:bg-black">
         <div class="h-16 w-16 animate-spin rounded-full border-4 border-solid border-brand-500 border-t-transparent">
         </div>
+    </div>
+
+    <!-- Tailwind Safelist - Hidden div to ensure dynamic classes are included in compiled CSS -->
+    <div class="hidden">
+        <!-- Status badge colors -->
+        <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300"></span>
+        <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300"></span>
+        <span class="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"></span>
+        <span class="bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"></span>
+        <!-- Button colors -->
+        <button class="bg-brand-500 hover:bg-brand-600"></button>
+        <button class="bg-green-500 hover:bg-green-600"></button>
+        <button class="bg-red-500 hover:bg-red-600"></button>
     </div>
 
     <!-- Page Wrapper -->

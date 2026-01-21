@@ -27,8 +27,8 @@
             <div class="p-7">
                 <form @submit.prevent="submitProduction">
                     <!-- Recipe Selection -->
-                    <div class="mb-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Recipe <span class="text-red-500">*</span>
                         </label>
                         <select x-model="formData.recipe_id" @change="updateExpectedYield" required
@@ -42,7 +42,7 @@
 
                     <!-- Expected Yield Display -->
                     <div x-show="selectedRecipe"
-                        class="mb-5.5 rounded border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                        class="mb-3 rounded border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                         <p class="text-sm text-blue-800 dark:text-blue-200">
                             Expected Yield: <span class="font-medium"
                                 x-text="selectedRecipe?.expected_yield + ' ' + (selectedRecipe?.yield_unit || '')"></span>
@@ -50,9 +50,9 @@
                     </div>
 
                     <!-- Production Date & Actual Yield -->
-                    <div class="mb-5.5 grid grid-cols-1 gap-5.5 md:grid-cols-2">
+                    <div class="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Production Date <span class="text-red-500">*</span>
                             </label>
                             <input type="date" x-model="formData.production_date" required
@@ -60,7 +60,7 @@
                         </div>
 
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Actual Yield <span class="text-red-500">*</span>
                             </label>
                             <input type="number" x-model="formData.actual_yield" required min="0.01" step="0.01"
@@ -72,13 +72,13 @@
                     <!-- Variance Display -->
                     <div x-show="formData.actual_yield && selectedRecipe" class="mb-5.5">
                         <div class="rounded border p-4" :class="{
-                                    'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': variance >= 0,
-                                    'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': variance < 0
-                                }">
+                                                                'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': variance >= 0,
+                                                                'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': variance < 0
+                                                            }">
                             <p class="text-sm" :class="{
-                                        'text-green-800 dark:text-green-200': variance >= 0,
-                                        'text-red-800 dark:text-red-200': variance < 0
-                                    }">
+                                                                    'text-green-800 dark:text-green-200': variance >= 0,
+                                                                    'text-red-800 dark:text-red-200': variance < 0
+                                                                }">
                                 Variance: <span class="font-medium"
                                     x-text="(variance >= 0 ? '+' : '') + variance + ' ' + (selectedRecipe?.yield_unit || '')"></span>
                                 <span x-show="variance < 0"> - Please explain the shortfall in notes</span>
@@ -87,8 +87,8 @@
                     </div>
 
                     <!-- Notes -->
-                    <div class="mb-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Notes
                         </label>
                         <textarea x-model="formData.notes" rows="4"
@@ -176,8 +176,8 @@
                         this.error = '';
 
                         try {
-                            const response = await API.post('/production', this.formData);
-                            window.location.href = '/production/' + response.id;
+                            const response = await API.post('/productions', this.formData);
+                            window.location.href = '/production/' + (response.data?.id || response.id);
                         } catch (error) {
                             console.error('Submit error:', error);
                             this.error = error.message || 'Failed to log production';

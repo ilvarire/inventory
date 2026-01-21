@@ -8,12 +8,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ProductionLog extends Model
 {
     use SoftDeletes;
+
     protected $fillable = [
         'recipe_version_id',
         'section_id',
         'chef_id',
         'quantity_produced',
-        'production_date'
+        'production_date',
+        'variance',
+        'notes'
     ];
 
     protected $casts = [
@@ -23,6 +26,16 @@ class ProductionLog extends Model
     public function recipeVersion()
     {
         return $this->belongsTo(RecipeVersion::class);
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
+
+    public function chef()
+    {
+        return $this->belongsTo(User::class, 'chef_id');
     }
 
     public function materials()

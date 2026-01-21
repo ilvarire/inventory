@@ -48,7 +48,7 @@
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Ingredients</p>
                                 <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white"
-                                    x-text="recipe.ingredients?.length || 0"></p>
+                                    x-text="(recipe.versions?.[0]?.items?.length || 0)"></p>
                             </div>
                         </div>
 
@@ -56,13 +56,13 @@
                         <div class="mb-6">
                             <h4 class="mb-3 font-medium text-gray-900 dark:text-white">Ingredients</h4>
                             <div class="space-y-2">
-                                <template x-for="ingredient in recipe.ingredients" :key="ingredient.id">
+                                <template x-for="ingredient in (recipe.versions?.[0]?.items || [])" :key="ingredient.id">
                                     <div
                                         class="flex items-center justify-between rounded border border-gray-200 p-3 dark:border-gray-800">
                                         <span class="text-gray-900 dark:text-white"
                                             x-text="ingredient.raw_material?.name"></span>
                                         <span class="font-medium text-gray-900 dark:text-white"
-                                            x-text="ingredient.quantity + ' ' + (ingredient.raw_material?.unit || '')"></span>
+                                            x-text="ingredient.quantity_required + ' ' + (ingredient.raw_material?.unit || '')"></span>
                                     </div>
                                 </template>
                             </div>

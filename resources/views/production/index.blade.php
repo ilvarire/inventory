@@ -12,11 +12,7 @@
                     Production Logs
                 </h2>
             </div>
-            @php
-                $user = json_decode(json_encode(session('user')));
-                $userRole = $user->role->name ?? 'Guest';
-            @endphp
-            @if(in_array($userRole, ['Chef', 'Admin']))
+            @if(auth()->check() && (auth()->user()->isChef() || auth()->user()->isAdmin()))
                 <div>
                     <a href="{{ route('production.create') }}"
                         class="inline-flex items-center justify-center gap-2.5 rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 lg:px-8 xl:px-10">
@@ -82,25 +78,27 @@
                                     <p class="text-gray-900 dark:text-white" x-text="formatDate(log.production_date)"></p>
                                 </td>
                                 <td class="px-4 py-5">
-                                    <p class="text-gray-900 dark:text-white" x-text="log.recipe?.name"></p>
+                                    <p class="text-gray-900 dark:text-white" x-text="log.recipeVersion?.recipe?.name"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white" x-text="log.section?.name"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white"
-                                        x-text="log.recipe?.expected_yield + ' ' + (log.recipe?.yield_unit || '')"></p>
+                                        x-text="log.recipeVersion?.recipe?.expected_yield + ' ' + (log.recipeVersion?.recipe?.yield_unit || '')">
+                                    </p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="font-medium text-gray-900 dark:text-white"
-                                        x-text="log.actual_yield + ' ' + (log.recipe?.yield_unit || '')"></p>
+                                        x-text="log.quantity_produced + ' ' + (log.recipeVersion?.recipe?.yield_unit || '')">
+                                    </p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': log.actual_yield >= log.recipe?.expected_yield,
-                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': log.actual_yield < log.recipe?.expected_yield
-                                            }"
-                                        x-text="((log.actual_yield - log.recipe?.expected_yield) >= 0 ? '+' : '') + (log.actual_yield - log.recipe?.expected_yield)">
+                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': (log.variance || 0) >= 0,
+                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': (log.variance || 0) < 0
+                                                        }"
+                                        x-text="((log.variance || 0) >= 0 ? '+' : '') + (log.variance || 0)">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -151,7 +149,7 @@
                     async fetchSections() {
                         try {
                             const response = await API.get('/sections');
-                            this.sections = response.data || [];
+                            this.sections = response.data || response || [];
                         } catch (error) {
                             console.error('Failed to fetch sections:', error);
                         }
@@ -167,8 +165,8 @@
                             if (this.filters.end_date) params.append('end_date', this.filters.end_date);
                             if (this.filters.section_id) params.append('section_id', this.filters.section_id);
 
-                            const response = await API.get('/production?' + params.toString());
-                            this.logs = response.data || [];
+                            const response = await API.get('/productions?' + params.toString());
+                            this.logs = response.data?.data || response.data || response || [];
                         } catch (error) {
                             console.error('Fetch error:', error);
                             this.error = error.message || 'Failed to load production logs';

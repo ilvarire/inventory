@@ -12,11 +12,7 @@
                     Recipes
                 </h2>
             </div>
-            @php
-                $user = json_decode(json_encode(session('user')));
-                $userRole = $user->role->name ?? 'Guest';
-            @endphp
-            @if(in_array($userRole, ['Chef', 'Admin']))
+            @if(auth()->check() && (auth()->user()->isChef() || auth()->user()->isAdmin()))
                 <div>
                     <a href="{{ route('recipes.create') }}"
                         class="inline-flex items-center justify-center gap-2.5 rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 lg:px-8 xl:px-10">
@@ -31,16 +27,18 @@
             @endif
         </div>
 
-        <!-- Filters -->
-        <div class="mb-6 flex flex-wrap gap-3">
-            <select x-model="filterSection"
-                class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                <option value="">All Sections</option>
-                <template x-for="section in sections" :key="section.id">
-                    <option :value="section.id" x-text="section.name"></option>
-                </template>
-            </select>
-        </div>
+        <!-- Filters (Manager/Admin only) -->
+        @if(auth()->check() && (auth()->user()->isManager() || auth()->user()->isAdmin()))
+            <div class="mb-6 flex flex-wrap gap-3">
+                <select x-model="filterSection"
+                    class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                    <option value="">All Sections</option>
+                    <template x-for="section in sections" :key="section.id">
+                        <option :value="section.id" x-text="section.name"></option>
+                    </template>
+                </select>
+            </div>
+        @endif
 
         <!-- Loading State -->
         <div x-show="loading" class="flex items-center justify-center py-12">
@@ -71,7 +69,7 @@
                             <div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Ingredients</p>
                                 <p class="font-medium text-gray-900 dark:text-white"
-                                    x-text="recipe.ingredients?.length || 0"></p>
+                                    x-text="(recipe.versions?.[0]?.items?.length || 0)"></p>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Yield</p>
@@ -112,8 +110,15 @@
                     recipes: [],
                     sections: [],
                     filterSection: '',
+                    userSectionId: {{ auth()->user()->section_id ?? 'null' }},
+                    isChef: {{ auth()->user()->isChef() ? 'true' : 'false' }},
 
                     async init() {
+                        // Auto-set section filter for Chef
+                        if (this.isChef && this.userSectionId) {
+                            this.filterSection = this.userSectionId;
+                        }
+
                         await this.fetchSections();
                         await this.fetchRecipes();
                     },
@@ -121,7 +126,7 @@
                     async fetchSections() {
                         try {
                             const response = await API.get('/sections');
-                            this.sections = response.data || [];
+                            this.sections = response.data || response || [];
                         } catch (error) {
                             console.error('Failed to fetch sections:', error);
                         }

@@ -1,0 +1,68 @@
+/* Custom CSS for dynamic Alpine.js color classes */
+/* These classes are used in :class bindings and need to be explicitly defined */
+
+/* Status Badge Colors - Light Mode */
+.bg-yellow-100 {
+    background-color: #fef3c7;
+}
+.text-yellow-800 {
+    color: #92400e;
+}
+.bg-blue-100 {
+    background-color: #dbeafe;
+}
+.text-blue-800 {
+    color: #1e40af;
+}
+.bg-green-100 {
+    background-color: #d1fae5;
+}
+.text-green-800 {
+    color: #065f46;
+}
+.bg-red-100 {
+    background-color: #fee2e2;
+}
+.text-red-800 {
+    color: #991b1b;
+}
+
+/* Status Badge Colors - Dark Mode */
+.dark .dark\:bg-yellow-900\/20 {
+    background-color: rgba(120, 53, 15, 0.2);
+}
+.dark .dark\:text-yellow-300 {
+    color: #fcd34d;
+}
+.dark .dark\:bg-blue-900\/20 {
+    background-color: rgba(30, 58, 138, 0.2);
+}
+.dark .dark\:text-blue-300 {
+    color: #93c5fd;
+}
+.dark .dark\:bg-green-900\/20 {
+    background-color: rgba(6, 78, 59, 0.2);
+}
+.dark .dark\:text-green-300 {
+    color: #6ee7b7;
+}
+.dark .dark\:bg-red-900\/20 {
+    background-color: rgba(127, 29, 29, 0.2);
+}
+.dark .dark\:text-red-300 {
+    color: #fca5a5;
+}
+
+/* Button Colors */
+.bg-green-500 {
+    background-color: #10b981;
+}
+.hover\:bg-green-600:hover {
+    background-color: #059669;
+}
+.bg-red-500 {
+    background-color: #ef4444;
+}
+.hover\:bg-red-600:hover {
+    background-color: #dc2626;
+}

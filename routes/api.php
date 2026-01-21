@@ -66,7 +66,9 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
 
     // Public raw materials list (for material requests - all authenticated users)
     Route::get('/raw-materials-list', function () {
-        return response()->json(\App\Models\RawMaterial::select('id', 'name', 'unit', 'category')->get());
+        return response()->json([
+            'data' => \App\Models\RawMaterial::select('id', 'name', 'unit', 'category')->get()
+        ]);
     });
 
     // Inventory routes
@@ -92,7 +94,9 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
 
     // Sections route (for dropdowns)
     Route::get('/sections', function () {
-        return response()->json(\App\Models\Section::all());
+        return response()->json([
+            'data' => \App\Models\Section::all()
+        ]);
     });
 
     // Material Request routes
@@ -130,7 +134,7 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
     Route::prefix('productions')->group(function () {
         Route::get('/', [ProductionController::class, 'index']);
         Route::post('/', [ProductionController::class, 'store'])
-            ->middleware(['role:Chef', 'throttle.custom:api.write']);
+            ->middleware(['role:Chef,Admin', 'throttle.custom:api.write']);
         Route::get('/{production}', [ProductionController::class, 'show']);
         Route::post('/{production}/approve', [ProductionController::class, 'approve'])
             ->middleware(['role:Manager,Admin', 'throttle.custom:api.write']);

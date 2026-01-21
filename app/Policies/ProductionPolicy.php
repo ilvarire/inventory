@@ -54,8 +54,7 @@ class ProductionPolicy
     public function update(User $user, ProductionLog $production): bool
     {
         // Production logs are immutable once created
-        // Only allow updates if not yet approved and user is the creator
-        return false; // Enforce immutability
+        return false;
     }
 
     /**

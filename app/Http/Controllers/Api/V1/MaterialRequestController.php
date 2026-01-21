@@ -27,7 +27,7 @@ class MaterialRequestController extends Controller
         $this->authorize('viewAny', MaterialRequest::class);
 
         $user = auth()->user();
-        $query = MaterialRequest::with(['chef', 'section', 'approver', 'items.rawMaterial']);
+        $query = MaterialRequest::with(['chef', 'section', 'approver', 'fulfiller', 'items.rawMaterial']);
 
         // Chef can only see their own requests
         if ($user->isChef()) {
@@ -100,7 +100,7 @@ class MaterialRequestController extends Controller
     {
         $this->authorize('view', $materialRequest);
 
-        $materialRequest->load(['chef', 'section', 'approver', 'items.rawMaterial']);
+        $materialRequest->load(['chef', 'section', 'approver', 'fulfiller', 'items.rawMaterial']);
 
         return response()->json($materialRequest);
     }
@@ -188,6 +188,8 @@ class MaterialRequestController extends Controller
 
             $materialRequest->update([
                 'status' => 'fulfilled',
+                'fulfilled_by' => auth()->id(),
+                'fulfilled_at' => now(),
             ]);
 
             DB::commit();

@@ -41,11 +41,11 @@
                                 Request <span x-text="'#' + request.id"></span>
                             </h3>
                             <span :class="{
-                                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': request.status === 'pending',
-                                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': request.status === 'approved',
-                                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': request.status === 'fulfilled',
-                                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': request.status === 'rejected'
-                                                            }"
+                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': request.status === 'pending',
+                                                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': request.status === 'approved',
+                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': request.status === 'fulfilled',
+                                                                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': request.status === 'rejected'
+                                                                }"
                                 class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
                                 x-text="request.status">
                             </span>
@@ -208,7 +208,7 @@
                                     <p class="text-sm text-gray-500 dark:text-gray-400"
                                         x-text="formatDate(request.approved_at)"></p>
                                     <p class="text-sm text-gray-500 dark:text-gray-400"
-                                        x-text="'by ' + (request.approved_by_user?.name || 'N/A')"></p>
+                                        x-text="'by ' + (request.approver?.name || 'N/A')"></p>
                                 </div>
                             </div>
 
@@ -226,7 +226,7 @@
                                     <p class="text-sm text-gray-500 dark:text-gray-400"
                                         x-text="formatDate(request.fulfilled_at)"></p>
                                     <p class="text-sm text-gray-500 dark:text-gray-400"
-                                        x-text="'by ' + (request.fulfilled_by_user?.name || 'N/A')"></p>
+                                        x-text="'by ' + (request.fulfiller?.name || 'N/A')"></p>
                                 </div>
                             </div>
                         </div>

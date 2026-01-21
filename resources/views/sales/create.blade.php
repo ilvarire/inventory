@@ -20,30 +20,35 @@
         <div class="rounded-sm border border-gray-200 bg-white shadow-default dark:border-gray-800 dark:bg-gray-900">
             <div class="border-b border-gray-200 px-7 py-4 dark:border-gray-800">
                 <h3 class="font-medium text-gray-900 dark:text-white">
-                    Record New Sale
+                    New Sale
                 </h3>
             </div>
 
             <div class="p-7">
                 <form @submit.prevent="submitSale">
-                    <div class="grid grid-cols-1 gap-5.5 md:grid-cols-2">
+                    <div class="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                         <!-- Section Selection -->
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Section <span class="text-red-500">*</span>
                             </label>
-                            <select x-model="formData.section_id" required
-                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                <option value="">Select Section</option>
-                                <template x-for="section in sections" :key="section.id">
-                                    <option :value="section.id" x-text="section.name"></option>
-                                </template>
-                            </select>
+                            @if(auth()->check() && auth()->user()->isSales())
+                                <input type="text" :value="userSectionName" readonly
+                                    class="w-full rounded border border-gray-300 bg-gray-100 px-5 py-3 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white" />
+                            @else
+                                <select x-model="formData.section_id" required
+                                    class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                    <option value="">Select Section</option>
+                                    <template x-for="section in sections" :key="section.id">
+                                        <option :value="section.id" x-text="section.name"></option>
+                                    </template>
+                                </select>
+                            @endif
                         </div>
 
                         <!-- Payment Method -->
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Payment Method <span class="text-red-500">*</span>
                             </label>
                             <select x-model="formData.payment_method" required
@@ -57,8 +62,8 @@
                     </div>
 
                     <!-- Customer Name (Optional) -->
-                    <div class="mt-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Customer Name (Optional)
                         </label>
                         <input type="text" x-model="formData.customer_name" placeholder="Enter customer name"
@@ -66,8 +71,8 @@
                     </div>
 
                     <!-- Products Section -->
-                    <div class="mt-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Products <span class="text-red-500">*</span>
                         </label>
 
@@ -76,13 +81,11 @@
                                 <div class="flex gap-3">
                                     <!-- Product Select -->
                                     <div class="flex-1">
-                                        <select x-model="item.finished_product_id" @change="updatePrice(index)" required
+                                        <select x-model="item.recipe_id" @change="updatePrice(index)" required
                                             class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                                             <option value="">Select Product</option>
                                             <template x-for="product in products" :key="product.id">
-                                                <option :value="product.id"
-                                                    x-text="product.name + ' - ₦' + parseFloat(product.selling_price).toFixed(2)">
-                                                </option>
+                                                <option :value="product.id" x-text="product.name"></option>
                                             </template>
                                         </select>
                                     </div>
@@ -184,22 +187,29 @@
                         payment_method: '',
                         customer_name: '',
                         items: [{
-                            finished_product_id: '',
+                            prepared_inventory_id: '',
                             quantity: 1,
                             unit_price: 0
                         }]
                     },
                     totalAmount: 0,
+                    userSectionName: '',
 
                     async init() {
                         await this.fetchSections();
                         await this.fetchProducts();
-                    },
+
+                        // Auto-set section for Sales users
+                        @if(auth()->check() && auth()->user()->isSales())
+                            this.formData.section_id = {{ auth()->user()->section_id ?? 'null' }};
+                            this.userSectionName = '{{ auth()->user()->section->name ?? "N/A" }}';
+                        @endif
+                                                                            },
 
                     async fetchSections() {
                         try {
                             const response = await API.get('/sections');
-                            this.sections = response.data || [];
+                            this.sections = response.data || response || [];
                         } catch (error) {
                             console.error('Failed to fetch sections:', error);
                         }
@@ -207,8 +217,8 @@
 
                     async fetchProducts() {
                         try {
-                            const response = await API.get('/finished-products');
-                            this.products = response.data || [];
+                            const response = await API.get('/recipes');
+                            this.products = response.data?.data || response.data || response || [];
                         } catch (error) {
                             console.error('Failed to fetch products:', error);
                         }
@@ -216,7 +226,7 @@
 
                     addItem() {
                         this.formData.items.push({
-                            finished_product_id: '',
+                            prepared_inventory_id: '',
                             quantity: 1,
                             unit_price: 0
                         });
@@ -229,9 +239,11 @@
 
                     updatePrice(index) {
                         const item = this.formData.items[index];
-                        const product = this.products.find(p => p.id == item.finished_product_id);
+                        const product = this.products.find(p => p.id == item.prepared_inventory_id);
                         if (product) {
-                            item.unit_price = parseFloat(product.selling_price);
+                            // For now, use a default price or fetch from a pricing table
+                            // Prepared inventory doesn't have selling_price, so we'll need to add it
+                            item.unit_price = parseFloat(product.selling_price || 0);
                         } else {
                             item.unit_price = 0;
                         }

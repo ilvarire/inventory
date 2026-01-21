@@ -12,11 +12,7 @@
                     Sales Transactions
                 </h2>
             </div>
-            @php
-                $user = json_decode(json_encode(session('user')));
-                $userRole = $user->role->name ?? 'Guest';
-            @endphp
-            @if(in_array($userRole, ['Frontline Sales', 'Admin']))
+            @if(auth()->check() && (auth()->user()->isSales() || auth()->user()->isAdmin()))
                 <div>
                     <a href="{{ route('sales.create') }}"
                         class="inline-flex items-center justify-center gap-2.5 rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 lg:px-8 xl:px-10">
@@ -168,10 +164,10 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
-                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
-                                                'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
-                                            }" x-text="sale.payment_method">
+                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
+                                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
+                                                    'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
+                                                }" x-text="sale.payment_method">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">

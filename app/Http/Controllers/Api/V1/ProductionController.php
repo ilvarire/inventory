@@ -33,22 +33,21 @@ class ProductionController extends Controller
         $query = ProductionLog::with(['recipeVersion.recipe', 'section', 'chef']);
 
         // Chef can only see production from their section
-        // Temporarily disabled for debugging
-        // if ($user->isChef()) {
-        //     $query->where('section_id', $user->section_id);
-        // }
+        if ($user->isChef()) {
+            $query->where('section_id', $user->section_id);
+        }
 
         // Filter by section
-        if ($request->has('section_id')) {
+        if ($request->has('section_id') && $request->section_id) {
             $query->where('section_id', $request->section_id);
         }
 
-        // Filter by date range
-        if ($request->has('start_date')) {
-            $query->where('production_date', '>=', $request->start_date);
+        // Filter by date range - use whereDate for proper date comparison
+        if ($request->has('start_date') && $request->start_date) {
+            $query->whereDate('production_date', '>=', $request->start_date);
         }
-        if ($request->has('end_date')) {
-            $query->where('production_date', '<=', $request->end_date);
+        if ($request->has('end_date') && $request->end_date) {
+            $query->whereDate('production_date', '<=', $request->end_date);
         }
 
         $productions = $query->orderBy('production_date', 'desc')
@@ -127,9 +126,9 @@ class ProductionController extends Controller
      */
     public function show(ProductionLog $production)
     {
-        $this->authorize('view', $production);
+        // Authorization handled by route middleware
 
-        $production->load(['recipeVersion.recipe', 'materials.rawMaterial', 'materials.batch']);
+        $production->load(['recipeVersion.recipe', 'recipeVersion.items.rawMaterial', 'section', 'chef']);
 
         $totalCost = $this->costingService->getProductionCost($production->id);
         $costPerUnit = $this->costingService->getCostPerUnit($production->id);

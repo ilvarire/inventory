@@ -33,13 +33,15 @@
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
             <input type="date" x-model="filters.end_date"
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-            <select x-model="filters.section_id"
-                class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                <option value="">All Sections</option>
-                <template x-for="section in sections" :key="section.id">
-                    <option :value="section.id" x-text="section.name"></option>
-                </template>
-            </select>
+            @if(auth()->check() && (auth()->user()->isManager() || auth()->user()->isAdmin()))
+                <select x-model="filters.section_id"
+                    class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                    <option value="">All Sections</option>
+                    <template x-for="section in sections" :key="section.id">
+                        <option :value="section.id" x-text="section.name"></option>
+                    </template>
+                </select>
+            @endif
             <button @click="fetchLogs" class="rounded-md bg-brand-500 px-4 py-2 text-sm text-white hover:bg-brand-600">
                 Apply Filters
             </button>
@@ -78,26 +80,26 @@
                                     <p class="text-gray-900 dark:text-white" x-text="formatDate(log.production_date)"></p>
                                 </td>
                                 <td class="px-4 py-5">
-                                    <p class="text-gray-900 dark:text-white" x-text="log.recipeVersion?.recipe?.name"></p>
+                                    <p class="text-gray-900 dark:text-white" x-text="log.recipe_version?.recipe?.name"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white" x-text="log.section?.name"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white"
-                                        x-text="log.recipeVersion?.recipe?.expected_yield + ' ' + (log.recipeVersion?.recipe?.yield_unit || '')">
+                                        x-text="log.recipe_version?.recipe?.expected_yield + ' ' + (log.recipe_version?.recipe?.yield_unit || '')">
                                     </p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="font-medium text-gray-900 dark:text-white"
-                                        x-text="log.quantity_produced + ' ' + (log.recipeVersion?.recipe?.yield_unit || '')">
+                                        x-text="log.quantity_produced + ' ' + (log.recipe_version?.recipe?.yield_unit || '')">
                                     </p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': (log.variance || 0) >= 0,
-                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': (log.variance || 0) < 0
-                                                        }"
+                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': (log.variance || 0) >= 0,
+                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': (log.variance || 0) < 0
+                                                                    }"
                                         x-text="((log.variance || 0) >= 0 ? '+' : '') + (log.variance || 0)">
                                     </span>
                                 </td>

@@ -26,13 +26,13 @@
 
             <div class="p-7">
                 <form @submit.prevent="submitExpense">
-                    <div class="grid grid-cols-1 gap-5.5 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                         <!-- Category -->
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Category <span class="text-red-500">*</span>
                             </label>
-                            <select x-model="formData.category" required
+                            <select x-model="formData.type" required
                                 class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                                 <option value="">Select Category</option>
                                 <option value="utilities">Utilities</option>
@@ -47,7 +47,7 @@
 
                         <!-- Amount -->
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Amount <span class="text-red-500">*</span>
                             </label>
                             <input type="number" x-model="formData.amount" required min="0.01" step="0.01"
@@ -57,8 +57,8 @@
                     </div>
 
                     <!-- Expense Date -->
-                    <div class="mt-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Expense Date <span class="text-red-500">*</span>
                         </label>
                         <input type="date" x-model="formData.expense_date" required
@@ -66,8 +66,8 @@
                     </div>
 
                     <!-- Description -->
-                    <div class="mt-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Description <span class="text-red-500">*</span>
                         </label>
                         <textarea x-model="formData.description" rows="4" required
@@ -77,7 +77,7 @@
 
                     <!-- Error Message -->
                     <div x-show="error"
-                        class="mt-5.5 rounded-sm border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+                        class="mt-3 rounded-sm border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
                         <p class="text-sm text-red-800 dark:text-red-200" x-text="error"></p>
                     </div>
 
@@ -105,7 +105,7 @@
                     loading: false,
                     error: '',
                     formData: {
-                        category: '',
+                        type: '',
                         amount: '',
                         expense_date: '',
                         description: ''
@@ -123,8 +123,9 @@
                         try {
                             const response = await API.post('/expenses', this.formData);
 
-                            // Redirect to expenses list
-                            window.location.href = '/expenses/' + response.id;
+                            // Redirect to expenses list or detail page
+                            const expenseId = response.data?.id || response.id;
+                            window.location.href = '/expenses/' + expenseId;
                         } catch (error) {
                             console.error('Submit error:', error);
                             this.error = error.message || 'Failed to log expense';

@@ -8,9 +8,12 @@ class PreparedInventory extends Model
 {
     protected $fillable = [
         'production_log_id',
+        'recipe_id',
         'section_id',
         'item_name',
         'quantity',
+        'unit',
+        'selling_price',
         'expiry_date',
         'status'
     ];

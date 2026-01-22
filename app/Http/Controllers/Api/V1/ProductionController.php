@@ -115,6 +115,7 @@ class ProductionController extends Controller
                 'item_name' => $recipe->name,
                 'quantity' => $validated['actual_yield'],
                 'unit' => $recipe->yield_unit ?? 'units',
+                'selling_price' => $recipe->selling_price ?? 0,
                 'status' => 'available',
                 'section_id' => $recipe->section_id,
             ]);

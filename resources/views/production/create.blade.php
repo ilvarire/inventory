@@ -72,13 +72,13 @@
                     <!-- Variance Display -->
                     <div x-show="formData.actual_yield && selectedRecipe" class="mb-5.5">
                         <div class="rounded border p-4" :class="{
-                                                                'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': variance >= 0,
-                                                                'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': variance < 0
-                                                            }">
+                                                                                'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': variance >= 0,
+                                                                                'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': variance < 0
+                                                                            }">
                             <p class="text-sm" :class="{
-                                                                    'text-green-800 dark:text-green-200': variance >= 0,
-                                                                    'text-red-800 dark:text-red-200': variance < 0
-                                                                }">
+                                                                                    'text-green-800 dark:text-green-200': variance >= 0,
+                                                                                    'text-red-800 dark:text-red-200': variance < 0
+                                                                                }">
                                 Variance: <span class="font-medium"
                                     x-text="(variance >= 0 ? '+' : '') + variance + ' ' + (selectedRecipe?.yield_unit || '')"></span>
                                 <span x-show="variance < 0"> - Please explain the shortfall in notes</span>

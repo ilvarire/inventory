@@ -74,6 +74,15 @@
                             <input type="text" x-model="formData.yield_unit" required placeholder="e.g., pieces, kg"
                                 class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                         </div>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
+                                Selling Price (₦) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" x-model="formData.selling_price" required min="0" step="0.01"
+                                placeholder="Enter selling price per unit"
+                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                        </div>
                     </div>
 
                     <!-- Description -->
@@ -183,6 +192,7 @@
                         description: '',
                         expected_yield: '',
                         yield_unit: '',
+                        selling_price: '',
                         instructions: '',
                         ingredients: [{
                             raw_material_id: '',
@@ -196,7 +206,7 @@
                             this.formData.section_id = this.userSectionId;
                         @endif
 
-                                                                                                                                                                await this.fetchSections();
+                                                                                                                                                                        await this.fetchSections();
                         await this.fetchMaterials();
                     },
 

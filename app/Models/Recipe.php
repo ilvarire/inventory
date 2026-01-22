@@ -16,6 +16,7 @@ class Recipe extends Model
         'description',
         'expected_yield',
         'yield_unit',
+        'selling_price',
         'instructions'
     ];
 

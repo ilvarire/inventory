@@ -12,11 +12,7 @@
                     Business Expenses
                 </h2>
             </div>
-            @php
-                $user = json_decode(json_encode(session('user')));
-                $userRole = $user->role->name ?? 'Guest';
-            @endphp
-            @if(in_array($userRole, ['Manager', 'Admin']))
+            @if(auth()->check() && (auth()->user()->isManager() || auth()->user()->isAdmin()))
                 <div>
                     <a href="{{ route('expenses.create') }}"
                         class="inline-flex items-center justify-center gap-2.5 rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 lg:px-8 xl:px-10">

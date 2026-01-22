@@ -209,7 +209,7 @@
                             this.formData.section_id = {{ auth()->user()->section_id ?? 'null' }};
                             this.userSectionName = '{{ auth()->user()->section->name ?? "N/A" }}';
                         @endif
-                                                                                                                                                    },
+                                                                                                                                                            },
 
                     async fetchSections() {
                         try {
@@ -246,7 +246,7 @@
                         const item = this.formData.items[index];
                         const product = this.products.find(p => p.id == item.prepared_inventory_id);
                         if (product) {
-                            // Use a default price - you'll need to add selling_price to recipes or create a pricing table
+                            // Use selling price from prepared inventory (fallback to 100 if not set)
                             item.unit_price = parseFloat(product.selling_price || 100);
                         } else {
                             item.unit_price = 0;

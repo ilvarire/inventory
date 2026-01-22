@@ -130,10 +130,10 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
     Route::prefix('recipes')->group(function () {
         Route::get('/', [RecipeController::class, 'index']);
         Route::post('/', [RecipeController::class, 'store'])
-            ->middleware(['role:Chef,Manager,Admin', 'throttle.custom:api.write']);
+            ->middleware(['role:Admin', 'throttle.custom:api.write']);
         Route::get('/{recipe}', [RecipeController::class, 'show']);
         Route::put('/{recipe}', [RecipeController::class, 'update'])
-            ->middleware(['role:Chef,Manager,Admin', 'throttle.custom:api.write']);
+            ->middleware(['role:Admin', 'throttle.custom:api.write']);
         Route::delete('/{recipe}', [RecipeController::class, 'destroy'])
             ->middleware(['role:Manager,Admin', 'throttle.custom:api.write']);
 

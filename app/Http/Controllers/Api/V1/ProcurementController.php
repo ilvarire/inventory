@@ -95,16 +95,20 @@ class ProcurementController extends Controller
 
             // If Admin created it as 'received', create inventory movements immediately
             if ($status === 'received') {
-                foreach ($procurement->items as $item) {
+                foreach ($validated['items'] as $itemData) {
                     InventoryMovement::create([
-                        'raw_material_id' => $item->raw_material_id,
-                        'procurement_item_id' => $item->id,
+                        'raw_material_id' => $itemData['raw_material_id'],
+                        'procurement_item_id' => null, // We don't have the item ID here
                         'from_location' => 'supplier',
                         'to_location' => 'store',
-                        'quantity' => $item->quantity,
+                        'quantity' => $itemData['quantity'],
                         'movement_type' => 'procurement',
                         'performed_by' => auth()->id(),
                     ]);
+
+                    // Update raw material quantity
+                    \App\Models\RawMaterial::find($itemData['raw_material_id'])
+                        ->increment('current_quantity', $itemData['quantity']);
                 }
             }
 
@@ -169,6 +173,10 @@ class ProcurementController extends Controller
                     'movement_type' => 'procurement',
                     'performed_by' => auth()->id(),
                 ]);
+
+                // Update raw material quantity
+                \App\Models\RawMaterial::find($item->raw_material_id)
+                    ->increment('current_quantity', $item->quantity);
             }
 
             DB::commit();

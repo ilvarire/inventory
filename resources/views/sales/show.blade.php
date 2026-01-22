@@ -41,10 +41,10 @@
                                 Sale Receipt <span x-text="'#' + sale.id"></span>
                             </h3>
                             <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
-                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
-                                        'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
-                                    }" x-text="sale.payment_method">
+                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
+                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
+                                            'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
+                                        }" x-text="sale.payment_method">
                             </span>
                         </div>
                     </div>
@@ -98,14 +98,13 @@
                                 <tbody>
                                     <template x-for="item in sale.items" :key="item.id">
                                         <tr class="border-b border-gray-200 dark:border-gray-800">
-                                            <td class="py-3 text-gray-900 dark:text-white"
-                                                x-text="item.finished_product?.name"></td>
+                                            <td class="py-3 text-gray-900 dark:text-white" x-text="item.item_name"></td>
                                             <td class="py-3 text-center text-gray-900 dark:text-white"
                                                 x-text="item.quantity"></td>
                                             <td class="py-3 text-right text-gray-900 dark:text-white"
                                                 x-text="formatCurrency(item.unit_price)"></td>
                                             <td class="py-3 text-right font-medium text-gray-900 dark:text-white"
-                                                x-text="formatCurrency(item.subtotal)"></td>
+                                                x-text="formatCurrency(item.quantity * item.unit_price)"></td>
                                         </tr>
                                     </template>
                                 </tbody>
@@ -184,7 +183,8 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Sold By</p>
-                            <p class="font-medium text-gray-900 dark:text-white" x-text="sale.user?.name || 'N/A'"></p>
+                            <p class="font-medium text-gray-900 dark:text-white" x-text="sale.sales_user?.name || 'N/A'">
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -209,7 +209,8 @@
                         this.error = '';
 
                         try {
-                            this.sale = await API.get(`/sales/${saleId}`);
+                            const response = await API.get(`/sales/${saleId}`);
+                            this.sale = response.data?.sale || response.sale || response.data || response;
                         } catch (error) {
                             console.error('Fetch error:', error);
                             this.error = error.message || 'Failed to load sale details';

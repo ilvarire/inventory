@@ -81,11 +81,13 @@
                                 <div class="flex gap-3">
                                     <!-- Product Select -->
                                     <div class="flex-1">
-                                        <select x-model="item.recipe_id" @change="updatePrice(index)" required
+                                        <select x-model="item.prepared_inventory_id" @change="updatePrice(index)" required
                                             class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                                             <option value="">Select Product</option>
                                             <template x-for="product in products" :key="product.id">
-                                                <option :value="product.id" x-text="product.name"></option>
+                                                <option :value="product.id"
+                                                    x-text="product.item_name + ' (' + product.quantity + ' ' + (product.unit || '') + ' available)'">
+                                                </option>
                                             </template>
                                         </select>
                                     </div>
@@ -184,8 +186,11 @@
                     products: [],
                     formData: {
                         section_id: '',
+                        sale_date: new Date().toISOString().split('T')[0], // Today's date
                         payment_method: '',
                         customer_name: '',
+                        total_amount: 0,
+                        sold_by: {{ auth()->id() }},
                         items: [{
                             prepared_inventory_id: '',
                             quantity: 1,
@@ -204,7 +209,7 @@
                             this.formData.section_id = {{ auth()->user()->section_id ?? 'null' }};
                             this.userSectionName = '{{ auth()->user()->section->name ?? "N/A" }}';
                         @endif
-                                                                            },
+                                                                                                                                                    },
 
                     async fetchSections() {
                         try {
@@ -217,7 +222,7 @@
 
                     async fetchProducts() {
                         try {
-                            const response = await API.get('/recipes');
+                            const response = await API.get('/prepared-inventory?status=available');
                             this.products = response.data?.data || response.data || response || [];
                         } catch (error) {
                             console.error('Failed to fetch products:', error);
@@ -241,9 +246,8 @@
                         const item = this.formData.items[index];
                         const product = this.products.find(p => p.id == item.prepared_inventory_id);
                         if (product) {
-                            // For now, use a default price or fetch from a pricing table
-                            // Prepared inventory doesn't have selling_price, so we'll need to add it
-                            item.unit_price = parseFloat(product.selling_price || 0);
+                            // Use a default price - you'll need to add selling_price to recipes or create a pricing table
+                            item.unit_price = parseFloat(product.selling_price || 100);
                         } else {
                             item.unit_price = 0;
                         }
@@ -261,10 +265,15 @@
                         this.error = '';
 
                         try {
+                            // Set total_amount before submitting
+                            this.formData.total_amount = this.totalAmount;
+
                             const response = await API.post('/sales', this.formData);
 
                             // Redirect to the new sale details page
-                            window.location.href = '/sales/' + response.id;
+                            // Response structure: { data: { sale: {...}, profit: ... } }
+                            const saleId = response.data?.sale?.id || response.sale?.id || response.id;
+                            window.location.href = '/sales/' + saleId;
                         } catch (error) {
                             console.error('Submit error:', error);
                             this.error = error.message || 'Failed to record sale';

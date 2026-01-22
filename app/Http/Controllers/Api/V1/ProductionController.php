@@ -108,6 +108,17 @@ class ProductionController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
+            // Create prepared inventory for the produced items
+            \App\Models\PreparedInventory::create([
+                'production_log_id' => $production->id,
+                'recipe_id' => $recipe->id,
+                'item_name' => $recipe->name,
+                'quantity' => $validated['actual_yield'],
+                'unit' => $recipe->yield_unit ?? 'units',
+                'status' => 'available',
+                'section_id' => $recipe->section_id,
+            ]);
+
             DB::commit();
 
             return response()->json([

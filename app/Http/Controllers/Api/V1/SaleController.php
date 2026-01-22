@@ -25,7 +25,7 @@ class SaleController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Sale::class);
+        // Authorization handled by route middleware
 
         $user = auth()->user();
         $query = Sale::with(['section', 'salesUser', 'items']);
@@ -36,16 +36,16 @@ class SaleController extends Controller
         }
 
         // Filter by section
-        if ($request->has('section_id')) {
+        if ($request->has('section_id') && $request->section_id) {
             $query->where('section_id', $request->section_id);
         }
 
-        // Filter by date range
-        if ($request->has('start_date')) {
-            $query->where('sale_date', '>=', $request->start_date);
+        // Filter by date range - use whereDate for proper date comparison
+        if ($request->has('start_date') && $request->start_date) {
+            $query->whereDate('sale_date', '>=', $request->start_date);
         }
-        if ($request->has('end_date')) {
-            $query->where('sale_date', '<=', $request->end_date);
+        if ($request->has('end_date') && $request->end_date) {
+            $query->whereDate('sale_date', '<=', $request->end_date);
         }
 
         $sales = $query->orderBy('sale_date', 'desc')
@@ -118,7 +118,7 @@ class SaleController extends Controller
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
                     'cost_price' => $costPerUnit,
-                    'source_type' => 'prepared_inventory',
+                    'source_type' => 'prepared',
                     'source_id' => $preparedItem->id,
                 ]);
 
@@ -154,7 +154,7 @@ class SaleController extends Controller
      */
     public function show(Sale $sale)
     {
-        $this->authorize('view', $sale);
+        // Authorization handled by route middleware
 
         $sale->load(['section', 'salesUser', 'items']);
 

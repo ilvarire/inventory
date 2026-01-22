@@ -83,6 +83,19 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
             ->middleware(['role:Manager,Admin', 'throttle.custom:api.write']);
     });
 
+    // Prepared Inventory routes (for sales)
+    Route::get('/prepared-inventory', function (Request $request) {
+        $query = \App\Models\PreparedInventory::query();
+
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        return response()->json([
+            'data' => $query->get()
+        ]);
+    });
+
     // Inventory routes
     Route::prefix('inventory')->group(function () {
         Route::get('/', [InventoryController::class, 'index']);

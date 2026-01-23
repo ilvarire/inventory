@@ -30,7 +30,7 @@
         <!-- Filters -->
         <div
             class="mb-6 rounded-sm border border-gray-200 bg-white p-4 shadow-default dark:border-gray-800 dark:bg-gray-900">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                 <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         Search
@@ -49,6 +49,19 @@
                         <option value="">All Categories</option>
                         <template x-for="category in categories" :key="category">
                             <option :value="category" x-text="category"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Section
+                    </label>
+                    <select x-model="filters.section_id" @change="fetchMaterials()"
+                        class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white">
+                        <option value="">All Sections</option>
+                        <template x-for="section in sections" :key="section.id">
+                            <option :value="section.id" x-text="section.name"></option>
                         </template>
                     </select>
                 </div>
@@ -108,7 +121,7 @@
                                 Reorder Qty
                             </th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">
-                                Supplier
+                                Section
                             </th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">
                                 Actions
@@ -137,7 +150,8 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-sm text-gray-600 dark:text-gray-400"
-                                        x-text="material.preferred_supplier_id || 'No supplier'"></p>
+                                        x-text="material.section?.name || 'N/A'">
+                                    </p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <div class="flex items-center gap-3">
@@ -229,6 +243,19 @@
 
                         <div>
                             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                Section
+                            </label>
+                            <select x-model="form.section_id"
+                                class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white">
+                                <option value="">Select Section</option>
+                                <template x-for="section in sections" :key="section.id">
+                                    <option :value="section.id" x-text="section.name"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                 Minimum Quantity <span class="text-red-500">*</span>
                             </label>
                             <input type="number" step="0.01" x-model="form.min_quantity" required min="0"
@@ -283,9 +310,11 @@
                     error: '',
                     materials: [],
                     categories: [],
+                    sections: [],
                     filters: {
                         search: '',
                         category: '',
+                        section_id: '',
                         sort_by: 'name'
                     },
                     showModal: false,
@@ -296,6 +325,7 @@
                         name: '',
                         unit: '',
                         category: '',
+                        section_id: '',
                         min_quantity: '',
                         reorder_quantity: '',
                         preferred_supplier_id: ''
@@ -305,7 +335,8 @@
                     async init() {
                         await Promise.all([
                             this.fetchMaterials(),
-                            this.fetchCategories()
+                            this.fetchCategories(),
+                            this.fetchSections()
                         ]);
                     },
 
@@ -317,6 +348,7 @@
                             const params = {};
                             if (this.filters.search) params.search = this.filters.search;
                             if (this.filters.category) params.category = this.filters.category;
+                            if (this.filters.section_id) params.section_id = this.filters.section_id;
                             if (this.filters.sort_by) params.sort_by = this.filters.sort_by;
 
                             const response = await API.get('/raw-materials', params);
@@ -334,6 +366,15 @@
                             this.categories = await API.get('/raw-materials/categories');
                         } catch (error) {
                             console.error('Categories fetch error:', error);
+                        }
+                    },
+
+                    async fetchSections() {
+                        try {
+                            const response = await API.get('/sections');
+                            this.sections = response.data || response;
+                        } catch (error) {
+                            console.error('Failed to load sections:', error);
                         }
                     },
 

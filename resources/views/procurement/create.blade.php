@@ -18,13 +18,26 @@
         <div class="rounded-sm border border-gray-200 bg-white p-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
             <form @submit.prevent="submit">
                 <!-- Header Info -->
-                <div class="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div class="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
                     <div>
                         <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                             Supplier <span class="text-red-500">*</span>
                         </label>
                         <input type="text" x-model="form.supplier_id" required placeholder="Enter supplier name"
                             class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white" />
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            Section <span class="text-red-500">*</span>
+                        </label>
+                        <select x-model="form.section_id" required
+                            class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white">
+                            <option value="">Select Section</option>
+                            <template x-for="section in sections" :key="section.id">
+                                <option :value="section.id" x-text="section.name"></option>
+                            </template>
+                        </select>
                     </div>
 
                     <div>
@@ -148,8 +161,10 @@
                 return {
                     loading: false,
                     materials: [],
+                    sections: [],
                     form: {
                         supplier_id: '',
+                        section_id: '',
                         purchase_date: new Date().toISOString().split('T')[0],
                         items: [
                             { raw_material_id: '', quantity: '', unit_cost: '', expiry_date: '' }
@@ -158,7 +173,8 @@
 
                     async init() {
                         await Promise.all([
-                            this.fetchMaterials()
+                            this.fetchMaterials(),
+                            this.fetchSections()
                         ]);
                     },
 
@@ -170,6 +186,15 @@
                         } catch (error) {
                             console.error('Failed to load materials:', error);
                             showError('Failed to load raw materials');
+                        }
+                    },
+
+                    async fetchSections() {
+                        try {
+                            const response = await API.get('/sections');
+                            this.sections = response.data || response;
+                        } catch (error) {
+                            console.error('Failed to load sections:', error);
                         }
                     },
 

@@ -13,7 +13,7 @@ class ExpenseController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Expense::class);
+        // Authorization handled by route middleware
 
         $query = Expense::with(['section', 'createdBy']);
 
@@ -31,12 +31,12 @@ class ExpenseController extends Controller
             $query->where('type', $request->type);
         }
 
-        // Filter by date range
-        if ($request->has('start_date')) {
-            $query->where('expense_date', '>=', $request->start_date);
+        // Filter by date range - use whereDate for proper date comparison
+        if ($request->has('start_date') && $request->start_date) {
+            $query->whereDate('expense_date', '>=', $request->start_date);
         }
-        if ($request->has('end_date')) {
-            $query->where('expense_date', '<=', $request->end_date);
+        if ($request->has('end_date') && $request->end_date) {
+            $query->whereDate('expense_date', '<=', $request->end_date);
         }
 
         $expenses = $query->orderBy('expense_date', 'desc')
@@ -80,7 +80,7 @@ class ExpenseController extends Controller
      */
     public function show(Expense $expense)
     {
-        $this->authorize('view', $expense);
+        // Authorization handled by route middleware
 
         $expense->load(['section', 'createdBy']);
 

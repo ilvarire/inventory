@@ -12,18 +12,23 @@
                     Waste Logs
                 </h2>
             </div>
-            <div>
-                <a href="{{ route('waste.create') }}"
-                    class="inline-flex items-center justify-center gap-2.5 rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 lg:px-8 xl:px-10">
-                    <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M10.0001 1.66669C10.4603 1.66669 10.8334 2.03978 10.8334 2.50002V9.16669H17.5001C17.9603 9.16669 18.3334 9.53978 18.3334 10C18.3334 10.4603 17.9603 10.8334 17.5001 10.8334H10.8334V17.5C10.8334 17.9603 10.4603 18.3334 10.0001 18.3334C9.53984 18.3334 9.16675 17.9603 9.16675 17.5V10.8334H2.50008C2.03984 10.8334 1.66675 10.4603 1.66675 10C1.66675 9.53978 2.03984 9.16669 2.50008 9.16669H9.16675V2.50002C9.16675 2.03978 9.53984 1.66669 10.0001 1.66669Z"
-                            fill="" />
-                    </svg>
-                    Report Waste
-                </a>
-            </div>
+            @php
+                $userRole = auth()->user()->role->name ?? 'Guest';
+            @endphp
+            @if(in_array($userRole, ['Procurement', 'Store Keeper', 'Chef', 'Admin']))
+                <div>
+                    <a href="{{ route('waste.create') }}"
+                        class="inline-flex items-center justify-center gap-2.5 rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 lg:px-8 xl:px-10">
+                        <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M10.0001 1.66669C10.4603 1.66669 10.8334 2.03978 10.8334 2.50002V9.16669H17.5001C17.9603 9.16669 18.3334 9.53978 18.3334 10C18.3334 10.4603 17.9603 10.8334 17.5001 10.8334H10.8334V17.5C10.8334 17.9603 10.4603 18.3334 10.0001 18.3334C9.53984 18.3334 9.16675 17.9603 9.16675 17.5V10.8334H2.50008C2.03984 10.8334 1.66675 10.4603 1.66675 10C1.66675 9.53978 2.03984 9.16669 2.50008 9.16669H9.16675V2.50002C9.16675 2.03978 9.53984 1.66669 10.0001 1.66669Z"
+                                fill="" />
+                        </svg>
+                        Report Waste
+                    </a>
+                </div>
+            @endif
         </div>
 
         <!-- Summary Card -->
@@ -104,11 +109,10 @@
                         <tr class="bg-gray-50 text-left dark:bg-gray-800">
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white xl:pl-11">Log ID</th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">Date</th>
-                            <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">Material</th>
+                            <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">Material/Item</th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">Quantity</th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">Reason</th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">Cost</th>
-                            <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">Status</th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">Actions</th>
                         </tr>
                     </thead>
@@ -119,10 +123,11 @@
                                     <p class="font-medium text-gray-900 dark:text-white" x-text="'#' + log.id"></p>
                                 </td>
                                 <td class="px-4 py-5">
-                                    <p class="text-gray-900 dark:text-white" x-text="formatDate(log.waste_date)"></p>
+                                    <p class="text-gray-900 dark:text-white" x-text="formatDate(log.created_at)"></p>
                                 </td>
                                 <td class="px-4 py-5">
-                                    <p class="text-gray-900 dark:text-white" x-text="log.raw_material?.name"></p>
+                                    <p class="text-gray-900 dark:text-white"
+                                        x-text="log.raw_material?.name || log.prepared_item?.item_name || 'N/A'"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white"
@@ -130,24 +135,15 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                                'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': log.reason === 'spoilage',
-                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': log.reason === 'damage',
-                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': log.reason === 'expiry',
-                                                'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': log.reason === 'other'
-                                            }" x-text="log.reason">
+                                                                                'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': log.reason === 'spoilage',
+                                                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': log.reason === 'damage',
+                                                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': log.reason === 'expiry',
+                                                                                'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': log.reason === 'other'
+                                                                            }" x-text="log.reason">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
-                                    <p class="font-medium text-red-500" x-text="formatCurrency(log.cost)"></p>
-                                </td>
-                                <td class="px-4 py-5">
-                                    <span :class="{
-                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': log.status === 'pending',
-                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': log.status === 'approved',
-                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': log.status === 'rejected'
-                                            }" class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
-                                        x-text="log.status">
-                                    </span>
+                                    <p class="font-medium text-red-500" x-text="formatCurrency(log.cost_amount)"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <div class="flex items-center gap-3">
@@ -159,7 +155,7 @@
                             </tr>
                         </template>
                         <tr x-show="filteredLogs.length === 0" class="border-t border-gray-200 dark:border-gray-800">
-                            <td colspan="8" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                                 No waste logs found
                             </td>
                         </tr>
@@ -192,7 +188,7 @@
 
                         try {
                             const response = await API.get('/waste');
-                            this.logs = response.data || [];
+                            this.logs = response.data?.data || response.data || [];
 
                             // Calculate summary (only approved waste counts)
                             this.summary.total_cost = this.logs

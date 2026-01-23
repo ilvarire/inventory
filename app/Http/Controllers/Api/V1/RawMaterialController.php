@@ -15,7 +15,7 @@ class RawMaterialController extends Controller
      */
     public function index(Request $request)
     {
-        $query = RawMaterial::query();
+        $query = RawMaterial::with('section');
 
         // Search by name
         if ($request->has('search')) {
@@ -25,6 +25,11 @@ class RawMaterialController extends Controller
         // Filter by category
         if ($request->has('category')) {
             $query->where('category', $request->category);
+        }
+
+        // Filter by section
+        if ($request->has('section_id')) {
+            $query->where('section_id', $request->section_id);
         }
 
         // Filter by supplier
@@ -41,6 +46,17 @@ class RawMaterialController extends Controller
         $perPage = $request->get('per_page', 15);
         $materials = $query->paginate($perPage);
 
+        // Add average unit cost from recent procurements for each material
+        $materials->getCollection()->transform(function ($material) {
+            $avgCost = \DB::table('procurement_items')
+                ->where('raw_material_id', $material->id)
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->avg('unit_cost');
+            $material->unit_cost = $avgCost ?? 0;
+            return $material;
+        });
+
         return response()->json($materials);
     }
 
@@ -55,6 +71,7 @@ class RawMaterialController extends Controller
             'name' => 'required|string|max:255|unique:raw_materials,name',
             'unit' => 'required|string|max:50',
             'category' => 'nullable|string|max:255',
+            'section_id' => 'nullable|exists:sections,id',
             'min_quantity' => 'required|numeric|min:0',
             'reorder_quantity' => 'required|numeric|min:0|gt:min_quantity',
             'preferred_supplier_id' => 'nullable|string|max:255',

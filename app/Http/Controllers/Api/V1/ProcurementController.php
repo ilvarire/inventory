@@ -19,7 +19,7 @@ class ProcurementController extends Controller
     {
         $this->authorize('viewAny', Procurement::class);
 
-        $query = Procurement::with(['user', 'items.rawMaterial']);
+        $query = Procurement::with(['user', 'section', 'items.rawMaterial']);
 
         // Filter by supplier
         if ($request->has('supplier_id')) {
@@ -55,6 +55,7 @@ class ProcurementController extends Controller
 
         $validated = $request->validate([
             'supplier_id' => 'required|string|max:255',
+            'section_id' => 'required|exists:sections,id',
             'purchase_date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.raw_material_id' => 'required|exists:raw_materials,id',
@@ -76,6 +77,7 @@ class ProcurementController extends Controller
             $procurement = Procurement::create([
                 'procurement_user_id' => auth()->id(),
                 'supplier_id' => $validated['supplier_id'],
+                'section_id' => $validated['section_id'],
                 'purchase_date' => $validated['purchase_date'],
                 'status' => $status,
             ]);
@@ -134,7 +136,7 @@ class ProcurementController extends Controller
     {
         $this->authorize('view', $procurement);
 
-        $procurement->load(['user', 'items.rawMaterial']);
+        $procurement->load(['user', 'section', 'items.rawMaterial']);
 
         return response()->json($procurement);
     }

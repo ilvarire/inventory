@@ -91,16 +91,83 @@ class ReportController extends Controller
     public function salesReport(Request $request)
     {
         $validated = $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'section_id' => 'nullable|exists:sections,id',
         ]);
 
-        // This would be implemented in ReportingService
-        // For now, return a placeholder
+        $startDate = $validated['start_date'] ?? now()->subDays(30)->format('Y-m-d');
+        $endDate = $validated['end_date'] ?? now()->format('Y-m-d');
+
+        $query = Sale::whereBetween('sale_date', [$startDate, $endDate]);
+
+        if (isset($validated['section_id'])) {
+            $query->where('section_id', $validated['section_id']);
+        }
+
+        $sales = $query->with(['section', 'items.preparedInventory'])->get();
+
+        // Calculate totals
+        $totalRevenue = $sales->sum('total_amount');
+        $totalSales = $sales->count();
+
+        // Calculate profit from sale items
+        $totalProfit = $sales->sum(function ($sale) {
+            return $sale->items->sum(function ($item) {
+                // Profit = (selling_price - cost_price) * quantity
+                $costPrice = $item->preparedInventory->cost_price ?? 0;
+                return ($item->unit_price - $costPrice) * $item->quantity;
+            });
+        });
+
+        $averageSale = $totalSales > 0 ? $totalRevenue / $totalSales : 0;
+
+        // Group by section
+        $bySection = $sales->groupBy('section_id')->map(function ($sectionSales) {
+            $sectionProfit = $sectionSales->sum(function ($sale) {
+                return $sale->items->sum(function ($item) {
+                    $costPrice = $item->preparedInventory->cost_price ?? 0;
+                    return ($item->unit_price - $costPrice) * $item->quantity;
+                });
+            });
+
+            return [
+                'section_id' => $sectionSales->first()->section_id,
+                'section_name' => $sectionSales->first()->section->name ?? 'N/A',
+                'sales_count' => $sectionSales->count(),
+                'revenue' => $sectionSales->sum('total_amount'),
+                'profit' => $sectionProfit,
+            ];
+        })->values();
+
+        // Group by payment method
+        $byPaymentMethod = $sales->groupBy('payment_method')->map(function ($methodSales, $method) {
+            return [
+                'payment_method' => ucfirst($method),
+                'revenue' => $methodSales->sum('total_amount'),
+                'count' => $methodSales->count(),
+            ];
+        })->values();
+
+        // Daily revenue
+        $dailyRevenue = $sales->groupBy(function ($sale) {
+            return \Carbon\Carbon::parse($sale->sale_date)->format('Y-m-d');
+        })->map(function ($daySales, $date) {
+            return [
+                'date' => $date,
+                'revenue' => $daySales->sum('total_amount'),
+                'sales_count' => $daySales->count(),
+            ];
+        })->values();
+
         return response()->json([
-            'message' => 'Sales report',
-            'filters' => $validated,
+            'total_revenue' => $totalRevenue,
+            'total_sales' => $totalSales,
+            'total_profit' => $totalProfit,
+            'average_sale' => $averageSale,
+            'by_section' => $bySection,
+            'by_payment_method' => $byPaymentMethod,
+            'daily_revenue' => $dailyRevenue,
         ]);
     }
 
@@ -110,27 +177,79 @@ class ReportController extends Controller
     public function profitLoss(Request $request)
     {
         $validated = $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'section_id' => 'nullable|exists:sections,id',
         ]);
 
-        if ($validated['section_id'] ?? null) {
-            $pnl = $this->costingService->getSectionPnL(
-                $validated['section_id'],
-                $validated['start_date'],
-                $validated['end_date']
-            );
-        } else {
-            // Business-wide P&L
-            $profit = $this->costingService->getBusinessProfit(
-                $validated['start_date'],
-                $validated['end_date']
-            );
-            $pnl = ['net_profit' => $profit];
-        }
+        $startDate = $validated['start_date'] ?? now()->startOfMonth()->format('Y-m-d');
+        $endDate = $validated['end_date'] ?? now()->format('Y-m-d');
 
-        return response()->json($pnl);
+        // Get sales revenue
+        $salesQuery = Sale::whereRaw('DATE(sale_date) BETWEEN ? AND ?', [$startDate, $endDate]);
+        if (isset($validated['section_id'])) {
+            $salesQuery->where('section_id', $validated['section_id']);
+        }
+        $sales = $salesQuery->with('items.preparedInventory')->get();
+        $totalRevenue = $sales->sum('total_amount');
+
+        // Calculate material costs from procurements
+        $procurementQuery = \App\Models\Procurement::whereRaw('DATE(purchase_date) BETWEEN ? AND ?', [$startDate, $endDate])
+            ->where('status', 'received');
+        if (isset($validated['section_id'])) {
+            $procurementQuery->where('section_id', $validated['section_id']);
+        }
+        $procurements = $procurementQuery->with('items')->get();
+        $materialCosts = $procurements->sum('total_cost');
+
+        // Calculate waste costs
+        $wasteQuery = WasteLog::whereRaw('DATE(created_at) BETWEEN ? AND ?', [$startDate, $endDate])
+            ->where('status', 'approved');
+        if (isset($validated['section_id'])) {
+            $wasteQuery->where('section_id', $validated['section_id']);
+        }
+        $wasteCosts = $wasteQuery->sum('cost_amount');
+
+        // Total COGS
+        $totalCogs = $materialCosts + $wasteCosts;
+
+        // Gross Profit
+        $grossProfit = $totalRevenue - $totalCogs;
+        $grossMargin = $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0;
+
+        // Get expenses
+        $expenseQuery = Expense::whereRaw('DATE(expense_date) BETWEEN ? AND ?', [$startDate, $endDate])
+            ->where('status', 'approved');
+        if (isset($validated['section_id'])) {
+            $expenseQuery->where('section_id', $validated['section_id']);
+        }
+        $expenses = $expenseQuery->get();
+        $totalExpenses = $expenses->sum('amount');
+
+        // Group expenses by category
+        $expensesByCategory = $expenses->groupBy('category')->map(function ($categoryExpenses, $category) {
+            return [
+                'category' => $category,
+                'amount' => $categoryExpenses->sum('amount'),
+            ];
+        })->values();
+
+        // Net Profit
+        $netProfit = $grossProfit - $totalExpenses;
+        $netMargin = $totalRevenue > 0 ? ($netProfit / $totalRevenue) * 100 : 0;
+
+        return response()->json([
+            'total_revenue' => $totalRevenue,
+            'material_costs' => $materialCosts,
+            'waste_costs' => $wasteCosts,
+            'total_cogs' => $totalCogs,
+            'gross_profit' => $grossProfit,
+            'gross_margin' => round($grossMargin, 2),
+            'total_expenses' => $totalExpenses,
+            'expenses_by_category' => $expensesByCategory,
+            'net_profit' => $netProfit,
+            'net_margin' => round($netMargin, 2),
+        ]);
     }
 
     /**

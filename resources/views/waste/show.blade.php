@@ -41,10 +41,10 @@
                                 Waste Log <span x-text="'#' + waste.id"></span>
                             </h3>
                             <span :class="{
-                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': waste.status === 'pending',
-                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': waste.status === 'approved',
-                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': waste.status === 'rejected'
-                                    }" class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
+                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': waste.status === 'pending',
+                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': waste.status === 'approved',
+                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': waste.status === 'rejected'
+                                            }" class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
                                 x-text="waste.status">
                             </span>
                         </div>
@@ -54,7 +54,8 @@
                         <div class="grid grid-cols-2 gap-5">
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Reported By</p>
-                                <p class="mt-1 font-medium text-gray-900 dark:text-white" x-text="waste.user?.name"></p>
+                                <p class="mt-1 font-medium text-gray-900 dark:text-white" x-text="waste.logged_by?.name">
+                                </p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Section</p>
@@ -64,24 +65,24 @@
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Date</p>
                                 <p class="mt-1 font-medium text-gray-900 dark:text-white"
-                                    x-text="formatDate(waste.waste_date)"></p>
+                                    x-text="formatDate(waste.created_at)"></p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Reason</p>
                                 <span class="mt-1 inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': waste.reason === 'spoilage',
-                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': waste.reason === 'damage',
-                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': waste.reason === 'expiry',
-                                            'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': waste.reason === 'other'
-                                        }" x-text="waste.reason">
+                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': waste.reason === 'spoilage',
+                                                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': waste.reason === 'damage',
+                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': waste.reason === 'expiry',
+                                                    'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': waste.reason === 'other'
+                                                }" x-text="waste.reason">
                                 </span>
                             </div>
                         </div>
 
                         <div class="mt-5 border-t border-gray-200 pt-5 dark:border-gray-800">
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Material</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Material/Item</p>
                             <p class="mt-1 text-lg font-medium text-gray-900 dark:text-white"
-                                x-text="waste.raw_material?.name"></p>
+                                x-text="waste.raw_material?.name || waste.prepared_item?.item_name || 'N/A'"></p>
                         </div>
 
                         <div class="mt-5 grid grid-cols-2 gap-5">
@@ -92,7 +93,8 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Waste Cost</p>
-                                <p class="mt-1 text-xl font-bold text-red-500" x-text="formatCurrency(waste.cost)"></p>
+                                <p class="mt-1 text-xl font-bold text-red-500" x-text="formatCurrency(waste.cost_amount)">
+                                </p>
                             </div>
                         </div>
 
@@ -171,7 +173,7 @@
                                     <p class="text-sm text-gray-500 dark:text-gray-400"
                                         x-text="formatDate(waste.created_at)"></p>
                                     <p class="text-sm text-gray-500 dark:text-gray-400"
-                                        x-text="'by ' + (waste.user?.name || 'N/A')"></p>
+                                        x-text="'by ' + (waste.logged_by?.name || 'N/A')"></p>
                                 </div>
                             </div>
 
@@ -189,7 +191,7 @@
                                     <p class="text-sm text-gray-500 dark:text-gray-400"
                                         x-text="formatDate(waste.approved_at)"></p>
                                     <p class="text-sm text-gray-500 dark:text-gray-400"
-                                        x-text="'by ' + (waste.approved_by_user?.name || 'N/A')"></p>
+                                        x-text="'by ' + (waste.approved_by?.name || 'N/A')"></p>
                                 </div>
                             </div>
                         </div>

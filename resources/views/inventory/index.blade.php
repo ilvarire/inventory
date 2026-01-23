@@ -115,6 +115,9 @@
                                 Category
                             </th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">
+                                Section
+                            </th>
+                            <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">
                                 Current Stock
                             </th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">
@@ -141,6 +144,9 @@
                                         x-text="material.category"></span>
                                 </td>
                                 <td class="px-4 py-5">
+                                    <p class="text-gray-900 dark:text-white" x-text="material.section?.name || 'N/A'"></p>
+                                </td>
+                                <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white font-medium"
                                         x-text="formatQuantity(material.current_stock, material.unit)"></p>
                                 </td>
@@ -152,10 +158,10 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': getStockStatus(material) === 'good',
-                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': getStockStatus(material) === 'low',
-                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': getStockStatus(material) === 'critical'
-                                        }" x-text="getStockStatusText(material)"></span>
+                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': getStockStatus(material) === 'good',
+                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': getStockStatus(material) === 'low',
+                                                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': getStockStatus(material) === 'critical'
+                                                }" x-text="getStockStatusText(material)"></span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <div class="flex items-center gap-3">

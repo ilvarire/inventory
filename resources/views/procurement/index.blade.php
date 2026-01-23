@@ -88,6 +88,9 @@
                                 Supplier
                             </th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">
+                                Section
+                            </th>
+                            <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">
                                 Total Cost
                             </th>
                             <th class="px-4 py-4 font-medium text-gray-900 dark:text-white">
@@ -117,14 +120,19 @@
                                         x-text="procurement.supplier_id || 'N/A'"></p>
                                 </td>
                                 <td class="px-4 py-5">
+                                    <p class="text-gray-900 dark:text-white" x-text="procurement.section?.name || 'N/A'">
+                                    </p>
+                                </td>
+                                <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white font-medium"
                                         x-text="formatCurrency(procurement.total_cost)"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
-                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
-                                                                        }" x-text="capitalize(procurement.status)"></span>
+                                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
+                                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
+                                                                                }"
+                                        x-text="capitalize(procurement.status)"></span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-sm text-gray-600 dark:text-gray-400"

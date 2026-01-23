@@ -239,8 +239,8 @@
                         </li>
                     @endif
 
-                    <!-- Waste Management (Chef, Manager, Admin) -->
-                    @if(in_array($userRole, ['Chef', 'Manager', 'Admin']))
+                    <!-- Waste Management (Procurement, Store Keeper, Chef, Manager, Admin) -->
+                    @if(in_array($userRole, ['Procurement', 'Store Keeper', 'Chef', 'Manager', 'Admin']))
                         <li>
                             <a href="{{ route('waste.index') }}"
                                 class="menu-item group {{ request()->routeIs('waste.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
@@ -259,8 +259,8 @@
                         </li>
                     @endif
 
-                    <!-- Reports (Manager, Admin only) -->
-                    @if(in_array($userRole, ['Manager', 'Admin']))
+                    <!-- Reports (Admin only) -->
+                    @if(in_array($userRole, ['Admin']))
                         <li>
                             <a href="#" @click.prevent="selected = (selected === 'Reports' ? '':'Reports')"
                                 class="menu-item group"

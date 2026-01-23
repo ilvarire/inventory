@@ -39,7 +39,7 @@
                 class="rounded-sm border border-gray-200 bg-white p-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-brand-500" x-text="formatCurrency(report.total_revenue)">
+                        <h4 class="text-title-sm font-bold text-brand-500" x-text="formatCurrency(report.total_revenue)">
                         </h4>
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Revenue</span>
                     </div>
@@ -58,7 +58,7 @@
                 class="rounded-sm border border-gray-200 bg-white p-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-gray-900 dark:text-white" x-text="report.total_sales"></h4>
+                        <h4 class="text-title-sm font-bold text-gray-900 dark:text-white" x-text="report.total_sales"></h4>
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales</span>
                     </div>
                 </div>
@@ -68,7 +68,7 @@
                 class="rounded-sm border border-gray-200 bg-white p-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-green-500" x-text="formatCurrency(report.total_profit)">
+                        <h4 class="text-title-sm font-bold text-green-500" x-text="formatCurrency(report.total_profit)">
                         </h4>
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Profit</span>
                     </div>
@@ -79,7 +79,7 @@
                 class="rounded-sm border border-gray-200 bg-white p-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-gray-900 dark:text-white"
+                        <h4 class="text-title-sm font-bold text-gray-900 dark:text-white"
                             x-text="formatCurrency(report.average_sale)">
                         </h4>
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Average Sale</span>

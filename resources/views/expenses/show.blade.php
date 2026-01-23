@@ -40,14 +40,14 @@
                                 Expense <span x-text="'#' + expense.id"></span>
                             </h3>
                             <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': expense.category === 'utilities',
-                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': expense.category === 'salaries',
-                                        'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': expense.category === 'rent',
-                                        'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': expense.category === 'maintenance',
-                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': expense.category === 'marketing',
-                                        'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': expense.category === 'supplies',
-                                        'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': expense.category === 'other'
-                                    }" x-text="expense.category">
+                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': expense.type === 'utilities',
+                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': expense.type === 'salaries',
+                                            'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': expense.type === 'rent',
+                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': expense.type === 'maintenance',
+                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': expense.type === 'marketing',
+                                            'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': expense.type === 'supplies',
+                                            'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': expense.type === 'other'
+                                        }" x-text="expense.type">
                             </span>
                         </div>
                     </div>
@@ -67,7 +67,7 @@
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Logged By</p>
                                 <p class="mt-1 font-medium text-gray-900 dark:text-white"
-                                    x-text="expense.user?.name || 'N/A'">
+                                    x-text="expense.created_by?.name || 'N/A'">
                                 </p>
                             </div>
                         </div>
@@ -121,7 +121,7 @@
                     <div class="p-7 space-y-4">
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Category</p>
-                            <p class="mt-1 font-medium capitalize text-gray-900 dark:text-white" x-text="expense.category">
+                            <p class="mt-1 font-medium capitalize text-gray-900 dark:text-white" x-text="expense.type">
                             </p>
                         </div>
                         <div>

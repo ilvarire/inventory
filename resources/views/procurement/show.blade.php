@@ -20,10 +20,10 @@
                         x-text="procurement?.reference_number || 'Loading...'">
                     </h2>
                     <span x-show="procurement" class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement?.status === 'completed',
-                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement?.status === 'pending',
-                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': procurement?.status === 'cancelled'
-                        }" x-text="capitalize(procurement?.status)"></span>
+                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement?.status === 'completed',
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement?.status === 'pending',
+                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': procurement?.status === 'cancelled'
+                            }" x-text="capitalize(procurement?.status)"></span>
                 </div>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 ml-7">
                     Created on <span x-text="formatDate(procurement?.created_at)"></span> by <span
@@ -139,6 +139,11 @@
                                 <span class="text-sm text-gray-500">Purchase Date</span>
                                 <span class="text-sm font-medium text-gray-900 dark:text-white"
                                     x-text="formatDate(procurement?.purchase_date)"></span>
+                            </div>
+                            <div class="flex justify-between border-t border-gray-100 pt-3 dark:border-gray-800">
+                                <span class="text-sm text-gray-500">Section</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white"
+                                    x-text="procurement?.section?.name || 'N/A'"></span>
                             </div>
                             <div class="flex justify-between border-t border-gray-100 pt-3 dark:border-gray-800">
                                 <span class="text-sm text-gray-500">Reference</span>

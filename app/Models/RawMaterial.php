@@ -10,6 +10,7 @@ class RawMaterial extends Model
         'name',
         'unit',
         'category',
+        'section_id',
         'min_quantity',
         'reorder_quantity',
         'preferred_supplier_id'
@@ -20,6 +21,11 @@ class RawMaterial extends Model
     public function supplier()
     {
         return $this->belongsTo(Supplier::class, 'preferred_supplier_id');
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
     }
 
     public function batches()

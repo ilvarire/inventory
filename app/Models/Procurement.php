@@ -11,6 +11,7 @@ class Procurement extends Model
     protected $fillable = [
         'procurement_user_id',
         'supplier_id',
+        'section_id',
         'purchase_date',
         'status',
         'approved_by',
@@ -56,5 +57,10 @@ class Procurement extends Model
     public function items()
     {
         return $this->hasMany(ProcurementItem::class);
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
     }
 }

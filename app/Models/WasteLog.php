@@ -16,7 +16,11 @@ class WasteLog extends Model
         'reason',
         'cost_amount',
         'logged_by',
-        'approved_by'
+        'approved_by',
+        'status',
+        'approved_at',
+        'rejected_at',
+        'rejection_reason',
     ];
 
     public function section()
@@ -29,7 +33,7 @@ class WasteLog extends Model
         return $this->belongsTo(RawMaterial::class);
     }
 
-    public function preparedInventory()
+    public function preparedItem()
     {
         return $this->belongsTo(PreparedInventory::class, 'production_log_id');
     }

@@ -26,24 +26,29 @@
 
             <div class="p-7">
                 <form @submit.prevent="submitWaste">
-                    <div class="grid grid-cols-1 gap-5.5 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                         <!-- Section Selection -->
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Section <span class="text-red-500">*</span>
                             </label>
-                            <select x-model="formData.section_id" required
-                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                <option value="">Select Section</option>
-                                <template x-for="section in sections" :key="section.id">
-                                    <option :value="section.id" x-text="section.name"></option>
-                                </template>
-                            </select>
+                            @if(auth()->check() && auth()->user()->isChef())
+                                <input type="text" value="{{ auth()->user()->section->name ?? 'N/A' }}" readonly
+                                    class="w-full rounded border border-gray-300 bg-gray-100 px-5 py-3 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white" />
+                            @else
+                                <select x-model="formData.section_id" required
+                                    class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                    <option value="">Select Section</option>
+                                    <template x-for="section in sections" :key="section.id">
+                                        <option :value="section.id" x-text="section.name"></option>
+                                    </template>
+                                </select>
+                            @endif
                         </div>
 
                         <!-- Waste Reason -->
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Waste Reason <span class="text-red-500">*</span>
                             </label>
                             <select x-model="formData.reason" required
@@ -57,25 +62,49 @@
                         </div>
                     </div>
 
-                    <!-- Raw Material Selection -->
-                    <div class="mt-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
-                            Raw Material <span class="text-red-500">*</span>
-                        </label>
-                        <select x-model="formData.raw_material_id" @change="updateCost" required
-                            class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                            <option value="">Select Material</option>
-                            <template x-for="material in materials" :key="material.id">
-                                <option :value="material.id"
-                                    x-text="material.name + ' (' + material.unit + ') - ₦' + parseFloat(material.unit_cost || 0).toFixed(2)">
-                                </option>
-                            </template>
-                        </select>
-                    </div>
+                    @php
+                        $userRole = auth()->user()->role->name ?? 'Guest';
+                    @endphp
+
+                    @if(in_array($userRole, ['Procurement', 'Store Keeper', 'Admin', 'Manager']))
+                        <!-- Raw Material Selection (for Procurement/Store Keeper) -->
+                        <div class="mt-3">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
+                                Raw Material <span class="text-red-500">*</span>
+                            </label>
+                            <select x-model="formData.raw_material_id" @change="updateCost" required
+                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                <option value="">Select Material</option>
+                                <template x-for="material in materials" :key="material.id">
+                                    <option :value="material.id"
+                                        x-text="material.name + ' (' + material.unit + ') - ₦' + parseFloat(material.unit_cost || 0).toFixed(2)">
+                                    </option>
+                                </template>
+                            </select>
+                        </div>
+                    @endif
+
+                    @if($userRole === 'Chef')
+                        <!-- Prepared Inventory Selection (for Chef) -->
+                        <div class="mt-3">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
+                                Prepared Item <span class="text-red-500">*</span>
+                            </label>
+                            <select x-model="formData.prepared_inventory_id" @change="updateCost" required
+                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                <option value="">Select Prepared Item</option>
+                                <template x-for="item in preparedItems" :key="item.id">
+                                    <option :value="item.id"
+                                        x-text="item.item_name + ' (' + item.quantity + ' ' + item.unit + ') - ₦' + parseFloat(item.selling_price || 0).toFixed(2)">
+                                    </option>
+                                </template>
+                            </select>
+                        </div>
+                    @endif
 
                     <!-- Quantity -->
-                    <div class="mt-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Quantity Wasted <span class="text-red-500">*</span>
                         </label>
                         <input type="number" x-model="formData.quantity" @input="updateCost" required min="0.01" step="0.01"
@@ -84,8 +113,8 @@
                     </div>
 
                     <!-- Estimated Cost (Read-only) -->
-                    <div class="mt-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Estimated Cost
                         </label>
                         <input type="text" :value="formatCurrency(estimatedCost)" readonly
@@ -93,8 +122,8 @@
                     </div>
 
                     <!-- Notes -->
-                    <div class="mt-5.5">
-                        <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
                             Notes / Explanation <span class="text-red-500">*</span>
                         </label>
                         <textarea x-model="formData.notes" rows="4" required
@@ -133,9 +162,11 @@
                     error: '',
                     sections: [],
                     materials: [],
+                    preparedItems: [],
                     formData: {
                         section_id: '',
                         raw_material_id: '',
+                        prepared_inventory_id: '',
                         quantity: '',
                         reason: '',
                         notes: ''
@@ -143,9 +174,15 @@
                     estimatedCost: 0,
 
                     async init() {
-                        await this.fetchSections();
-                        await this.fetchMaterials();
-                    },
+                        @if(auth()->check() && auth()->user()->isChef())
+                            // Auto-set section for Chef users
+                            this.formData.section_id = {{ auth()->user()->section_id ?? 'null' }};
+                            await this.fetchPreparedItems();
+                        @else
+                                                    await this.fetchSections();
+                            await this.fetchMaterials();
+                        @endif
+                                    },
 
                     async fetchSections() {
                         try {
@@ -158,18 +195,40 @@
 
                     async fetchMaterials() {
                         try {
-                            const response = await API.get('/inventory');
-                            this.materials = response.data || [];
+                            const response = await API.get('/raw-materials');
+                            this.materials = response.data?.data || response.data || [];
                         } catch (error) {
                             console.error('Failed to fetch materials:', error);
                         }
                     },
 
+                    async fetchPreparedItems() {
+                        try {
+                            const response = await API.get('/prepared-inventory');
+                            this.preparedItems = response.data?.data || response.data || [];
+                        } catch (error) {
+                            console.error('Failed to fetch prepared items:', error);
+                        }
+                    },
+
                     updateCost() {
-                        const material = this.materials.find(m => m.id == this.formData.raw_material_id);
-                        if (material && this.formData.quantity) {
-                            this.estimatedCost = parseFloat(material.unit_cost || 0) * parseFloat(this.formData
-                                .quantity);
+                        // For raw materials
+                        if (this.formData.raw_material_id) {
+                            const material = this.materials.find(m => m.id == this.formData.raw_material_id);
+                            if (material && this.formData.quantity) {
+                                this.estimatedCost = parseFloat(material.unit_cost || 0) * parseFloat(this.formData.quantity);
+                            } else {
+                                this.estimatedCost = 0;
+                            }
+                        }
+                        // For prepared items
+                        else if (this.formData.prepared_inventory_id) {
+                            const item = this.preparedItems.find(i => i.id == this.formData.prepared_inventory_id);
+                            if (item && this.formData.quantity) {
+                                this.estimatedCost = parseFloat(item.selling_price || 0) * parseFloat(this.formData.quantity);
+                            } else {
+                                this.estimatedCost = 0;
+                            }
                         } else {
                             this.estimatedCost = 0;
                         }
@@ -183,7 +242,8 @@
                             const response = await API.post('/waste', this.formData);
 
                             // Redirect to the new waste log details page
-                            window.location.href = '/waste/' + response.id;
+                            const wasteId = response.data?.id || response.id;
+                            window.location.href = '/waste/' + wasteId;
                         } catch (error) {
                             console.error('Submit error:', error);
                             this.error = error.message || 'Failed to submit waste report';

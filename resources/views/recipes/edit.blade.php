@@ -91,6 +91,31 @@
                             </div>
                         </div>
 
+                        <!-- Profitability Analysis -->
+                        <div class="mb-5.5 rounded-sm border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/50"
+                            x-show="calculateProfit().totalCost > 0">
+                            <h4 class="mb-3 font-medium text-gray-900 dark:text-white">Profitability Estimator</h4>
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Material Cost</p>
+                                    <p class="mt-1 font-semibold text-gray-900 dark:text-white"
+                                        x-text="'₦' + calculateProfit().totalCost.toFixed(2)"></p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Cost Per Unit</p>
+                                    <p class="mt-1 font-semibold text-gray-900 dark:text-white"
+                                        x-text="'₦' + calculateProfit().costPerUnit.toFixed(2)"></p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Estimated Profit/Loss</p>
+                                    <p class="mt-1 font-bold"
+                                        :class="calculateProfit().profit >= 0 ? 'text-green-500' : 'text-red-500'"
+                                        x-text="'₦' + calculateProfit().profit.toFixed(2) + (calculateProfit().profit >= 0 ? ' (Profit)' : ' (Loss)')">
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Description -->
                         <div class="mb-3">
                             <label class="block text-sm font-medium text-gray-900 dark:text-white">
@@ -290,6 +315,32 @@
                             this.error = error.message || 'Failed to update recipe';
                             this.submitting = false;
                         }
+                    },
+
+                    getMaterialCost(materialId) {
+                        const material = this.materials.find(m => m.id == materialId);
+                        return material ? parseFloat(material.unit_cost || 0) : 0;
+                    },
+
+                    calculateProfit() {
+                        let totalCost = 0;
+
+                        this.formData.ingredients.forEach(ingredient => {
+                            const qty = parseFloat(ingredient.quantity || 0);
+                            const cost = this.getMaterialCost(ingredient.raw_material_id);
+                            totalCost += qty * cost;
+                        });
+
+                        const yieldAmount = parseFloat(this.formData.expected_yield || 1);
+                        const costPerUnit = totalCost / (yieldAmount || 1);
+                        const sellingPrice = parseFloat(this.formData.selling_price || 0);
+                        const profit = sellingPrice - costPerUnit;
+
+                        return {
+                            totalCost,
+                            costPerUnit,
+                            profit
+                        };
                     }
                 }
             }

@@ -22,6 +22,12 @@ Route::middleware('guest')->group(function () {
 
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             $request->session()->regenerate();
+
+            // Update last login timestamp
+            $user = Auth::user();
+            $user->last_login_at = now();
+            $user->save();
+
             return redirect()->intended('dashboard');
         }
 
@@ -115,6 +121,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/create', function () {
             return view('recipes.create');
         })->name('create');
+
+        Route::get('/{id}/edit', function ($id) {
+            return view('recipes.edit', compact('id'));
+        })->name('edit');
 
         Route::get('/{id}', function ($id) {
             return view('recipes.show', compact('id'));

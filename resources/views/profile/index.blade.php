@@ -5,7 +5,7 @@
 
 @section('content')
     @php
-        $user = json_decode(json_encode(session('user')));
+        $user = auth()->user();
     @endphp
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -59,7 +59,7 @@
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Member Since</p>
                             <p class="mt-1 font-medium text-gray-900 dark:text-white">
-                                {{ isset($user->created_at) ? date('M d, Y', strtotime($user->created_at)) : 'N/A' }}
+                                {{ $user->created_at?->format('M d, Y') ?? 'N/A' }}
                             </p>
                         </div>
                     </div>
@@ -95,7 +95,7 @@
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Last Login</p>
                         <p class="mt-1 text-sm text-gray-900 dark:text-white">
-                            {{ isset($user->last_login_at) ? date('M d, Y H:i', strtotime($user->last_login_at)) : 'N/A' }}
+                            {{ $user->last_login_at?->format('M d, Y H:i') ?? 'N/A' }}
                         </p>
                     </div>
                 </div>

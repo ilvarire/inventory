@@ -4,6 +4,9 @@
 @section('page-title', 'Edit Profile')
 
 @section('content')
+    @php
+        $user = auth()->user();
+    @endphp
     <div x-data="editProfileData()">
         <!-- Header -->
         <div class="mb-6">

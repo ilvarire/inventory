@@ -145,15 +145,54 @@ class RecipeController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
+            'section_id' => 'sometimes|exists:sections,id',
+            'description' => 'nullable|string',
+            'expected_yield' => 'sometimes|numeric|min:0.01',
+            'yield_unit' => 'sometimes|string|max:50',
+            'selling_price' => 'sometimes|numeric|min:0',
+            'instructions' => 'nullable|string',
             'status' => 'sometimes|in:draft,active,archived',
+            'ingredients' => 'nullable|array|min:1',
+            'ingredients.*.raw_material_id' => 'required_with:ingredients|exists:raw_materials,id',
+            'ingredients.*.quantity' => 'required_with:ingredients|numeric|min:0.01',
         ]);
 
-        $recipe->update($validated);
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'message' => 'Recipe updated successfully',
-            'data' => $recipe
-        ]);
+            // Update recipe details
+            $recipe->update(\Illuminate\Support\Arr::except($validated, ['ingredients']));
+
+            // Update ingredients if provided (updates the latest version)
+            if (isset($validated['ingredients'])) {
+                $latestVersion = $recipe->versions()->latest()->first();
+
+                if ($latestVersion) {
+                    // Remove old items
+                    $latestVersion->items()->delete();
+
+                    // Add new items
+                    foreach ($validated['ingredients'] as $ingredient) {
+                        RecipeItem::create([
+                            'recipe_version_id' => $latestVersion->id,
+                            'raw_material_id' => $ingredient['raw_material_id'],
+                            'quantity_required' => $ingredient['quantity'],
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Recipe updated successfully',
+                'data' => $recipe->load(['section', 'versions.items.rawMaterial'])
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     /**

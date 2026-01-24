@@ -30,6 +30,7 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
     Route::get('/user', function (Request $request) {
         return $request->user()->load(['role', 'section']);
     });
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
 
     // User Management routes (Admin/Manager only)
     Route::prefix('users')->middleware('role:Admin,Manager')->group(function () {

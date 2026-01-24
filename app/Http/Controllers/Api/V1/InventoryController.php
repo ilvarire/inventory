@@ -24,7 +24,7 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', RawMaterial::class);
-        $query = RawMaterial::with(['supplier', 'batches']);
+        $query = RawMaterial::with(['supplier', 'section', 'batches']);
 
         // Filter by category
         if ($request->has('category')) {
@@ -45,6 +45,7 @@ class InventoryController extends Controller
                 'name' => $material->name,
                 'unit' => $material->unit,
                 'category' => $material->category,
+                'section' => $material->section,
                 'current_stock' => $stockBalance,
                 'min_quantity' => $material->min_quantity,
                 'reorder_quantity' => $material->reorder_quantity,

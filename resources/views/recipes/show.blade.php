@@ -84,7 +84,7 @@
             <!-- Actions Sidebar -->
             <div class="space-y-6">
                 @php
-                    $user = json_decode(json_encode(session('user')));
+                    $user = auth()->user();
                     $userRole = $user->role->name ?? 'Guest';
                 @endphp
 
@@ -101,6 +101,14 @@
                             class="block w-full rounded-md bg-brand-500 px-4 py-3 text-center text-white hover:bg-brand-600">
                             Log Production
                         </a>
+
+                        @if(in_array($userRole, ['Chef', 'Admin', 'Manager']))
+                            <!-- Edit Button -->
+                            <a :href="'/recipes/' + recipe.id + '/edit'"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-center text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
+                                Edit Recipe
+                            </a>
+                        @endif
 
                         @if(in_array($userRole, ['Chef', 'Admin']))
                             <!-- Delete Button -->

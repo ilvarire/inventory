@@ -57,14 +57,9 @@
                     <select x-model="filters.category" @change="fetchInventory()"
                         class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white">
                         <option value="">All Categories</option>
-                        <option value="vegetables">Vegetables</option>
-                        <option value="meat">Meat</option>
-                        <option value="seafood">Seafood</option>
-                        <option value="dairy">Dairy</option>
-                        <option value="grains">Grains</option>
-                        <option value="spices">Spices</option>
-                        <option value="beverages">Beverages</option>
-                        <option value="other">Other</option>
+                        <template x-for="category in categories" :key="category">
+                            <option :value="category" x-text="category"></option>
+                        </template>
                     </select>
                 </div>
 
@@ -158,10 +153,10 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': getStockStatus(material) === 'good',
-                                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': getStockStatus(material) === 'low',
-                                                                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': getStockStatus(material) === 'critical'
-                                                                }" x-text="getStockStatusText(material)"></span>
+                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': getStockStatus(material) === 'good',
+                                                                        'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': getStockStatus(material) === 'low',
+                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': getStockStatus(material) === 'critical'
+                                                                    }" x-text="getStockStatusText(material)"></span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <div class="flex items-center gap-3">
@@ -213,6 +208,7 @@
                     loading: true,
                     error: '',
                     materials: [],
+                    categories: [],
                     filters: {
                         search: '',
                         category: '',
@@ -220,7 +216,10 @@
                     },
 
                     async init() {
-                        await this.fetchInventory();
+                        await Promise.all([
+                            this.fetchInventory(),
+                            this.fetchCategories()
+                        ]);
                     },
 
                     async fetchInventory() {
@@ -248,6 +247,15 @@
                             showError(this.error);
                         } finally {
                             this.loading = false;
+                        }
+                    },
+
+                    async fetchCategories() {
+                        try {
+                            // Using the same endpoint as raw materials
+                            this.categories = await API.get('/raw-materials/categories');
+                        } catch (error) {
+                            console.error('Failed to load categories:', error);
                         }
                     },
 

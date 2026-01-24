@@ -297,13 +297,13 @@ class ReportController extends Controller
         $endDate = $request->get('end_date', now()->toDateString());
         $limit = $request->get('limit', 10);
 
-        // This is already implemented in ReportingService as a protected method
-        // We'd need to make it public or create a wrapper
-        return response()->json([
-            'message' => 'Top selling items report',
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-        ]);
+        $report = $this->reportingService->getTopSellingItems(
+            $startDate,
+            $endDate,
+            $limit
+        );
+
+        return response()->json($report);
     }
 
     // ==================== EXPORT METHODS ====================

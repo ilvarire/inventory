@@ -22,6 +22,14 @@
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
             <input type="date" x-model="filters.end_date"
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            
+            <select x-model="filters.section_id"
+                class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                <option value="">All Sections</option>
+                <template x-for="section in sections" :key="section.id">
+                    <option :value="section.id" x-text="section.name"></option>
+                </template>
+            </select>
             <button @click="fetchReport" class="rounded-md bg-brand-500 px-4 py-2 text-sm text-white hover:bg-brand-600">
                 Generate Report
             </button>
@@ -164,9 +172,11 @@
                         net_margin: 0,
                         expenses_by_category: []
                     },
+                    sections: [],
                     filters: {
                         start_date: '',
-                        end_date: ''
+                        end_date: '',
+                        section_id: ''
                     },
 
                     async init() {
@@ -177,7 +187,19 @@
                         this.filters.start_date = firstDay.toISOString().split('T')[0];
                         this.filters.end_date = today.toISOString().split('T')[0];
 
-                        await this.fetchReport();
+                        await Promise.all([
+                            this.fetchSections(),
+                            this.fetchReport()
+                        ]);
+                    },
+
+                    async fetchSections() {
+                        try {
+                            const response = await API.get('/sections');
+                            this.sections = response.data || response || [];
+                        } catch (error) {
+                            console.error('Failed to fetch sections:', error);
+                        }
                     },
 
                     async fetchReport() {
@@ -188,6 +210,7 @@
                             const params = new URLSearchParams();
                             if (this.filters.start_date) params.append('start_date', this.filters.start_date);
                             if (this.filters.end_date) params.append('end_date', this.filters.end_date);
+                            if (this.filters.section_id) params.append('section_id', this.filters.section_id);
 
                             const response = await API.get('/reports/profit-loss?' + params.toString());
                             this.report = response;

@@ -40,8 +40,8 @@
         <!-- Filters -->
         <div
             class="mb-6 rounded-sm border border-gray-200 bg-white p-4 shadow-default dark:border-gray-800 dark:bg-gray-900">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
+            <div class="w-full grid grid-cols-12 gap-4 sm:grid-cols-3">
+                <div class="col-span-3">
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         Search
                     </label>
@@ -50,7 +50,7 @@
                         class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:text-white dark:placeholder:text-gray-500" />
                 </div>
 
-                <div>
+                <div class="col-span-3">
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         Category
                     </label>
@@ -68,7 +68,7 @@
                     </select>
                 </div>
 
-                <div>
+                <div class="col-span-3">
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         Stock Status
                     </label>
@@ -158,10 +158,10 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': getStockStatus(material) === 'good',
-                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': getStockStatus(material) === 'low',
-                                                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': getStockStatus(material) === 'critical'
-                                                }" x-text="getStockStatusText(material)"></span>
+                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': getStockStatus(material) === 'good',
+                                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': getStockStatus(material) === 'low',
+                                                                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': getStockStatus(material) === 'critical'
+                                                                }" x-text="getStockStatusText(material)"></span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <div class="flex items-center gap-3">

@@ -21,7 +21,13 @@ return new class extends Migration {
             $table->text('description')->nullable();
 
             $table->date('expense_date');
+
+            $table->softDeletes();
             $table->timestamps();
+
+            $table->index('section_id');
+            $table->index('expense_date');
+            $table->index(['section_id', 'expense_date']);
         });
     }
 

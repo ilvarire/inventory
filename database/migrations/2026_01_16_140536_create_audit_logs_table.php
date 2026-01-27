@@ -19,6 +19,12 @@ return new class extends Migration {
             $table->json('before')->nullable();
             $table->json('after')->nullable();
             $table->timestamps();
+
+            $table->index('user_id');
+            $table->index('model_type');
+            $table->index('model_id');
+            $table->index('created_at');
+            $table->index(['model_type', 'model_id']);
         });
 
     }

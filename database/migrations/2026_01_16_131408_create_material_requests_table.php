@@ -16,12 +16,20 @@ return new class extends Migration {
             $table->foreignId('chef_id')->constrained('users');
             $table->foreignId('section_id')->constrained();
 
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'fulfilled'])->default('pending');
 
             $table->foreignId('approved_by')->nullable()->constrained('users');
             $table->timestamp('approved_at')->nullable();
 
+            $table->foreignId('fulfilled_by')->nullable()->constrained('users');
+            $table->timestamp('fulfilled_at')->nullable();
+
             $table->timestamps();
+
+            $table->index('chef_id');
+            $table->index('section_id');
+            $table->index('status');
+            $table->index('approved_by');
         });
 
     }

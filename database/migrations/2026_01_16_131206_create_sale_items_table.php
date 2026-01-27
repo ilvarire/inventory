@@ -25,6 +25,9 @@ return new class extends Migration {
             $table->unsignedBigInteger('source_id')->nullable();
 
             $table->timestamps();
+
+            $table->index('sale_id');
+            $table->index('source_id');
         });
     }
 

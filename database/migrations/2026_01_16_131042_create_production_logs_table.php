@@ -18,9 +18,18 @@ return new class extends Migration {
             $table->foreignId('chef_id')->constrained('users');
 
             $table->integer('quantity_produced');
+            $table->decimal('variance', 10, 2)->nullable();
+            $table->text('notes')->nullable();
+
             $table->date('production_date');
 
+            $table->softDeletes();
             $table->timestamps();
+
+            $table->index('section_id');
+            $table->index('production_date');
+            $table->index('chef_id');
+            $table->index(['section_id', 'production_date']);
         });
     }
 

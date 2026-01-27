@@ -16,10 +16,14 @@ return new class extends Migration {
             $table->string('unit'); // kg, liter, piece
             $table->string('category')->nullable();
 
+            $table->decimal('current_quantity', 10, 2)->default(0);
+            $table->foreignId('section_id')->nullable()->constrained();
+
             $table->decimal('min_quantity', 10, 2)->default(0);
             $table->decimal('reorder_quantity', 10, 2)->default(0);
 
-            $table->foreignId('preferred_supplier_id')->nullable()->constrained('suppliers');
+            // Changed from foreign key to string in later migration, consolidating here
+            $table->string('preferred_supplier_id')->nullable();
 
             $table->timestamps();
         });

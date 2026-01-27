@@ -20,7 +20,12 @@ return new class extends Migration {
             $table->decimal('total_amount', 12, 2);
             $table->string('payment_method');
 
+            $table->softDeletes();
             $table->timestamps();
+
+            $table->index('section_id');
+            $table->index('sale_date');
+            $table->index(['section_id', 'sale_date']);
         });
     }
 

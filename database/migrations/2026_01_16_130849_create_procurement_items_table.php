@@ -24,6 +24,11 @@ return new class extends Migration {
             $table->date('expiry_date')->nullable();
 
             $table->timestamps();
+
+            $table->index('raw_material_id');
+            $table->index('procurement_id');
+            $table->index('expiry_date');
+            $table->index(['raw_material_id', 'created_at']);
         });
     }
 

@@ -37,6 +37,11 @@ return new class extends Migration {
             $table->foreignId('approved_by')->nullable()->constrained('users');
 
             $table->timestamps();
+
+            $table->index('raw_material_id');
+            $table->index('movement_type');
+            $table->index('created_at');
+            $table->index(['raw_material_id', 'movement_type']);
         });
 
     }

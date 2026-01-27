@@ -1,58 +1,116 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Inventory Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A robust Inventory Management System built with Laravel. This application helps manage stock, procurement, production (recipes), waste tracking, and reporting.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **User Management:** Role-based access control (Admin, Manager, Procurement, Store Keeper, Chef, Frontline Sales).
+- **Inventory Management:** Track raw materials, stock levels, and expiry dates.
+- **Procurement:** Manage suppliers and purchase orders with approval workflows.
+- **Production:** Recipe management and production logging with automatic stock deduction.
+- **Sales:** POS interface for frontline sales with daily reporting.
+- **Waste:** Track and approve waste logs.
+- **Reports:** Profit & Loss, Expenses, Inventory Health, and more.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation (Local Development)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1.  Clone the repository.
+2.  Run `composer install` to install PHP dependencies.
+3.  Copy `.env.example` to `.env` and configure your database.
+4.  Run `php artisan key:generate`.
+5.  Run `php artisan migrate --seed` to setup the database and default users.
+6.  Run `npm install && npm run build` to compile assets.
+7.  Serve the application: `php artisan serve`.
 
-## Learning Laravel
+## Deployment on Shared Hosting
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Deploying to shared hosting (e.g., cPanel) requires a few specific steps since you may not have root access.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. Preparation
 
-## Laravel Sponsors
+1.  Run `npm run build` locally to compile assets for production.
+2.  Compress your project files into a `zip` archive (exclude `node_modules`, `tests`, and `.git`).
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 2. Uploading
 
-### Premium Partners
+1.  Upload the `zip` file to your hosting file manager (e.g., inside `public_html` or a subdirectory).
+2.  Extract the files.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 3. Folder Structure (Important)
 
-## Contributing
+Shared hosts usually serve from `public_html`. Laravel serves from `public`.
+**Option A (Recommended if you have SSH):**
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- Place the core code in a folder _outside_ `public_html` (e.g., `~/inventory_app`).
+- Symlink the `public` folder to `public_html`.
+    ```bash
+    ln -s ~/inventory_app/public ~/public_html
+    ```
+    **Option B (Easy Method):**
+- Place everything in the root directory.
+- Create an `.htaccess` file in the root to redirect traffic to the `public/` folder.
+    ```apache
+    <IfModule mod_rewrite.c>
+        RewriteEngine On
+        RewriteRule ^(.*)$ public/$1 [L]
+    </IfModule>
+    ```
 
-## Code of Conduct
+### 4. Database Setup
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1.  Create a MySQL database and user via your hosting control panel.
+2.  Update `.env` with your production database credentials:
+    ```ini
+    DB_DATABASE=your_db_name
+    DB_USERNAME=your_db_user
+    DB_PASSWORD=your_db_password
+    APP_URL=https://your-domain.com
+    APP_ENV=production
+    APP_DEBUG=false
+    ```
 
-## Security Vulnerabilities
+### 5. Running Migrations & Seeds
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+If you have SSH access:
+
+```bash
+php artisan migrate --seed --force
+```
+
+If you **do not** have SSH access:
+
+1.  Run migrations locally on a test database.
+2.  Export the local database to an SQL file.
+3.  Import the SQL file into your production database using phpMyAdmin.
+
+### 6. File Permissions
+
+Ensure the following directories are writable (775):
+
+- `storage/`
+- `bootstrap/cache/`
+
+## Default Seed Users
+
+The application comes pre-configured with the following users for testing and initial setup.
+**Default Password:** `password`
+
+| Role               | Email                        |
+| :----------------- | :--------------------------- |
+| **Admin**          | `admin@inventory.com`        |
+| **Manager**        | `manager@inventory.com`      |
+| **Procurement**    | `procurement@inventory.com`  |
+| **Store Keeper**   | `storekeeper@inventory.com`  |
+| **Chef (Eatery)**  | `chef.eatery@inventory.com`  |
+| **Chef (Cafe)**    | `chef.cafe@inventory.com`    |
+| **Chef (Lounge)**  | `chef.lounge@inventory.com`  |
+| **Chef (Grills)**  | `chef.grills@inventory.com`  |
+| **Sales (Eatery)** | `sales.eatery@inventory.com` |
+| **Sales (Cafe)**   | `sales.cafe@inventory.com`   |
+| **Sales (Lounge)** | `sales.lounge@inventory.com` |
+| **Sales (Grills)** | `sales.grills@inventory.com` |
+
+---
 
 ## License
 

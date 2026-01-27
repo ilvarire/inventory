@@ -14,11 +14,21 @@ return new class extends Migration {
             $table->id();
 
             $table->foreignId('procurement_user_id')->constrained('users');
-            $table->foreignId('supplier_id')->constrained();
+
+            // Changed from foreign key to string in later migration
+            $table->string('supplier_id')->nullable();
+
+            $table->foreignId('section_id')->nullable()->constrained();
 
             $table->date('purchase_date');
-            $table->enum('status', ['pending', 'received'])->default('pending');
+            $table->enum('status', ['pending', 'received', 'approved', 'rejected'])->default('pending');
 
+            // Approval fields
+            $table->foreignId('approved_by')->nullable()->constrained('users');
+            $table->timestamp('approved_at')->nullable();
+            $table->text('rejection_reason')->nullable();
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }

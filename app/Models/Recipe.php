@@ -30,8 +30,8 @@ class Recipe extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function versions()
+    public function items()
     {
-        return $this->hasMany(RecipeVersion::class);
+        return $this->hasMany(RecipeItem::class);
     }
 }

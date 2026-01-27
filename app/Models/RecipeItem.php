@@ -9,14 +9,14 @@ class RecipeItem extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'recipe_version_id',
+        'recipe_id',
         'raw_material_id',
         'quantity_required'
     ];
 
-    public function recipeVersion()
+    public function recipe()
     {
-        return $this->belongsTo(RecipeVersion::class);
+        return $this->belongsTo(Recipe::class);
     }
 
     public function rawMaterial()

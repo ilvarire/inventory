@@ -18,10 +18,10 @@ class RawMaterial extends Model
     ];
 
     // Relationship to Supplier model
-    public function supplier()
-    {
-        return $this->belongsTo(Supplier::class, 'preferred_supplier_id');
-    }
+    // public function supplier()
+    // {
+    //     return $this->belongsTo(Supplier::class, 'preferred_supplier_id');
+    // }
 
     public function section()
     {

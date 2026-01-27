@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('production_logs', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('recipe_version_id')->constrained();
+            $table->foreignId('recipe_id')->constrained();
             $table->foreignId('section_id')->constrained();
             $table->foreignId('chef_id')->constrained('users');
 

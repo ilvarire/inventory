@@ -22,9 +22,7 @@ class RecipeController extends Controller
         $query = Recipe::with([
             'section',
             'creator',
-            'versions' => function ($q) {
-                $q->latest()->with('items.rawMaterial')->limit(1);
-            }
+            'items.rawMaterial'
         ]);
 
         // Chef can only see recipes from their section
@@ -92,20 +90,12 @@ class RecipeController extends Controller
                 'selling_price' => $validated['selling_price'],
                 'instructions' => $validated['instructions'] ?? null,
                 'created_by' => auth()->id(),
-                'status' => 'draft',
-            ]);
-
-            // Create initial version with ingredients
-            $recipeVersion = RecipeVersion::create([
-                'recipe_id' => $recipe->id,
-                'version_number' => 1,
-                'created_by' => auth()->id(),
-                'effective_date' => now(),
+                'status' => 'active', // Default directly to active for simplicity
             ]);
 
             foreach ($validated['ingredients'] as $ingredient) {
                 RecipeItem::create([
-                    'recipe_version_id' => $recipeVersion->id,
+                    'recipe_id' => $recipe->id,
                     'raw_material_id' => $ingredient['raw_material_id'],
                     'quantity_required' => $ingredient['quantity'],
                 ]);
@@ -115,7 +105,7 @@ class RecipeController extends Controller
 
             return response()->json([
                 'message' => 'Recipe created successfully',
-                'data' => $recipe->load('versions.items.rawMaterial')
+                'data' => $recipe->load('items.rawMaterial')
             ], 201);
 
         } catch (\Exception $e) {
@@ -131,7 +121,7 @@ class RecipeController extends Controller
     {
         $this->authorize('view', $recipe);
 
-        $recipe->load(['section', 'creator', 'versions.items.rawMaterial']);
+        $recipe->load(['section', 'creator', 'items.rawMaterial']);
 
         return response()->json($recipe);
     }
@@ -163,22 +153,18 @@ class RecipeController extends Controller
             // Update recipe details
             $recipe->update(\Illuminate\Support\Arr::except($validated, ['ingredients']));
 
-            // Update ingredients if provided (updates the latest version)
+            // Update ingredients if provided
             if (isset($validated['ingredients'])) {
-                $latestVersion = $recipe->versions()->latest()->first();
+                // Remove old items
+                $recipe->items()->delete();
 
-                if ($latestVersion) {
-                    // Remove old items
-                    $latestVersion->items()->delete();
-
-                    // Add new items
-                    foreach ($validated['ingredients'] as $ingredient) {
-                        RecipeItem::create([
-                            'recipe_version_id' => $latestVersion->id,
-                            'raw_material_id' => $ingredient['raw_material_id'],
-                            'quantity_required' => $ingredient['quantity'],
-                        ]);
-                    }
+                // Add new items
+                foreach ($validated['ingredients'] as $ingredient) {
+                    RecipeItem::create([
+                        'recipe_id' => $recipe->id,
+                        'raw_material_id' => $ingredient['raw_material_id'],
+                        'quantity_required' => $ingredient['quantity'],
+                    ]);
                 }
             }
 
@@ -186,7 +172,7 @@ class RecipeController extends Controller
 
             return response()->json([
                 'message' => 'Recipe updated successfully',
-                'data' => $recipe->load(['section', 'versions.items.rawMaterial'])
+                'data' => $recipe->load(['section', 'items.rawMaterial'])
             ]);
 
         } catch (\Exception $e) {
@@ -207,71 +193,5 @@ class RecipeController extends Controller
         return response()->json([
             'message' => 'Recipe deleted successfully'
         ]);
-    }
-
-    /**
-     * Create a new version for a recipe.
-     */
-    public function createVersion(Request $request, Recipe $recipe)
-    {
-        $this->authorize('update', $recipe);
-
-        $validated = $request->validate([
-            'ingredients' => 'required|array|min:1',
-            'ingredients.*.raw_material_id' => 'required|exists:raw_materials,id',
-            'ingredients.*.quantity_required' => 'required|numeric|min:0.01',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Get next version number
-            $lastVersion = $recipe->versions()->orderBy('version_number', 'desc')->first();
-            $versionNumber = $lastVersion ? $lastVersion->version_number + 1 : 1;
-
-            $recipeVersion = RecipeVersion::create([
-                'recipe_id' => $recipe->id,
-                'version_number' => $versionNumber,
-                'created_by' => auth()->id(),
-                'effective_date' => now(),
-            ]);
-
-            foreach ($validated['ingredients'] as $ingredient) {
-                RecipeItem::create([
-                    'recipe_version_id' => $recipeVersion->id,
-                    'raw_material_id' => $ingredient['raw_material_id'],
-                    'quantity_required' => $ingredient['quantity_required'],
-                ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Recipe version created successfully',
-                'data' => $recipeVersion->load('items.rawMaterial')
-            ], 201);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    /**
-     * Get a specific recipe version.
-     */
-    public function showVersion(Recipe $recipe, RecipeVersion $version)
-    {
-        $this->authorize('view', $recipe);
-
-        if ($version->recipe_id !== $recipe->id) {
-            return response()->json([
-                'message' => 'Version does not belong to this recipe'
-            ], 404);
-        }
-
-        $version->load('items.rawMaterial');
-
-        return response()->json($version);
     }
 }

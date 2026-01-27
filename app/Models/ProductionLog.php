@@ -10,7 +10,7 @@ class ProductionLog extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'recipe_version_id',
+        'recipe_id',
         'section_id',
         'chef_id',
         'quantity_produced',
@@ -23,9 +23,9 @@ class ProductionLog extends Model
         'production_date' => 'date'
     ];
 
-    public function recipeVersion()
+    public function recipe()
     {
-        return $this->belongsTo(RecipeVersion::class);
+        return $this->belongsTo(Recipe::class);
     }
 
     public function section()

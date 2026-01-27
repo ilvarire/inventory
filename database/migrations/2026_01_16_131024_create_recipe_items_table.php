@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('recipe_items', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('recipe_version_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('recipe_id')->constrained()->cascadeOnDelete();
             $table->foreignId('raw_material_id')->constrained();
 
             $table->decimal('quantity_required', 10, 3);

@@ -13,11 +13,11 @@
         class="sidebar-header flex items-center gap-2 pt-8 pb-7">
         <a href="{{ route('dashboard') }}">
             <span class="logo" :class="sidebarToggle ? 'hidden' : ''">
-                <img class="dark:hidden" src="{{ asset('images/logo/logo.svg') }}" alt="Logo" />
+                <img class="dark:hidden w-64" src="{{ asset('images/logo/logo.svg') }}" alt="Logo" />
                 <img class="hidden dark:block" src="{{ asset('images/logo/logo-dark.svg') }}" alt="Logo" />
             </span>
 
-            <img class="logo-icon" :class="sidebarToggle ? 'xl:block' : 'hidden'"
+            <img class="logo-icon w-12" :class="sidebarToggle ? 'xl:block' : 'hidden'"
                 src="{{ asset('images/logo/logo-icon.svg') }}" alt="Logo" />
         </a>
     </div>
@@ -180,6 +180,30 @@
                         </li>
                     @endif
 
+                    <!-- Prepared Products (Sales, Manager, Admin) -->
+                    @if(in_array($userRole, ['Frontline Sales', 'Manager', 'Admin']))
+                        <li>
+                            <a href="{{ route('prepared-products.index') }}"
+                                class="menu-item group {{ request()->routeIs('prepared-products.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                                <svg class="{{ request()->routeIs('prepared-products.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                                    width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- Use a burger icon or list icon for now as placeholder for product list -->
+                                    <path
+                                        d="M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                                    <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">
+                                    Prepared Products
+                                </span>
+                            </a>
+                        </li>
+                    @endif
+
                     <!-- Production (Chef, Manager, Admin) -->
                     @if(in_array($userRole, ['Chef', 'Manager', 'Admin']))
                         <li>
@@ -331,8 +355,8 @@
                         </li>
                     @endif
 
-                    <!-- User Management (Admin, Manager only) -->
-                    @if(in_array($userRole, ['Admin', 'Manager']))
+                    <!-- User Management (Admin only) -->
+                    @if(in_array($userRole, ['Admin']))
                         <li>
                             <a href="{{ route('users.index') }}"
                                 class="menu-item group {{ request()->routeIs('users.*') ? 'menu-item-active' : 'menu-item-inactive' }}">

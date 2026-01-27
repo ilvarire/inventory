@@ -42,17 +42,46 @@ class ReportController extends Controller
     /**
      * Admin/Manager dashboard.
      */
+    /**
+     * Admin/Manager/Sales dashboard.
+     */
     public function dashboard(Request $request)
     {
-        // Only Admin and Manager can access
-        if (!auth()->user()->isAdmin() && !auth()->user()->isManager()) {
+        $user = auth()->user();
+
+        // Allow Admin, Manager, and Frontline Sales
+        if (!$user->isAdmin() && !$user->isManager() && !$user->isSales()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $startDate = $request->get('start_date', now()->toDateString());
         $endDate = $request->get('end_date', now()->toDateString());
 
-        $dashboard = $this->reportingService->getAdminDashboard($startDate, $endDate);
+        // Prepare query dates (start of day / end of day)
+        $queryStartDate = \Carbon\Carbon::parse($startDate)->startOfDay()->toDateTimeString();
+        $queryEndDate = \Carbon\Carbon::parse($endDate)->endOfDay()->toDateTimeString();
+
+        // If it's a Frontline Sales user, return their specific stats
+        if ($user->isSales()) {
+            $todaySales = Sale::where('sales_user_id', $user->id)
+                ->whereBetween('sale_date', [$queryStartDate, $queryEndDate])
+                ->get();
+
+
+            return response()->json([
+                'revenue' => $todaySales->sum('total_amount'),
+                'profit' => 0, // Sales users don't see profit
+                'sales_count' => $todaySales->count(),
+                'expenses' => 0,
+                'waste_cost' => 0,
+                'is_personal' => true
+            ]);
+        }
+
+        // For Admin/Manager, return full dashboard
+        $dashboard = $this->reportingService->getAdminDashboard($queryStartDate, $queryEndDate);
+        // Ensure sales_count is present for Admin dashboard
+        $dashboard['sales_count'] = Sale::whereBetween('sale_date', [$queryStartDate, $queryEndDate])->count();
 
         return response()->json($dashboard);
     }
@@ -67,10 +96,14 @@ class ReportController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $startDate = $request->get('start_date', now()->toDateString());
         $endDate = $request->get('end_date', now()->toDateString());
 
-        $dashboard = $this->reportingService->getSectionDashboard($sectionId, $startDate, $endDate);
+        // Prepare query dates
+        $queryStartDate = \Carbon\Carbon::parse($startDate)->startOfDay()->toDateTimeString();
+        $queryEndDate = \Carbon\Carbon::parse($endDate)->endOfDay()->toDateTimeString();
+
+        $dashboard = $this->reportingService->getSectionDashboard($sectionId, $queryStartDate, $queryEndDate);
 
         return response()->json($dashboard);
     }

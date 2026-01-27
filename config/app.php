@@ -27,6 +27,8 @@ return [
     */
 
     'env' => env('APP_ENV', 'production'),
+    'contact' => env('APP_CONTACT', '+123 XXX XXX XXXX'),
+    'motto' => env('APP_MOTTO', 'Fun, Fast.'),
 
     /*
     |--------------------------------------------------------------------------

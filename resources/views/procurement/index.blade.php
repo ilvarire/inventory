@@ -129,9 +129,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
-                                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
-                                                                                }"
+                                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
+                                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
+                                                                                    }"
                                         x-text="capitalize(procurement.status)"></span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -336,62 +336,65 @@
                         });
                     },
 
-                    formatDate(date) {
-                        if (!date) return 'N/A';
-
-                        // For date-only strings (YYYY-MM-DD), parse as local date to avoid timezone issues
-                        if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                            const [year, month, day] = date.split('-');
-                            return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+                    formatDate(dateString) {
+                        if (!dateString) return 'N/A';
+             
+                        // Check if it's a YYYY-MM-DD string
+                        if (typeof dateString === 'string' && dateString.length === 10 && dateString.includes('-')) {
+                            const parts = dateString.split('-');
+                            const year = parseInt(parts[0]);
+                            const month = parseInt(parts[1]) - 1; 
+                            const day = parseInt(parts[2]);
+                            const date = new Date(year, month, day);
+                            return date.toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric'
                             });
                         }
-
-                        // For datetime strings, use normal parsing
-                        return new Date(date).toLocaleDateString('en-US', {
+                        
+                        return new Date(dateString).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric'
                         });
                     },
 
-                    async approveProcurement(procurement) {
-                        if (!confirm(`Approve procurement ${procurement.reference_number}?`)) return;
+                            async approveProcurement(procurement) {
+                                if (!confirm(`Approve procurement ${procurement.reference_number}?`)) return;
 
-                        try {
-                            const response = await API.post(`/procurements/${procurement.id}/approve`);
-                            showSuccess(response.message || 'Procurement approved successfully');
-                            await this.fetchProcurements(this.pagination.current_page);
-                        } catch (error) {
-                            console.error('Approval error:', error);
-                            showError(error.message || 'Failed to approve procurement');
+                                try {
+                                    const response = await API.post(`/procurements/${procurement.id}/approve`);
+                                    showSuccess(response.message || 'Procurement approved successfully');
+                                    await this.fetchProcurements(this.pagination.current_page);
+                                } catch (error) {
+                                    console.error('Approval error:', error);
+                                    showError(error.message || 'Failed to approve procurement');
+                                }
+                            },
+
+                            async rejectProcurement(procurement) {
+                                const reason = prompt(`Reject procurement ${procurement.reference_number}?\n\nPlease provide a reason:`);
+                                if (!reason || reason.trim() === '') return;
+
+                                try {
+                                    const response = await API.post(`/procurements/${procurement.id}/reject`, {
+                                        rejection_reason: reason.trim()
+                                    });
+                                    showSuccess(response.message || 'Procurement rejected');
+                                    await this.fetchProcurements(this.pagination.current_page);
+                                } catch (error) {
+                                    console.error('Rejection error:', error);
+                                    showError(error.message || 'Failed to reject procurement');
+                                }
+                            },
+
+                            capitalize(string) {
+                                if (!string) return '';
+                                return string.charAt(0).toUpperCase() + string.slice(1);
+                            }
                         }
-                    },
-
-                    async rejectProcurement(procurement) {
-                        const reason = prompt(`Reject procurement ${procurement.reference_number}?\n\nPlease provide a reason:`);
-                        if (!reason || reason.trim() === '') return;
-
-                        try {
-                            const response = await API.post(`/procurements/${procurement.id}/reject`, {
-                                rejection_reason: reason.trim()
-                            });
-                            showSuccess(response.message || 'Procurement rejected');
-                            await this.fetchProcurements(this.pagination.current_page);
-                        } catch (error) {
-                            console.error('Rejection error:', error);
-                            showError(error.message || 'Failed to reject procurement');
-                        }
-                    },
-
-                    capitalize(string) {
-                        if (!string) return '';
-                        return string.charAt(0).toUpperCase() + string.slice(1);
                     }
-                }
-            }
         </script>
     @endpush
 @endsection

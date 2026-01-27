@@ -17,8 +17,8 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        // Only Admin and Manager can view users
-        if (!auth()->user()->isAdmin() && !auth()->user()->isManager()) {
+        // Only Admin can view users
+        if (!auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -59,8 +59,8 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        // Only Admin and Manager can create users
-        if (!auth()->user()->isAdmin() && !auth()->user()->isManager()) {
+        // Only Admin can create users
+        if (!auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -101,8 +101,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        // Only Admin and Manager can view user details
-        if (!auth()->user()->isAdmin() && !auth()->user()->isManager()) {
+        // Only Admin can view user details
+        if (!auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -116,8 +116,8 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        // Only Admin and Manager can update users
-        if (!auth()->user()->isAdmin() && !auth()->user()->isManager()) {
+        // Only Admin can update users
+        if (!auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -183,10 +183,13 @@ class UserController extends Controller
     /**
      * Get all roles.
      */
+    /**
+     * Get all roles.
+     */
     public function roles()
     {
         $roles = Role::all();
-        return response()->json($roles);
+        return response()->json(['data' => $roles]);
     }
 
     /**
@@ -195,7 +198,7 @@ class UserController extends Controller
     public function sections()
     {
         $sections = Section::all();
-        return response()->json($sections);
+        return response()->json(['data' => $sections]);
     }
 
     /**
@@ -203,8 +206,8 @@ class UserController extends Controller
      */
     public function toggleStatus(User $user)
     {
-        // Only Admin and Manager can toggle status
-        if (!auth()->user()->isAdmin() && !auth()->user()->isManager()) {
+        // Only Admin can toggle status
+        if (!auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

@@ -207,8 +207,21 @@
 
                     formatDate(dateString) {
                         if (!dateString) return 'N/A';
-                        const date = new Date(dateString);
-                        return date.toLocaleDateString('en-US', {
+                        // Check if it's a YYYY-MM-DD string
+                        if (dateString.length === 10 && dateString.includes('-')) {
+                            const parts = dateString.split('-');
+                            const year = parseInt(parts[0]);
+                            const month = parseInt(parts[1]) - 1;
+                            const day = parseInt(parts[2]);
+                            const date = new Date(year, month, day);
+                            return date.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                        }
+                        // Fallback for timestamps
+                        return new Date(dateString).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric'

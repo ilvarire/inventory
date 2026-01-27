@@ -40,21 +40,22 @@
                             <h3 class="font-medium text-gray-900 dark:text-white">
                                 Sale Receipt <span x-text="'#' + sale.id"></span>
                             </h3>
-                            <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
-                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
-                                            'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
-                                        }" x-text="sale.payment_method">
+                            <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
+                                :class="{
+                                                                                                                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
+                                                                                                                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
+                                                                                                                                                'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
+                                                                                                                                            }" x-text="sale.payment_method">
                             </span>
                         </div>
                     </div>
 
                     <div class="p-7">
                         <!-- Business Info -->
-                        <div class="mb-6 text-center">
-                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Your Business Name</h2>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Multi-Section Food Business</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Contact: +234 XXX XXX XXXX</p>
+                        <div class="mb-6 text-left">
+                            <img class="w-40" src="{{ asset('images/logo/logo.svg') }}" alt="Logo" />
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ config('app.motto') }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Contact: {{ config('app.contact') }}</p>
                         </div>
 
                         <!-- Sale Info -->

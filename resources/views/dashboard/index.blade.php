@@ -6,11 +6,12 @@
 @section('content')
     <div x-data="dashboardData()">
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5 mb-6">
+        <!-- Stats Cards -->
+        <div x-show="showStats" class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-6 mb-6">
             <!-- Revenue Card -->
             <div
-                class="rounded-sm border border-gray-200 bg-white px-7.5 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
-                <div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-900/20">
+                class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-900/20">
                     <svg class="fill-brand-500" width="22" height="22" viewBox="0 0 22 22" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -24,19 +25,19 @@
 
                 <div class="mt-4 flex items-end justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-gray-900 dark:text-white"
+                        <h4 class="text-title-xs font-bold text-gray-900 dark:text-white"
                             x-text="formatCurrency(stats.revenue)">
                             ₦0.00
                         </h4>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Revenue</span>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Today</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Profit Card -->
+            <!-- Number Card -->
             <div
-                class="rounded-sm border border-gray-200 bg-white px-7.5 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
-                <div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20">
+                class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20">
                     <svg class="fill-green-500" width="22" height="22" viewBox="0 0 22 22" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -50,48 +51,18 @@
 
                 <div class="mt-4 flex items-end justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-gray-900 dark:text-white"
-                            x-text="formatCurrency(stats.profit)">
-                            ₦0.00
+                        <h4 class="text-title-xs font-bold text-gray-900 dark:text-white" x-text="stats.sales_count">
+                            0
                         </h4>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Profit</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Expenses Card -->
-            <div
-                class="rounded-sm border border-gray-200 bg-white px-7.5 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
-                <div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
-                    <svg class="fill-red-500" width="22" height="22" viewBox="0 0 22 22" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M11 0.171875C4.92188 0.171875 0 5.09375 0 11.1719C0 17.25 4.92188 22.1719 11 22.1719C17.0781 22.1719 22 17.25 22 11.1719C22 5.09375 17.0781 0.171875 11 0.171875ZM11 20.6219C5.78125 20.6219 1.55 16.3906 1.55 11.1719C1.55 5.95312 5.78125 1.72188 11 1.72188C16.2188 1.72188 20.45 5.95312 20.45 11.1719C20.45 16.3906 16.2188 20.6219 11 20.6219Z"
-                            fill="" />
-                        <path
-                            d="M11 5.92188C10.5156 5.92188 10.125 6.3125 10.125 6.79688V11.9219C10.125 12.4062 10.5156 12.7969 11 12.7969C11.4844 12.7969 11.875 12.4062 11.875 11.9219V6.79688C11.875 6.3125 11.4844 5.92188 11 5.92188Z"
-                            fill="" />
-                        <path
-                            d="M11 14.3469C10.5156 14.3469 10.125 14.7375 10.125 15.2219C10.125 15.7062 10.5156 16.0969 11 16.0969C11.4844 16.0969 11.875 15.7062 11.875 15.2219C11.875 14.7375 11.4844 14.3469 11 14.3469Z"
-                            fill="" />
-                    </svg>
-                </div>
-
-                <div class="mt-4 flex items-end justify-between">
-                    <div>
-                        <h4 class="text-title-md font-bold text-gray-900 dark:text-white"
-                            x-text="formatCurrency(stats.expenses)">
-                            ₦0.00
-                        </h4>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Expenses</span>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Number of Sales</span>
                     </div>
                 </div>
             </div>
 
             <!-- Waste Cost Card -->
             <div
-                class="rounded-sm border border-gray-200 bg-white px-7.5 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
-                <div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-900/20">
+                class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-900/20">
                     <svg class="fill-orange-500" width="22" height="22" viewBox="0 0 22 22" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -111,7 +82,7 @@
 
                 <div class="mt-4 flex items-end justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-gray-900 dark:text-white"
+                        <h4 class="text-title-xs font-bold text-gray-900 dark:text-white"
                             x-text="formatCurrency(stats.waste_cost)">
                             ₦0.00
                         </h4>
@@ -135,7 +106,7 @@
 
         <!-- Welcome Message -->
         <div x-show="!loading && !error"
-            class="rounded-sm border border-gray-200 bg-white p-7.5 shadow-default dark:border-gray-800 dark:bg-gray-900">
+            class="rounded-sm border border-gray-200 bg-white p-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Welcome back, <span x-text="user.name"></span>!
             </h3>
@@ -155,6 +126,7 @@
                 return {
                     loading: true,
                     error: '',
+                    showStats: false,
                     stats: {
                         revenue: 0,
                         profit: 0,
@@ -184,19 +156,29 @@
                                 section: userResponse.section?.name || null
                             };
 
-                            // Fetch dashboard stats (if user is Manager or Admin)
-                            if (['Manager', 'Admin'].includes(this.user.role)) {
+                            // Check if user is authorized to view stats
+                            const authorizedRoles = ['Admin', 'Manager', 'Frontline Sales'];
+                            if (authorizedRoles.includes(this.user.role)) {
+                                // Fetch dashboard stats
                                 const statsResponse = await API.get('/reports/dashboard');
                                 this.stats = {
                                     revenue: statsResponse.revenue || 0,
                                     profit: statsResponse.profit || 0,
+                                    sales_count: statsResponse.sales_count || 0,
                                     expenses: statsResponse.expenses || 0,
                                     waste_cost: statsResponse.waste_cost || 0
                                 };
+                                this.showStats = true;
+                            } else {
+                                this.showStats = false;
                             }
+
                         } catch (error) {
                             console.error('Dashboard error:', error);
-                            this.error = error.message || 'Failed to load dashboard data';
+                            // Only show error if it's not a 403 (Unauthorized) or if the user WAS supposed to see stats
+                            if (!error.message.includes('Unauthorized') && !error.message.includes('403')) {
+                                this.error = error.message || 'Failed to load dashboard data';
+                            }
                         } finally {
                             this.loading = false;
                         }

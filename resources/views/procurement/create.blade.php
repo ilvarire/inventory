@@ -74,7 +74,7 @@
                                     <tr class="border-b border-gray-100 dark:border-gray-800">
                                         <td class="px-4 py-3">
                                             <select x-model="item.raw_material_id" required @change="updateUnit(index)"
-                                                class="w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                                                class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white">
                                                 <option value="">Select Material</option>
                                                 <template x-for="material in materials" :key="material.id">
                                                     <option :value="material.id" x-text="material.name"></option>
@@ -137,7 +137,7 @@
 
                 <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                     <button type="submit" :disabled="loading"
-                        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-8 py-2.5 text-center text-sm font-medium text-white hover:bg-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-6 py-3 text-center text-sm font-medium text-white hover:bg-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-300 disabled:opacity-50 disabled:cursor-not-allowed">
                         <span x-show="!loading">Save Procurement</span>
                         <span x-show="loading" class="flex items-center gap-2">
                             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

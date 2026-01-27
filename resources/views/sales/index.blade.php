@@ -31,10 +31,10 @@
         <!-- Revenue Summary Cards -->
         <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
             <div
-                class="rounded-sm border border-gray-200 bg-white px-7.5 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
+                class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-gray-900 dark:text-white"
+                        <h4 class="text-title-sm font-bold text-gray-900 dark:text-white"
                             x-text="formatCurrency(summary.total_revenue)">
                             ₦0.00
                         </h4>
@@ -52,10 +52,10 @@
             </div>
 
             <div
-                class="rounded-sm border border-gray-200 bg-white px-7.5 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
+                class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-gray-900 dark:text-white" x-text="summary.total_sales">0
+                        <h4 class="text-title-sm font-bold text-gray-900 dark:text-white" x-text="summary.total_sales">0
                         </h4>
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales</span>
                     </div>
@@ -70,10 +70,10 @@
             </div>
 
             <div
-                class="rounded-sm border border-gray-200 bg-white px-7.5 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
+                class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-gray-900 dark:text-white"
+                        <h4 class="text-title-sm font-bold text-gray-900 dark:text-white"
                             x-text="formatCurrency(summary.total_profit)">
                             ₦0.00
                         </h4>
@@ -164,10 +164,10 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
-                                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
-                                                        'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
-                                                    }" x-text="sale.payment_method">
+                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
+                                                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
+                                                                        'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
+                                                                    }" x-text="sale.payment_method">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">

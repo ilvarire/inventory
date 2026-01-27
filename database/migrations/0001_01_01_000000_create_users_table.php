@@ -10,6 +10,19 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique(); // admin, manager, procurement, store_keeper, chef, sales
+            $table->string('description')->nullable();
+        });
+
+        Schema::create('sections', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique(); // eatery, cafe, lounge, grills
+            $table->string('description')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -21,6 +34,7 @@ return new class extends Migration {
             $table->foreignId('section_id')->nullable()->constrained();
 
             $table->boolean('is_active')->default(true);
+            $table->timestamp('last_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -46,8 +60,10 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('sections');
+        Schema::dropIfExists('roles');
     }
 };

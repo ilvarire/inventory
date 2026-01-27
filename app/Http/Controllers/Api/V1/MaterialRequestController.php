@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MaterialRequest;
 use App\Models\MaterialRequestItem;
 use App\Services\InventoryService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -13,10 +14,12 @@ use Illuminate\Validation\ValidationException;
 class MaterialRequestController extends Controller
 {
     protected InventoryService $inventoryService;
+    protected NotificationService $notificationService;
 
-    public function __construct(InventoryService $inventoryService)
+    public function __construct(InventoryService $inventoryService, NotificationService $notificationService)
     {
         $this->inventoryService = $inventoryService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -80,6 +83,21 @@ class MaterialRequestController extends Controller
                 ]);
             }
 
+            // Notify admins/managers
+            $approvers = \App\Models\User::whereHas('role', function ($q) {
+                $q->whereIn('name', ['Admin', 'Manager']);
+            })->get();
+
+            foreach ($approvers as $approver) {
+                $this->notificationService->sendPendingApprovalAlert(
+                    manager: $approver,
+                    type: 'material_request',
+                    id: $materialRequest->id,
+                    requester: auth()->user(),
+                    details: ['section' => $materialRequest->section->name]
+                );
+            }
+
             DB::commit();
 
             return response()->json([
@@ -124,6 +142,17 @@ class MaterialRequestController extends Controller
             'approved_at' => now(),
         ]);
 
+        // Notify chef
+        if ($materialRequest->chef) {
+            $this->notificationService->sendApprovalStatusChanged(
+                requester: $materialRequest->chef,
+                type: 'material_request',
+                id: $materialRequest->id,
+                status: 'approved',
+                approver: auth()->user()
+            );
+        }
+
         return response()->json([
             'message' => 'Material request approved successfully',
             'data' => $materialRequest->load(['items.rawMaterial'])
@@ -152,6 +181,18 @@ class MaterialRequestController extends Controller
             'approved_by' => auth()->id(),
             'approved_at' => now(),
         ]);
+
+        // Notify chef
+        if ($materialRequest->chef) {
+            $this->notificationService->sendApprovalStatusChanged(
+                requester: $materialRequest->chef,
+                type: 'material_request',
+                id: $materialRequest->id,
+                status: 'rejected',
+                approver: auth()->user(),
+                notes: $validated['rejection_reason'] ?? null
+            );
+        }
 
         return response()->json([
             'message' => 'Material request rejected',

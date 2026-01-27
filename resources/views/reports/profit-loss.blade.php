@@ -22,7 +22,7 @@
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
             <input type="date" x-model="filters.end_date"
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-            
+
             <select x-model="filters.section_id"
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                 <option value="">All Sections</option>
@@ -127,26 +127,26 @@
 
                 <!-- Net Profit -->
                 <div class="rounded border p-4" :class="{
-                            'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
-                            'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
-                        }">
+                                'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
+                                'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
+                            }">
                     <div class="flex justify-between">
                         <span class="font-bold" :class="{
-                                    'text-green-800 dark:text-green-200': report.net_profit >= 0,
-                                    'text-red-800 dark:text-red-200': report.net_profit < 0
-                                }">
+                                        'text-green-800 dark:text-green-200': report.net_profit >= 0,
+                                        'text-red-800 dark:text-red-200': report.net_profit < 0
+                                    }">
                             Net Profit
                         </span>
                         <span class="text-2xl font-bold" :class="{
-                                    'text-green-600 dark:text-green-400': report.net_profit >= 0,
-                                    'text-red-600 dark:text-red-400': report.net_profit < 0
-                                }" x-text="formatCurrency(report.net_profit)">
+                                        'text-green-600 dark:text-green-400': report.net_profit >= 0,
+                                        'text-red-600 dark:text-red-400': report.net_profit < 0
+                                    }" x-text="formatCurrency(report.net_profit)">
                         </span>
                     </div>
                     <p class="mt-1 text-sm" :class="{
-                                'text-green-700 dark:text-green-300': report.net_profit >= 0,
-                                'text-red-700 dark:text-red-300': report.net_profit < 0
-                            }">
+                                    'text-green-700 dark:text-green-300': report.net_profit >= 0,
+                                    'text-red-700 dark:text-red-300': report.net_profit < 0
+                                }">
                         Margin: <span x-text="report.net_margin + '%'"></span>
                     </p>
                 </div>
@@ -231,17 +231,25 @@
 
                     formatDateRange() {
                         if (!this.filters.start_date || !this.filters.end_date) return '';
-                        const start = new Date(this.filters.start_date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
-                        const end = new Date(this.filters.end_date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
-                        return `${start} - ${end}`;
+
+                        const formatDate = (dateStr) => {
+                            if (!dateStr) return '';
+                            // Create date using local time components to avoid timezone shifts
+                            const parts = dateStr.split('-');
+                            const year = parseInt(parts[0]);
+                            const month = parseInt(parts[1]) - 1; // Months are 0-indexed
+                            const day = parseInt(parts[2]);
+
+                            const date = new Date(year, month, day);
+
+                            return date.toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                            });
+                        };
+
+                        return `${formatDate(this.filters.start_date)} - ${formatDate(this.filters.end_date)}`;
                     }
                 }
             }

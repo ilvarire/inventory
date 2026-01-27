@@ -13,8 +13,7 @@
                 </h2>
             </div>
             @php
-                $user = json_decode(json_encode(session('user')));
-                $userRole = $user->role->name ?? 'Guest';
+                $userRole = auth()->user()->role->name ?? 'Guest';
             @endphp
             @if($userRole === 'Admin')
                 <div>
@@ -94,13 +93,13 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': user.role?.name === 'Admin',
-                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': user.role?.name === 'Manager',
-                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': user.role?.name === 'Chef',
-                                                'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': user.role?.name === 'Procurement',
-                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': user.role?.name === 'Store Keeper',
-                                                'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': user.role?.name === 'Frontline Sales'
-                                            }" x-text="user.role?.name">
+                                                    'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': user.role?.name === 'Admin',
+                                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': user.role?.name === 'Manager',
+                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': user.role?.name === 'Chef',
+                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': user.role?.name === 'Procurement',
+                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': user.role?.name === 'Store Keeper',
+                                                    'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': user.role?.name === 'Frontline Sales'
+                                                }" x-text="user.role?.name">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -108,9 +107,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': user.is_active,
-                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': !user.is_active
-                                            }" x-text="user.is_active ? 'Active' : 'Inactive'">
+                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': user.is_active,
+                                                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': !user.is_active
+                                                }" x-text="user.is_active ? 'Active' : 'Inactive'">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">

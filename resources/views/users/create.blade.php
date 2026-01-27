@@ -144,7 +144,7 @@
 
                     async fetchRoles() {
                         try {
-                            const response = await API.get('/roles');
+                            const response = await API.get('/users/roles');
                             this.roles = response.data || [];
                         } catch (error) {
                             console.error('Failed to fetch roles:', error);

@@ -33,10 +33,10 @@
 
             <div class="p-7">
                 <form @submit.prevent="submitUpdate">
-                    <div class="grid grid-cols-1 gap-5.5 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                         <!-- Name -->
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Full Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" x-model="formData.name" required placeholder="Enter full name"
@@ -45,7 +45,7 @@
 
                         <!-- Email -->
                         <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Email Address <span class="text-red-500">*</span>
                             </label>
                             <input type="email" x-model="formData.email" required placeholder="user@example.com"
@@ -53,10 +53,10 @@
                         </div>
                     </div>
 
-                    <div class="mt-5.5 grid grid-cols-1 gap-5.5 md:grid-cols-2">
+                    <div class="mt-5.5 grid grid-cols-1 gap-3 md:grid-cols-2">
                         <!-- Role -->
-                        <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="mt-3">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Role <span class="text-red-500">*</span>
                             </label>
                             <select x-model="formData.role_id" required
@@ -69,8 +69,8 @@
                         </div>
 
                         <!-- Section -->
-                        <div>
-                            <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="mt-3">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Section (Optional)
                             </label>
                             <select x-model="formData.section_id"
@@ -84,7 +84,7 @@
                     </div>
 
                     <!-- Password Reset Section -->
-                    <div class="mt-5.5">
+                    <div class="mt-6">
                         <div class="mb-3 flex items-center gap-2">
                             <input type="checkbox" x-model="resetPassword" id="resetPassword"
                                 class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
@@ -93,9 +93,9 @@
                             </label>
                         </div>
 
-                        <div x-show="resetPassword" class="grid grid-cols-1 gap-5.5 md:grid-cols-2">
+                        <div x-show="resetPassword" class="grid grid-cols-1 gap-3 md:grid-cols-2">
                             <div>
-                                <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                     New Password
                                 </label>
                                 <input type="password" x-model="formData.password" placeholder="Enter new password"
@@ -104,7 +104,7 @@
                             </div>
 
                             <div>
-                                <label class="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                     Confirm Password
                                 </label>
                                 <input type="password" x-model="formData.password_confirmation"
@@ -181,7 +181,7 @@
 
                     async fetchRoles() {
                         try {
-                            const response = await API.get('/roles');
+                            const response = await API.get('/users/roles');
                             this.roles = response.data || [];
                         } catch (error) {
                             console.error('Failed to fetch roles:', error);

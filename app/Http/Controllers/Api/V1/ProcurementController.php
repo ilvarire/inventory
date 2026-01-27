@@ -6,12 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Procurement;
 use App\Models\ProcurementItem;
 use App\Models\InventoryMovement;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ProcurementController extends Controller
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     /**
      * Display a listing of procurements.
      */
@@ -112,6 +120,21 @@ class ProcurementController extends Controller
                     \App\Models\RawMaterial::find($itemData['raw_material_id'])
                         ->increment('current_quantity', $itemData['quantity']);
                 }
+            } else {
+                // If pending, notify admins/managers
+                $approvers = \App\Models\User::whereHas('role', function ($q) {
+                    $q->whereIn('name', ['Admin', 'Manager']);
+                })->get();
+
+                foreach ($approvers as $approver) {
+                    $this->notificationService->sendPendingApprovalAlert(
+                        manager: $approver,
+                        type: 'procurement',
+                        id: $procurement->id,
+                        requester: auth()->user(),
+                        details: ['supplier' => $procurement->supplier_id]
+                    );
+                }
             }
 
             DB::commit();
@@ -181,6 +204,17 @@ class ProcurementController extends Controller
                     ->increment('current_quantity', $item->quantity);
             }
 
+            // Notify creator
+            if ($procurement->user) {
+                $this->notificationService->sendApprovalStatusChanged(
+                    requester: $procurement->user,
+                    type: 'procurement',
+                    id: $procurement->id,
+                    status: 'approved',
+                    approver: auth()->user()
+                );
+            }
+
             DB::commit();
 
             return response()->json([
@@ -217,6 +251,18 @@ class ProcurementController extends Controller
             'approved_by' => auth()->id(),
             'approved_at' => now(),
         ]);
+
+        // Notify creator
+        if ($procurement->user) {
+            $this->notificationService->sendApprovalStatusChanged(
+                requester: $procurement->user,
+                type: 'procurement',
+                id: $procurement->id,
+                status: 'rejected',
+                approver: auth()->user(),
+                notes: $validated['rejection_reason']
+            );
+        }
 
         return response()->json([
             'message' => 'Procurement rejected',

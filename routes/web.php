@@ -8,6 +8,8 @@ Route::get('/', function () {
     return Auth::check() ? redirect()->route('dashboard') : redirect()->route('login');
 });
 
+// Temporary test route removed
+
 // Authentication routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
@@ -144,6 +146,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}', function ($id) {
             return view('production.show', compact('id'));
         })->name('show');
+    });
+
+    // Prepared Products
+    Route::group(['prefix' => 'prepared-products', 'as' => 'prepared-products.'], function () {
+        Route::get('/', function () {
+            return view('prepared-products.index');
+        })->name('index');
     });
 
     // Sales

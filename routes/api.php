@@ -32,8 +32,8 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
     });
     Route::put('/profile', [AuthController::class, 'updateProfile']);
 
-    // User Management routes (Admin/Manager only)
-    Route::prefix('users')->middleware('role:Admin,Manager')->group(function () {
+    // User Management routes (Admin only)
+    Route::prefix('users')->middleware('role:Admin')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::post('/', [UserController::class, 'store']);
         Route::get('/roles', [UserController::class, 'roles']);
@@ -197,7 +197,7 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
     // Report routes
     Route::prefix('reports')->middleware('throttle.custom:api.reports')->group(function () {
         Route::get('/dashboard', [ReportController::class, 'dashboard'])
-            ->middleware('role:Manager,Admin');
+            ->middleware('role:Manager,Admin,Frontline Sales');
         Route::get('/sections/{sectionId}/dashboard', [ReportController::class, 'sectionDashboard']);
         Route::get('/inventory-health', [ReportController::class, 'inventoryHealth']);
         Route::get('/sales', [ReportController::class, 'salesReport']);

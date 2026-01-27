@@ -108,10 +108,10 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': getDaysLeft(item.expiry_date) <= 2,
-                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': getDaysLeft(item.expiry_date) > 2 && getDaysLeft(item.expiry_date) <= 5,
-                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': getDaysLeft(item.expiry_date) > 5
-                                        }" x-text="getDaysLeft(item.expiry_date) + ' days'"></span>
+                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': getDaysLeft(item.expiry_date) <= 2,
+                                                'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': getDaysLeft(item.expiry_date) > 2 && getDaysLeft(item.expiry_date) <= 5,
+                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': getDaysLeft(item.expiry_date) > 5
+                                            }" x-text="getDaysLeft(item.expiry_date) + ' days'"></span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-600 dark:text-gray-400" x-text="formatCurrency(item.unit_cost)"></p>
@@ -193,6 +193,19 @@
 
                     formatDate(date) {
                         if (!date) return 'N/A';
+                        // Check if it's a YYYY-MM-DD string
+                        if (typeof date === 'string' && date.length === 10 && date.includes('-')) {
+                            const parts = date.split('-');
+                            const year = parseInt(parts[0]);
+                            const month = parseInt(parts[1]) - 1;
+                            const day = parseInt(parts[2]);
+                            const d = new Date(year, month, day);
+                            return d.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                        }
                         return new Date(date).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
@@ -203,7 +216,18 @@
                     getDaysLeft(expiryDate) {
                         if (!expiryDate) return 0;
                         const today = new Date();
-                        const expiry = new Date(expiryDate);
+                        today.setHours(0, 0, 0, 0);
+
+                        // Parse expiry as local date
+                        let expiry;
+                        if (typeof expiryDate === 'string' && expiryDate.length === 10 && expiryDate.includes('-')) {
+                            const [year, month, day] = expiryDate.split('-');
+                            expiry = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                        } else {
+                            expiry = new Date(expiryDate);
+                        }
+                        expiry.setHours(0, 0, 0, 0);
+
                         const diffTime = expiry - today;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         return Math.max(0, diffDays);

@@ -97,9 +97,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': (log.variance || 0) >= 0,
-                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': (log.variance || 0) < 0
-                                                                    }"
+                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': (log.variance || 0) >= 0,
+                                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': (log.variance || 0) < 0
+                                                                        }"
                                         x-text="((log.variance || 0) >= 0 ? '+' : '') + (log.variance || 0)">
                                     </span>
                                 </td>
@@ -179,8 +179,20 @@
 
                     formatDate(dateString) {
                         if (!dateString) return 'N/A';
-                        const date = new Date(dateString);
-                        return date.toLocaleDateString('en-US', {
+                        // Check if it's a YYYY-MM-DD string
+                        if (dateString.length === 10 && dateString.includes('-')) {
+                            const parts = dateString.split('-');
+                            const year = parseInt(parts[0]);
+                            const month = parseInt(parts[1]) - 1;
+                            const day = parseInt(parts[2]);
+                            const date = new Date(year, month, day);
+                            return date.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                        }
+                        return new Date(dateString).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric'

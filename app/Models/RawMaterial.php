@@ -17,12 +17,6 @@ class RawMaterial extends Model
         // reorder_email_sent_at (nullable)
     ];
 
-    // Relationship to Supplier model
-    // public function supplier()
-    // {
-    //     return $this->belongsTo(Supplier::class, 'preferred_supplier_id');
-    // }
-
     public function section()
     {
         return $this->belongsTo(Section::class);

@@ -22,7 +22,7 @@ class InventoryHealthExport implements FromCollection, WithHeadings, WithMapping
 
     public function collection()
     {
-        return RawMaterial::with('preferredSupplier')->get();
+        return RawMaterial::all();
     }
 
     public function headings(): array
@@ -48,7 +48,7 @@ class InventoryHealthExport implements FromCollection, WithHeadings, WithMapping
         if ($currentStock <= 0) {
             $status = 'OUT OF STOCK';
         } elseif ($currentStock <= $material->min_quantity) {
-            $status = 'LOW STOCK';
+            $status = 'LOW STOCK'; // This was correctly kept
         } elseif ($currentStock >= $material->reorder_quantity * 2) {
             $status = 'OVERSTOCKED';
         }
@@ -62,7 +62,7 @@ class InventoryHealthExport implements FromCollection, WithHeadings, WithMapping
             number_format($material->min_quantity, 2),
             number_format($material->reorder_quantity, 2),
             $status,
-            $material->preferredSupplier->name ?? 'N/A',
+            $material->preferred_supplier_id ?? 'N/A',
         ];
     }
 

@@ -590,7 +590,7 @@ class ReportController extends Controller
      */
     public function exportInventoryHealthPdf()
     {
-        $rawMaterials = RawMaterial::with('preferredSupplier')->get();
+        $rawMaterials = RawMaterial::all();
 
         $materials = $rawMaterials->map(function ($material) {
             $currentStock = $this->inventoryService->getStockBalance($material->id);

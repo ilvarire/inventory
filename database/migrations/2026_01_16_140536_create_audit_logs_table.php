@@ -21,10 +21,10 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->index('user_id');
-            $table->index('model_type');
-            $table->index('model_id');
+            $table->index('entity_type');
+            $table->index('entity_id');
             $table->index('created_at');
-            $table->index(['model_type', 'model_id']);
+            $table->index(['entity_type', 'entity_id']);
         });
 
     }

@@ -114,17 +114,35 @@ class ProductionController extends Controller
                 $item->rawMaterial->decrement('current_quantity', $qtyUsed);
             }
 
-            // Create prepared inventory for the produced items
-            \App\Models\PreparedInventory::create([
-                'production_log_id' => $production->id,
-                'recipe_id' => $recipe->id,
-                'item_name' => $recipe->name,
-                'quantity' => $validated['actual_yield'],
-                'unit' => $recipe->yield_unit ?? 'units',
-                'selling_price' => $recipe->selling_price ?? 0,
-                'status' => 'available',
-                'section_id' => $recipe->section_id,
-            ]);
+            // Create or update prepared inventory
+            // Create or update prepared inventory
+            $existingInventory = \App\Models\PreparedInventory::where('recipe_id', $recipe->id)
+                ->where('section_id', $recipe->section_id)
+                ->where('status', 'available')
+                ->first();
+
+            if ($existingInventory) {
+                // Aggregate quantity to existing record
+                $existingInventory->quantity += $validated['actual_yield'];
+
+                // Update selling price to match current recipe price (optional but keeps data fresh)
+                $existingInventory->selling_price = $recipe->selling_price ?? 0;
+
+                $existingInventory->save();
+            } else {
+                // Create new record
+                \App\Models\PreparedInventory::create([
+                    'production_log_id' => $production->id, // Initial log source
+                    'recipe_id' => $recipe->id,
+                    'item_name' => $recipe->name,
+                    'quantity' => $validated['actual_yield'],
+                    'unit' => $recipe->yield_unit ?? 'units',
+                    'selling_price' => $recipe->selling_price ?? 0,
+                    'status' => 'available',
+                    'section_id' => $recipe->section_id,
+                    'expiry_date' => $validated['expiry_date'] ?? null, // If passed, or calculator
+                ]);
+            }
 
             // Note: Actual stock deduction for ingredients would happen here in a real system
             // Decrement raw materials based on recipe items * quantity_produced

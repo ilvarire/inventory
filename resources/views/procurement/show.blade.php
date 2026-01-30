@@ -20,10 +20,10 @@
                         x-text="procurement?.reference_number || 'Loading...'">
                     </h2>
                     <span x-show="procurement" class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement?.status === 'completed',
-                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement?.status === 'pending',
-                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': procurement?.status === 'cancelled'
-                            }" x-text="capitalize(procurement?.status)"></span>
+                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement?.status === 'completed',
+                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement?.status === 'pending',
+                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': procurement?.status === 'cancelled'
+                                        }" x-text="capitalize(procurement?.status)"></span>
                 </div>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 ml-7">
                     Created on <span x-text="formatDate(procurement?.created_at)"></span> by <span
@@ -58,7 +58,7 @@
         <!-- Content -->
         <div x-show="!loading && !error && procurement" class="grid grid-cols-1 gap-6 xl:grid-cols-3">
             <!-- Main Info -->
-            <div class="xl:col-span-2 flex flex-col gap-6">
+            <div class="xl:col-span-6 flex flex-col gap-6">
                 <!-- Items Table -->
                 <div
                     class="rounded-sm border border-gray-200 bg-white shadow-default dark:border-gray-800 dark:bg-gray-900">
@@ -83,7 +83,10 @@
                                         <td class="px-6 py-4">
                                             <p class="font-medium text-gray-900 dark:text-white"
                                                 x-text="item.raw_material?.name"></p>
-                                            <p class="text-xs text-gray-500" x-text="item.quality_note || ''"></p>
+                                            <p class="text-xs text-gray-500" x-show="item.quality_note"
+                                                x-text="'Quality: ' + item.quality_note"></p>
+                                            <p class="text-xs text-gray-500" x-show="item.notes"
+                                                x-text="'Note: ' + item.notes"></p>
                                         </td>
                                         <td class="px-6 py-4 text-gray-700 dark:text-gray-300">
                                             <span x-text="item.quantity"></span> <span x-text="item.raw_material?.unit"

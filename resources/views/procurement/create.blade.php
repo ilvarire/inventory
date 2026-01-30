@@ -97,6 +97,8 @@
                                         <td class="px-4 py-3">
                                             <input type="date" x-model="item.expiry_date"
                                                 class="w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                                            <input type="text" x-model="item.notes" placeholder="Add. Info (e.g. 10 pieces)"
+                                                class="mt-1 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-xs focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
                                         </td>
                                         <td class="px-4 py-3 text-sm text-gray-900 dark:text-white font-medium"
                                             x-text="formatCurrency(item.quantity * item.unit_cost)">
@@ -167,7 +169,7 @@
                         section_id: '',
                         purchase_date: new Date().toISOString().split('T')[0],
                         items: [
-                            { raw_material_id: '', quantity: '', unit_cost: '', expiry_date: '' }
+                            { raw_material_id: '', quantity: '', unit_cost: '', expiry_date: '', notes: '' }
                         ]
                     },
 
@@ -203,7 +205,8 @@
                             raw_material_id: '',
                             quantity: '',
                             unit_cost: '',
-                            expiry_date: ''
+                            expiry_date: '',
+                            notes: ''
                         });
                     },
 

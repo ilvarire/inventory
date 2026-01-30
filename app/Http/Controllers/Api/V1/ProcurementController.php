@@ -70,6 +70,7 @@ class ProcurementController extends Controller
             'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.unit_cost' => 'required|numeric|min:0',
             'items.*.quality_note' => 'nullable|string',
+            'items.*.notes' => 'nullable|string',
             'items.*.expiry_date' => 'nullable|date|after:today',
         ]);
 
@@ -99,6 +100,7 @@ class ProcurementController extends Controller
                     'unit_cost' => $item['unit_cost'],
                     'received_quantity' => 0, // Will be updated when approved/issued
                     'quality_note' => $item['quality_note'] ?? null,
+                    'notes' => $item['notes'] ?? null,
                     'expiry_date' => $item['expiry_date'] ?? null,
                 ]);
             }

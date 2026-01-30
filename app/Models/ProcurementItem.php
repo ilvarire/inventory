@@ -13,6 +13,7 @@ class ProcurementItem extends Model
         'unit_cost',
         'received_quantity',
         'quality_note',
+        'notes',
         'expiry_date'
     ];
 

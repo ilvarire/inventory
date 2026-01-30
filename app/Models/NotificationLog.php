@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class NotificationLog extends Model
 {
     protected $fillable = [
+        'user_id',
         'type',
         'message',
         'recipient_email',

@@ -80,26 +80,26 @@
                                     <p class="text-gray-900 dark:text-white" x-text="formatDate(log.production_date)"></p>
                                 </td>
                                 <td class="px-4 py-5">
-                                    <p class="text-gray-900 dark:text-white" x-text="log.recipe_version?.recipe?.name"></p>
+                                    <p class="text-gray-900 dark:text-white" x-text="log.recipe?.name"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white" x-text="log.section?.name"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white"
-                                        x-text="log.recipe_version?.recipe?.expected_yield + ' ' + (log.recipe_version?.recipe?.yield_unit || '')">
+                                        x-text="log.recipe?.expected_yield + ' ' + (log.recipe?.yield_unit || '')">
                                     </p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="font-medium text-gray-900 dark:text-white"
-                                        x-text="log.quantity_produced + ' ' + (log.recipe_version?.recipe?.yield_unit || '')">
+                                        x-text="log.quantity_produced + ' ' + (log.recipe?.yield_unit || '')">
                                     </p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': (log.variance || 0) >= 0,
-                                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': (log.variance || 0) < 0
-                                                                        }"
+                                                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': (log.variance || 0) >= 0,
+                                                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': (log.variance || 0) < 0
+                                                                            }"
                                         x-text="((log.variance || 0) >= 0 ? '+' : '') + (log.variance || 0)">
                                     </span>
                                 </td>

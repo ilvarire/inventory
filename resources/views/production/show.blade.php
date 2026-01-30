@@ -40,7 +40,7 @@
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Recipe</p>
                                 <p class="mt-1 text-lg font-medium text-gray-900 dark:text-white"
-                                    x-text="production.recipe_version?.recipe?.name"></p>
+                                    x-text="production.recipe?.name"></p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Production Date</p>
@@ -54,22 +54,22 @@
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Expected Yield</p>
                                 <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white"
-                                    x-text="production.recipe_version?.recipe?.expected_yield + ' ' + (production.recipe_version?.recipe?.yield_unit || '')">
+                                    x-text="production.recipe?.expected_yield + ' ' + (production.recipe?.yield_unit || '')">
                                 </p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Actual Yield</p>
                                 <p class="mt-1 text-xl font-bold text-brand-500"
-                                    x-text="production.quantity_produced + ' ' + (production.recipeVersion?.recipe?.yield_unit || '')">
+                                    x-text="production.quantity_produced + ' ' + (production.recipe?.yield_unit || '')">
                                 </p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Variance</p>
                                 <p class="mt-1 text-xl font-bold" :class="{
-                                                    'text-green-500': (production.variance || 0) >= 0,
-                                                    'text-red-500': (production.variance || 0) < 0
-                                                }"
-                                    x-text="((production.variance || 0) >= 0 ? '+' : '') + (production.variance || 0) + ' ' + (production.recipe_version?.recipe?.yield_unit || '')">
+                                                        'text-green-500': (production.variance || 0) >= 0,
+                                                        'text-red-500': (production.variance || 0) < 0
+                                                    }"
+                                    x-text="((production.variance || 0) >= 0 ? '+' : '') + (production.variance || 0) + ' ' + (production.recipe?.yield_unit || '')">
                                 </p>
                             </div>
                         </div>
@@ -91,7 +91,7 @@
 
                     <div class="p-7">
                         <div class="space-y-2">
-                            <template x-for="ingredient in (production.recipe_version?.items || [])" :key="ingredient.id">
+                            <template x-for="ingredient in (production.recipe?.items || [])" :key="ingredient.id">
                                 <div
                                     class="flex items-center justify-between rounded border border-gray-200 p-3 dark:border-gray-800">
                                     <span class="text-gray-900 dark:text-white"

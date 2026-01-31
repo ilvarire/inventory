@@ -91,9 +91,9 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
             ->middleware(['role:Procurement,Admin', 'throttle.custom:api.write']);
         Route::get('/{procurement}', [ProcurementController::class, 'show']);
         Route::post('/{procurement}/approve', [ProcurementController::class, 'approve'])
-            ->middleware(['role:Manager,Admin', 'throttle.custom:api.write']);
+            ->middleware(['role:Store Keeper,Admin', 'throttle.custom:api.write']);
         Route::post('/{procurement}/reject', [ProcurementController::class, 'reject'])
-            ->middleware(['role:Manager,Admin', 'throttle.custom:api.write']);
+            ->middleware(['role:Store Keeper,Admin', 'throttle.custom:api.write']);
     });
 
     // Prepared Inventory routes (for sales)

@@ -59,7 +59,7 @@
                                 <tr class="bg-gray-50 dark:bg-gray-800">
                                     <th class="min-w-[200px] px-4 py-3 font-medium text-gray-700 dark:text-gray-400">Raw
                                         Material</th>
-                                    <th class="min-w-[120px] px-4 py-3 font-medium text-gray-700 dark:text-gray-400">
+                                    <th class="min-w-[100px] px-4 py-3 font-medium text-gray-700 dark:text-gray-400">
                                         Quantity</th>
                                     <th class="min-w-[150px] px-4 py-3 font-medium text-gray-700 dark:text-gray-400">Unit
                                         Cost (₦)</th>
@@ -72,16 +72,59 @@
                             <tbody>
                                 <template x-for="(item, index) in form.items" :key="index">
                                     <tr class="border-b border-gray-100 dark:border-gray-800">
-                                        <td class="px-4 py-3">
-                                            <select x-model="item.raw_material_id" required @change="updateUnit(index)"
-                                                class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white">
-                                                <option value="">Select Material</option>
-                                                <template x-for="material in materials" :key="material.id">
-                                                    <option :value="material.id" x-text="material.name"></option>
-                                                </template>
-                                            </select>
+                                        <td class="px-1 py-3" style="min-width: 150px;">
+                                            <div x-data="{
+                                                                    open: false,
+                                                                    search: '',
+                                                                    filteredMaterials: [],
+                                                                    init() {
+                                                                        this.filteredMaterials = materials;
+                                                                        // Initialize search with selected item name if exists
+                                                                        if (item.raw_material_id) {
+                                                                            const selected = materials.find(m => m.id == item.raw_material_id);
+                                                                            if (selected) this.search = selected.name;
+                                                                        }
+                                                                    },
+                                                                    filterMaterials() {
+                                                                        if (this.search === '') {
+                                                                            this.filteredMaterials = materials;
+                                                                        } else {
+                                                                            this.filteredMaterials = materials.filter(m => 
+                                                                                m.name.toLowerCase().includes(this.search.toLowerCase())
+                                                                            );
+                                                                        }
+                                                                    },
+                                                                    selectMaterial(material) {
+                                                                        item.raw_material_id = material.id;
+                                                                        this.search = material.name;
+                                                                        this.open = false;
+                                                                        updateUnit(index);
+                                                                    }
+                                                                }" class="relative">
+                                                <input type="text" x-model="search" @input="filterMaterials(); open = true"
+                                                    @click="open = true" @click.away="open = false"
+                                                    placeholder="Search material..."
+                                                    class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+
+                                                <div x-show="open"
+                                                    class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                                    style="display: none;">
+                                                    <template x-for="material in filteredMaterials" :key="material.id">
+                                                        <div @click="selectMaterial(material)"
+                                                            class="cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
+                                                            <span x-text="material.name"></span>
+                                                            <span class="text-xs text-gray-500 ml-1"
+                                                                x-text="'(' + material.unit + ')'"></span>
+                                                        </div>
+                                                    </template>
+                                                    <div x-show="filteredMaterials.length === 0"
+                                                        class="px-4 py-2 text-sm text-gray-500">
+                                                        No results found
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td class="px-4 py-3">
+                                        <td class="px-1 py-3">
                                             <div class="relative">
                                                 <input type="number" x-model="item.quantity" required step="0.01" min="0.01"
                                                     class="w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 pr-12 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
@@ -90,7 +133,7 @@
                                                     x-text="getUnit(item.raw_material_id)"></span>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3">
+                                        <td class="px-1 py-3">
                                             <input type="number" x-model="item.unit_cost" required step="0.01" min="0"
                                                 class="w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
                                         </td>
@@ -182,8 +225,8 @@
 
                     async fetchMaterials() {
                         try {
-                            // Fetch all materials via inventory endpoint
-                            const response = await API.get('/raw-materials');
+                            // Fetch all materials via inventory endpoint with per_page=-1 to get complete list
+                            const response = await API.get('/raw-materials?per_page=-1&sort_by=name&sort_order=asc');
                             this.materials = response.data || response;
                         } catch (error) {
                             console.error('Failed to load materials:', error);

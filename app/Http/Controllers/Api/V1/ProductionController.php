@@ -115,17 +115,23 @@ class ProductionController extends Controller
             }
 
             // Create or update prepared inventory
-            // Create or update prepared inventory
             $existingInventory = \App\Models\PreparedInventory::where('recipe_id', $recipe->id)
                 ->where('section_id', $recipe->section_id)
-                ->where('status', 'available')
+                ->whereIn('status', ['available', 'sold'])
+                ->orderByRaw("CASE WHEN status = 'available' THEN 1 ELSE 2 END")
                 ->first();
 
             if ($existingInventory) {
                 // Aggregate quantity to existing record
                 $existingInventory->quantity += $validated['actual_yield'];
 
+                // Ensure status is available (in case it was sold)
+                $existingInventory->status = 'available';
+
                 // Update selling price to match current recipe price (optional but keeps data fresh)
+                // Also update expiry if provided for fresh batch? 
+                // Decision: For now keep existing expiry to be safe, or maybe user wants to overwrite?
+                // The prompt implies simple aggregation.
                 $existingInventory->selling_price = $recipe->selling_price ?? 0;
 
                 $existingInventory->save();

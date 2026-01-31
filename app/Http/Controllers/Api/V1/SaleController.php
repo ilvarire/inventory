@@ -63,7 +63,7 @@ class SaleController extends Controller
 
         $validated = $request->validate([
             'sale_date' => 'required|date',
-            'payment_method' => 'required|string|in:cash,card,mobile',
+            'payment_method' => 'required|string|in:cash,card,mobile,transfer',
             'items' => 'required|array|min:1',
             'items.*.prepared_inventory_id' => 'required|exists:prepared_inventories,id',
             'items.*.quantity' => 'required|numeric|min:1',

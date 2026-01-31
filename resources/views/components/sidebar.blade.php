@@ -119,8 +119,8 @@
                         </li>
                     @endif
 
-                    <!-- Procurement (Procurement, Manager, Admin) -->
-                    @if(in_array($userRole, ['Procurement', 'Manager', 'Admin']))
+                    <!-- Procurement (Procurement, Store Keeper, Admin) -->
+                    @if(in_array($userRole, ['Procurement', 'Store Keeper', 'Admin']))
                         <li>
                             <a href="{{ route('procurement.index') }}"
                                 class="menu-item group {{ request()->routeIs('procurement.*') ? 'menu-item-active' : 'menu-item-inactive' }}">

@@ -68,8 +68,8 @@
                         <div class="mb-4 flex items-center justify-between">
                             <div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Ingredients</p>
-                                <p class="font-medium text-gray-900 dark:text-white"
-                                    x-text="(recipe.versions?.[0]?.items?.length || 0)"></p>
+                                <p class="font-medium text-gray-900 dark:text-white" x-text="(recipe.items?.length || 0)">
+                                </p>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Yield</p>

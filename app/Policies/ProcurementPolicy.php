@@ -57,7 +57,7 @@ class ProcurementPolicy
      */
     public function approve(User $user, Procurement $procurement): bool
     {
-        // Only Manager and Admin can approve/reject procurements
-        return $user->isManager() || $user->isAdmin();
+        // Only Store Keeper and Admin can approve/reject procurements
+        return $user->isStoreKeeper() || $user->isAdmin();
     }
 }

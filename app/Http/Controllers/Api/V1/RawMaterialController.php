@@ -43,6 +43,27 @@ class RawMaterialController extends Controller
 
         // Paginate
         $perPage = $request->get('per_page', 15);
+        if ($perPage == -1) {
+            $materials = $query->get();
+            // Wrap in expected structure if using API resource or just raw collection
+            // For consistency with pagination, we might need manual wrapping or just return list
+            // But let's check how frontend consumes it. 
+            // Api.js handles response.data.data (pagination) or response.data (list)
+
+            // Add average unit cost manually since we aren't using pagination transform
+            $materials->transform(function ($material) {
+                $avgCost = \DB::table('procurement_items')
+                    ->where('raw_material_id', $material->id)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(5)
+                    ->avg('unit_cost');
+                $material->unit_cost = $avgCost ?? 0;
+                return $material;
+            });
+
+            return response()->json($materials);
+        }
+
         $materials = $query->paginate($perPage);
 
         // Add average unit cost from recent procurements for each material

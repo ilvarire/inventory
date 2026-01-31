@@ -125,7 +125,7 @@ class ProcurementController extends Controller
             } else {
                 // If pending, notify admins/managers
                 $approvers = \App\Models\User::whereHas('role', function ($q) {
-                    $q->whereIn('name', ['Admin', 'Manager']);
+                    $q->whereIn('name', ['Admin', 'Store Keeper']);
                 })->get();
 
                 foreach ($approvers as $approver) {

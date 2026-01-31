@@ -270,9 +270,9 @@
                             this.formData.selling_price = recipe.selling_price;
                             this.formData.instructions = recipe.instructions;
 
-                            // Load ingredients from latest version
-                            if (recipe.versions && recipe.versions.length > 0 && recipe.versions[0].items) {
-                                this.formData.ingredients = recipe.versions[0].items.map(item => ({
+                            // Load ingredients
+                            if (recipe.items && recipe.items.length > 0) {
+                                this.formData.ingredients = recipe.items.map(item => ({
                                     raw_material_id: item.raw_material_id,
                                     quantity: item.quantity_required
                                 }));

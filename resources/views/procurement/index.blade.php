@@ -129,9 +129,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
-                                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
-                                                                                    }"
+                                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
+                                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
+                                                                                        }"
                                         x-text="capitalize(procurement.status)"></span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -150,8 +150,8 @@
                                             </svg>
                                         </a>
 
-                                        <!-- Approval buttons for pending procurements (Manager/Admin only) -->
-                                        @if(auth()->user()->isManager() || auth()->user()->isAdmin())
+                                        <!-- Approval buttons for pending procurements (Store Keeper/Admin only) -->
+                                        @if(auth()->user()->isStoreKeeper() || auth()->user()->isAdmin())
                                             <template x-if="procurement.status === 'pending'">
                                                 <div class="flex items-center gap-2">
                                                     <button @click="approveProcurement(procurement)"
@@ -338,12 +338,12 @@
 
                     formatDate(dateString) {
                         if (!dateString) return 'N/A';
-             
+
                         // Check if it's a YYYY-MM-DD string
                         if (typeof dateString === 'string' && dateString.length === 10 && dateString.includes('-')) {
                             const parts = dateString.split('-');
                             const year = parseInt(parts[0]);
-                            const month = parseInt(parts[1]) - 1; 
+                            const month = parseInt(parts[1]) - 1;
                             const day = parseInt(parts[2]);
                             const date = new Date(year, month, day);
                             return date.toLocaleDateString('en-US', {
@@ -352,7 +352,7 @@
                                 day: 'numeric'
                             });
                         }
-                        
+
                         return new Date(dateString).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
@@ -360,41 +360,41 @@
                         });
                     },
 
-                            async approveProcurement(procurement) {
-                                if (!confirm(`Approve procurement ${procurement.reference_number}?`)) return;
+                    async approveProcurement(procurement) {
+                        if (!confirm(`Approve procurement ${procurement.reference_number}?`)) return;
 
-                                try {
-                                    const response = await API.post(`/procurements/${procurement.id}/approve`);
-                                    showSuccess(response.message || 'Procurement approved successfully');
-                                    await this.fetchProcurements(this.pagination.current_page);
-                                } catch (error) {
-                                    console.error('Approval error:', error);
-                                    showError(error.message || 'Failed to approve procurement');
-                                }
-                            },
-
-                            async rejectProcurement(procurement) {
-                                const reason = prompt(`Reject procurement ${procurement.reference_number}?\n\nPlease provide a reason:`);
-                                if (!reason || reason.trim() === '') return;
-
-                                try {
-                                    const response = await API.post(`/procurements/${procurement.id}/reject`, {
-                                        rejection_reason: reason.trim()
-                                    });
-                                    showSuccess(response.message || 'Procurement rejected');
-                                    await this.fetchProcurements(this.pagination.current_page);
-                                } catch (error) {
-                                    console.error('Rejection error:', error);
-                                    showError(error.message || 'Failed to reject procurement');
-                                }
-                            },
-
-                            capitalize(string) {
-                                if (!string) return '';
-                                return string.charAt(0).toUpperCase() + string.slice(1);
-                            }
+                        try {
+                            const response = await API.post(`/procurements/${procurement.id}/approve`);
+                            showSuccess(response.message || 'Procurement approved successfully');
+                            await this.fetchProcurements(this.pagination.current_page);
+                        } catch (error) {
+                            console.error('Approval error:', error);
+                            showError(error.message || 'Failed to approve procurement');
                         }
+                    },
+
+                    async rejectProcurement(procurement) {
+                        const reason = prompt(`Reject procurement ${procurement.reference_number}?\n\nPlease provide a reason:`);
+                        if (!reason || reason.trim() === '') return;
+
+                        try {
+                            const response = await API.post(`/procurements/${procurement.id}/reject`, {
+                                rejection_reason: reason.trim()
+                            });
+                            showSuccess(response.message || 'Procurement rejected');
+                            await this.fetchProcurements(this.pagination.current_page);
+                        } catch (error) {
+                            console.error('Rejection error:', error);
+                            showError(error.message || 'Failed to reject procurement');
+                        }
+                    },
+
+                    capitalize(string) {
+                        if (!string) return '';
+                        return string.charAt(0).toUpperCase() + string.slice(1);
                     }
+                }
+            }
         </script>
     @endpush
 @endsection

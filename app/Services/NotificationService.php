@@ -28,22 +28,22 @@ class NotificationService
     {
         $currentStock = $this->getStockBalance($material->id);
         $message = "Low stock alert: {$material->name} is below minimum quantity. Current stock: {$currentStock}, Minimum: {$material->min_quantity}";
+        $actionUrl = "/inventory/{$material->id}";
 
-        // Log notification
-        $this->logNotification('low_stock', $message);
-
-        // Send email to managers and procurement
+        // Send to managers and procurement
         $recipients = User::whereHas('role', function ($q) {
             $q->whereIn('name', ['Manager', 'Admin', 'Procurement']);
         })->where('is_active', true)->get();
 
         foreach ($recipients as $recipient) {
+            // Log for UI
+            $this->logNotification($recipient, 'low_stock', $message, $actionUrl);
+
             try {
                 if ($this->shouldSendEmail($recipient, 'low_stock')) {
                     Mail::to($recipient->email)->queue(
                         new LowStockAlert($material, $currentStock)
                     );
-
                     Log::info("Low stock alert sent to {$recipient->email} for {$material->name}");
                 }
             } catch (\Exception $e) {
@@ -60,22 +60,22 @@ class NotificationService
         $daysUntilExpiry = now()->diffInDays($batch->expiry_date);
         $expiryDateFormatted = $batch->expiry_date?->format('Y-m-d') ?? 'N/A';
         $message = "Expiry alert: {$batch->rawMaterial->name} (Batch #{$batch->id}) expires in {$daysUntilExpiry} days on {$expiryDateFormatted}";
+        $actionUrl = "/procurement/{$batch->procurement_id}";
 
-        // Log notification
-        $this->logNotification('expiry_alert', $message);
-
-        // Send email to managers and store keepers
+        // Send to managers and store keepers
         $recipients = User::whereHas('role', function ($q) {
             $q->whereIn('name', ['Manager', 'Admin', 'Store Keeper']);
         })->where('is_active', true)->get();
 
         foreach ($recipients as $recipient) {
+            // Log for UI
+            $this->logNotification($recipient, 'expiry_alert', $message, $actionUrl);
+
             try {
                 if ($this->shouldSendEmail($recipient, 'expiry_alert')) {
                     Mail::to($recipient->email)->queue(
                         new ExpiryAlert($batch)
                     );
-
                     Log::info("Expiry alert sent to {$recipient->email} for batch #{$batch->id}");
                 }
             } catch (\Exception $e) {
@@ -90,22 +90,22 @@ class NotificationService
     public function sendHighWastageAlert(Section $section, float $threshold, float $actualWastage = 0, float $costImpact = 0): void
     {
         $message = "High wastage alert: {$section->name} has exceeded wastage threshold of {$threshold}%";
+        $actionUrl = "/reports/waste"; // Or specific section dashboard
 
-        // Log notification
-        $this->logNotification('high_wastage', $message);
-
-        // Send email to managers
+        // Send to managers
         $recipients = User::whereHas('role', function ($q) {
             $q->whereIn('name', ['Manager', 'Admin']);
         })->where('is_active', true)->get();
 
         foreach ($recipients as $recipient) {
+            // Log for UI
+            $this->logNotification($recipient, 'high_wastage', $message, $actionUrl);
+
             try {
                 if ($this->shouldSendEmail($recipient, 'high_wastage')) {
                     Mail::to($recipient->email)->queue(
                         new HighWastageAlert($section, $threshold, $actualWastage, $costImpact)
                     );
-
                     Log::info("High wastage alert sent to {$recipient->email} for {$section->name}");
                 }
             } catch (\Exception $e) {
@@ -121,8 +121,17 @@ class NotificationService
     {
         $message = "Pending approval: {$type} #{$id} requires your approval";
 
+        // Determine action URL based on type
+        $actionUrl = match ($type) {
+            'procurement' => "/procurement/{$id}",
+            'material_request' => "/material-requests/{$id}",
+            'production' => "/productions/{$id}",
+            'waste' => "/waste/{$id}",
+            default => null
+        };
+
         // Log notification
-        $this->logNotification('pending_approval', $message, $manager);
+        $this->logNotification($manager, 'pending_approval', $message, $actionUrl);
 
         try {
             if ($this->shouldSendEmail($manager, 'pending_approval')) {
@@ -144,8 +153,17 @@ class NotificationService
     {
         $message = "Approval status changed: {$type} #{$id} has been {$status}";
 
+        // Determine action URL based on type
+        $actionUrl = match ($type) {
+            'procurement' => "/procurement/{$id}",
+            'material_request' => "/material-requests/{$id}",
+            'production' => "/productions/{$id}", // production.show
+            'waste' => "/waste/{$id}",
+            default => null
+        };
+
         // Log notification
-        $this->logNotification('approval_status', $message, $requester);
+        $this->logNotification($requester, 'approval_status', $message, $actionUrl);
 
         try {
             if ($this->shouldSendEmail($requester, 'approval_status')) {
@@ -192,12 +210,14 @@ class NotificationService
     /**
      * Log notification to database
      */
-    public function logNotification(string $type, string $message, ?User $user = null): void
+    public function logNotification(User $user, string $type, string $message, ?string $actionUrl = null): void
     {
         NotificationLog::create([
-            'user_id' => $user?->id,
+            'user_id' => $user->id,
             'type' => $type,
             'message' => $message,
+            'recipient_email' => $user->email,
+            'action_url' => $actionUrl,
             'sent_at' => now(),
         ]);
     }

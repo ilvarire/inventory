@@ -43,6 +43,59 @@
         </div>
 
         <div class="flex items-center gap-3 2xsm:gap-7">
+            <!-- Notification Menu Area -->
+            <div class="relative" x-data="notificationsData()" x-init="init()">
+                <button
+                    class="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border border-gray-200 bg-white hover:text-brand-500 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                    @click.prevent="toggleDropdown" @click.outside="dropdownOpen = false">
+                    <span
+                        class="absolute -top-1 -right-1.5 z-1 h-2 w-2 rounded-full bg-red-500 border border-white dark:border-gray-900"
+                        x-show="unreadCount > 0">
+                        <span
+                            class="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
+                    </span>
+
+                    <svg class="fill-current duration-300 ease-in-out" width="18" height="18" viewBox="0 0 18 18"
+                        fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M16.1999 14.9343L15.6374 14.0624C15.5249 13.8937 15.4687 13.7249 15.4687 13.528V7.67803C15.4687 6.01865 14.7655 4.47178 13.4718 3.31865C12.4312 2.39053 11.0811 1.7999 9.64678 1.6874V1.1249C9.64678 0.787402 9.36553 0.478027 8.9999 0.478027C8.6624 0.478027 8.35303 0.759277 8.35303 1.1249V1.6874C6.91865 1.7999 5.56865 2.39053 4.52803 3.31865C3.23428 4.47178 2.53115 6.01865 2.53115 7.67803V13.528C2.53115 13.7249 2.4749 13.8937 2.3624 14.0624L1.7999 14.9343C1.6874 15.1312 1.63115 15.328 1.63115 15.553C1.63115 15.8343 1.74365 16.0874 1.96865 16.2843C2.19365 16.4812 2.50303 16.5937 2.8124 16.5937H15.1874C15.4968 16.5937 15.8062 16.4812 16.0312 16.2843C16.2562 16.0874 16.3687 15.8343 16.3687 15.553C16.3687 15.328 16.3124 15.1312 16.1999 14.9343ZM8.9999 17.6905C9.75928 17.6905 10.4343 17.2687 10.828 16.65H7.1999C7.56553 17.2687 8.24053 17.6905 8.9999 17.6905Z"
+                            fill="" />
+                    </svg>
+                </button>
+
+                <!-- Dropdown -->
+                <div x-show="dropdownOpen" x-transition
+                    class="absolute mt-3 -right-6 flex h-90 w-75 flex-col rounded-sm border border-gray-200 bg-white shadow-default dark:border-gray-800 dark:bg-gray-900"
+                    style="display: none;">
+                    <div class="px-5 py-3 gap-3 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
+                        <h5 class="text-sm font-medium text-gray-500 dark:text-gray-400">Notifications</h5>
+                        <button @click="markAllRead" class="text-xs text-brand-500 hover:text-brand-600 w-24">Mark
+                            all
+                            read</button>
+                    </div>
+
+                    <ul class="flex flex-col overflow-y-auto h-auto max-h-64">
+                        <template x-for="notification in notifications" :key="notification.id">
+                            <li>
+                                <a class="flex flex-col gap-2.5 border-t border-gray-200 px-4.5 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800"
+                                    :href="notification.action_url || '#'" @click="markAsRead(notification)">
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-sm text-gray-800 dark:text-white" x-text="notification.message">
+                                        </p>
+                                        <span x-show="!notification.read_at"
+                                            class="inline-block h-2 w-2 rounded-full bg-brand-500 shrink-0 mt-1.5 ml-2"></span>
+                                    </div>
+                                    <p class="text-xs text-gray-500" x-text="formatDate(notification.created_at)"></p>
+                                </a>
+                            </li>
+                        </template>
+                        <li x-show="notifications.length === 0" class="px-4.5 py-3 text-center text-sm text-gray-500">
+                            No notifications
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
             <!-- Dark Mode Toggle -->
             <button
                 class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800"
@@ -130,3 +183,80 @@
         </div>
     </div>
 </header>
+
+@push('scripts')
+    <script>
+        function notificationsData() {
+            return {
+                dropdownOpen: false,
+                unreadCount: 0,
+                notifications: [],
+
+                async init() {
+                    await this.fetchUnreadCount();
+                    // Poll every 30 seconds
+                    setInterval(() => this.fetchUnreadCount(), 30000);
+                },
+
+                async toggleDropdown() {
+                    this.dropdownOpen = !this.dropdownOpen;
+                    if (this.dropdownOpen) {
+                        await this.fetchNotifications();
+                    }
+                },
+
+                async fetchUnreadCount() {
+                    try {
+                        const response = await API.get('/notifications/unread-count');
+                        this.unreadCount = response.count;
+                    } catch (error) {
+                        console.error('Failed to fetch unread count:', error);
+                    }
+                },
+
+                async fetchNotifications() {
+                    try {
+                        const response = await API.get('/notifications'); // Assumes API returns { data: [...] } for pagination
+                        this.notifications = response.data || response;
+                    } catch (error) {
+                        console.error('Failed to fetch notifications:', error);
+                    }
+                },
+
+                async markAsRead(notification) {
+                    if (notification.read_at) return;
+                    try {
+                        await API.post(`/notifications/${notification.id}/read`);
+                        notification.read_at = new Date().toISOString();
+                        this.unreadCount = Math.max(0, this.unreadCount - 1);
+                    } catch (error) {
+                        console.error('Failed to mark as read:', error);
+                    }
+                },
+
+                async markAllRead() {
+                    try {
+                        await API.post('/notifications/mark-all-read');
+                        this.notifications.forEach(n => n.read_at = new Date().toISOString());
+                        this.unreadCount = 0;
+                    } catch (error) {
+                        console.error('Failed to mark all as read:', error);
+                    }
+                },
+
+                formatDate(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    const now = new Date();
+                    const diff = (now - date) / 1000; // seconds
+
+                    if (diff < 60) return 'Just now';
+                    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+                    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+
+                    return date.toLocaleDateString();
+                }
+            }
+        }
+    </script>
+@endpush

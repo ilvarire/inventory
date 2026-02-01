@@ -44,6 +44,11 @@ class User extends Authenticatable
         return $this->belongsTo(Section::class);
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(NotificationLog::class)->orderBy('created_at', 'desc');
+    }
+
     public function inventoryMovements()
     {
         return $this->hasMany(InventoryMovement::class, 'performed_by');

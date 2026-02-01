@@ -41,11 +41,11 @@
                                 Request <span x-text="'#' + request.id"></span>
                             </h3>
                             <span :class="{
-                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': request.status === 'pending',
-                                                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': request.status === 'approved',
-                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': request.status === 'fulfilled',
-                                                                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': request.status === 'rejected'
-                                                                }"
+                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': request.status === 'pending',
+                                                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': request.status === 'approved',
+                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': request.status === 'fulfilled',
+                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': request.status === 'rejected'
+                                                                    }"
                                 class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
                                 x-text="request.status">
                             </span>
@@ -152,8 +152,8 @@
                             </button>
                         @endif
 
-                        <!-- Fulfill Button (Manager/Admin only, Approved status) -->
-                        @if(auth()->check() && (auth()->user()->isManager() || auth()->user()->isAdmin()))
+                        <!-- Fulfill Button (Store Keeper, Manager, Admin only, Approved status) -->
+                        @if(auth()->check() && (auth()->user()->isStoreKeeper() || auth()->user()->isManager() || auth()->user()->isAdmin()))
                             <button x-show="request.status === 'approved'" @click="fulfillRequest" :disabled="actionLoading"
                                 class="w-full rounded-md bg-brand-500 px-4 py-3 text-white hover:bg-brand-600 disabled:opacity-50">
                                 <span x-show="!actionLoading">Mark as Fulfilled</span>

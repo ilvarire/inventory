@@ -107,20 +107,20 @@ class ProcurementController extends Controller
 
             // If Admin created it as 'received', create inventory movements immediately
             if ($status === 'received') {
-                foreach ($validated['items'] as $itemData) {
+                foreach ($procurement->items as $item) {
                     InventoryMovement::create([
-                        'raw_material_id' => $itemData['raw_material_id'],
-                        'procurement_item_id' => null, // We don't have the item ID here
+                        'raw_material_id' => $item->raw_material_id,
+                        'procurement_item_id' => $item->id,
                         'from_location' => 'supplier',
                         'to_location' => 'store',
-                        'quantity' => $itemData['quantity'],
+                        'quantity' => $item->quantity,
                         'movement_type' => 'procurement',
                         'performed_by' => auth()->id(),
                     ]);
 
                     // Update raw material quantity
-                    \App\Models\RawMaterial::find($itemData['raw_material_id'])
-                        ->increment('current_quantity', $itemData['quantity']);
+                    \App\Models\RawMaterial::find($item->raw_material_id)
+                        ->increment('current_quantity', $item->quantity);
                 }
             } else {
                 // If pending, notify admins/managers
@@ -164,6 +164,55 @@ class ProcurementController extends Controller
         $procurement->load(['user', 'section', 'items.rawMaterial']);
 
         return response()->json($procurement);
+    }
+
+    /**
+     * Remove the specified procurement from storage.
+     */
+    public function destroy(Procurement $procurement)
+    {
+        $this->authorize('delete', $procurement);
+
+        try {
+            DB::beginTransaction();
+
+            // If it was received, we need to revert inventory
+            if ($procurement->status === 'received') {
+                // Determine if we should revert stock
+                // If we implemented robust locking, we would check if stock was already used
+                // but for now we will revert based on what was added.
+                // NOTE: If stock is now LESS than what we want to deduct (because it was consumed),
+                // it might go negative. This is acceptable for correction purposes or we could check.
+                // Assuming we force correction.
+
+                foreach ($procurement->items as $item) {
+                    // Revert RawMaterial stock
+                    $material = \App\Models\RawMaterial::find($item->raw_material_id);
+                    if ($material) {
+                        $material->decrement('current_quantity', $item->quantity);
+                    }
+
+                    // Delete associated inventory movements to keep history clean of this "mistake"
+                    // Or we could soft delete checks if we added that, but hard delete for movements is ok for now
+                    // especially since the prompt implies "wrongly inputed"
+                    InventoryMovement::where('procurement_item_id', $item->id)->delete();
+                }
+            }
+
+            // Soft delete items
+            $procurement->items()->delete();
+
+            // Soft delete procurement
+            $procurement->delete();
+
+            DB::commit();
+
+            return response()->json(['message' => 'Procurement deleted successfully']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to delete procurement: ' . $e->getMessage()], 500);
+        }
     }
 
     /**

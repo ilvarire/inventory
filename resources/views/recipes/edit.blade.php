@@ -141,13 +141,66 @@
                                 <template x-for="(ingredient, index) in formData.ingredients" :key="index">
                                     <div class="w-full flex flex-row gap-3 items-center justify-center">
                                         <div class="w-1/2">
-                                            <select x-model="ingredient.raw_material_id" required
-                                                class="w-full rounded border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                                <option value="">Select Material</option>
-                                                <template x-for="material in materials" :key="material.id">
-                                                    <option :value="material.id" x-text="material.name"></option>
-                                                </template>
-                                            </select>
+                                            <div x-data="{
+                                                open: false,
+                                                search: '',
+                                                filteredMaterials: [],
+                                                init() {
+                                                    this.filteredMaterials = materials;
+                                                    if (ingredient.raw_material_id) {
+                                                        const selected = materials.find(m => m.id == ingredient.raw_material_id);
+                                                        if (selected) this.search = selected.name;
+                                                    }
+                                                    this.$watch('materials', value => {
+                                                        this.filteredMaterials = value;
+                                                    });
+                                                },
+                                                filterMaterials() {
+                                                    if (this.search === '') {
+                                                        this.filteredMaterials = materials;
+                                                    } else {
+                                                        this.filteredMaterials = materials.filter(m => 
+                                                            m.name.toLowerCase().includes(this.search.toLowerCase())
+                                                        );
+                                                    }
+                                                },
+                                                selectMaterial(material) {
+                                                    ingredient.raw_material_id = material.id;
+                                                    this.search = material.name;
+                                                    this.open = false;
+                                                },
+                                                handleClickOutside() {
+                                                    this.open = false;
+                                                    const selected = materials.find(m => m.id == ingredient.raw_material_id);
+                                                    if (selected) {
+                                                        this.search = selected.name;
+                                                    } else {
+                                                        this.search = '';
+                                                    }
+                                                }
+                                            }" class="relative" @click.outside="handleClickOutside()">
+                                                <input type="text" x-model="search" @input="filterMaterials(); open = true"
+                                                    @click="open = true" @focus="open = true"
+                                                    placeholder="Search ingredient..."
+                                                    class="w-full rounded border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+
+                                                <div x-show="open"
+                                                    class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                                    style="display: none;">
+                                                    <template x-for="material in filteredMaterials" :key="material.id">
+                                                        <div @click="selectMaterial(material)"
+                                                            class="cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
+                                                            <span x-text="material.name"></span>
+                                                            <span class="text-xs text-gray-500 ml-1"
+                                                                x-text="'(' + material.unit + ')'"></span>
+                                                        </div>
+                                                    </template>
+                                                    <div x-show="filteredMaterials.length === 0"
+                                                        class="px-4 py-2 text-sm text-gray-500">
+                                                        No results found
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="w-1/6">
                                             <input type="number" x-model="ingredient.quantity" required min="0.01"

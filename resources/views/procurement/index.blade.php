@@ -129,9 +129,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
-                                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
-                                                                                        }"
+                                                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
+                                                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
+                                                                                                    }"
                                         x-text="capitalize(procurement.status)"></span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -175,6 +175,17 @@
                                                 </div>
                                             </template>
                                         @endif
+
+                                        <!-- Delete button (Admin only) -->
+                                        @if(auth()->user()->isAdmin())
+                                            <button @click="deleteProcurement(procurement)"
+                                                class="text-red-500 hover:text-red-600" title="Delete">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -191,7 +202,8 @@
                                     </svg>
                                     <p class="text-gray-600 dark:text-gray-400">No procurements found</p>
                                     <a href="{{ route('procurement.create') }}"
-                                        class="mt-2 text-brand-500 hover:underline">Create your first procurement</a>
+                                        class="mt-2 text-brand-500 hover:underline">Create your
+                                        first procurement</a>
                                 </div>
                             </td>
                         </tr>
@@ -386,6 +398,19 @@
                         } catch (error) {
                             console.error('Rejection error:', error);
                             showError(error.message || 'Failed to reject procurement');
+                        }
+                    },
+
+                    async deleteProcurement(procurement) {
+                        if (!confirm(`Are you sure you want to delete procurement ${procurement.reference_number}? This action cannot be undone and will revert inventory if received.`)) return;
+
+                        try {
+                            const response = await API.delete(`/procurements/${procurement.id}`);
+                            showSuccess(response.message || 'Procurement deleted successfully');
+                            await this.fetchProcurements(this.pagination.current_page);
+                        } catch (error) {
+                            console.error('Delete error:', error);
+                            showError(error.message || 'Failed to delete procurement');
                         }
                     },
 

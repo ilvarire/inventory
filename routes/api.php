@@ -103,6 +103,8 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
             ->middleware(['role:Store Keeper,Admin', 'throttle.custom:api.write']);
         Route::post('/{procurement}/reject', [ProcurementController::class, 'reject'])
             ->middleware(['role:Store Keeper,Admin', 'throttle.custom:api.write']);
+        Route::delete('/{procurement}', [ProcurementController::class, 'destroy'])
+            ->middleware(['role:Admin', 'throttle.custom:api.write']);
     });
 
     // Prepared Inventory routes (for sales)

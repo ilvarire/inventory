@@ -72,15 +72,66 @@
                             <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Raw Material <span class="text-red-500">*</span>
                             </label>
-                            <select x-model="formData.raw_material_id" @change="updateCost" required
-                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                <option value="">Select Material</option>
-                                <template x-for="material in materials" :key="material.id">
-                                    <option :value="material.id"
-                                        x-text="material.name + ' (' + material.unit + ') - ₦' + parseFloat(material.unit_cost || 0).toFixed(2)">
-                                    </option>
-                                </template>
-                            </select>
+                            <div x-data="{
+                                                open: false,
+                                                search: '',
+                                                filteredMaterials: [],
+                                                init() {
+                                                    this.filteredMaterials = materials;
+                                                    this.$watch('materials', value => {
+                                                        this.filteredMaterials = value;
+                                                        // If ID is already set, set the name
+                                                        if (formData.raw_material_id) {
+                                                            const selected = value.find(m => m.id == formData.raw_material_id);
+                                                            if (selected) this.search = selected.name;
+                                                        }
+                                                    });
+                                                },
+                                                filterMaterials() {
+                                                    if (this.search === '') {
+                                                        this.filteredMaterials = materials;
+                                                    } else {
+                                                        this.filteredMaterials = materials.filter(m => 
+                                                            m.name.toLowerCase().includes(this.search.toLowerCase())
+                                                        );
+                                                    }
+                                                },
+                                                selectMaterial(material) {
+                                                    formData.raw_material_id = material.id;
+                                                    this.search = material.name;
+                                                    this.open = false;
+                                                    updateCost();
+                                                },
+                                                handleClickOutside() {
+                                                    this.open = false;
+                                                    const selected = materials.find(m => m.id == formData.raw_material_id);
+                                                    if (selected) {
+                                                        this.search = selected.name;
+                                                    } else {
+                                                        this.search = '';
+                                                    }
+                                                }
+                                            }" class="relative" @click.outside="handleClickOutside()">
+                                <input type="text" x-model="search" @input="filterMaterials(); open = true" @click="open = true"
+                                    @focus="open = true" placeholder="Search raw material..."
+                                    class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+
+                                <div x-show="open"
+                                    class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                    style="display: none;">
+                                    <template x-for="material in filteredMaterials" :key="material.id">
+                                        <div @click="selectMaterial(material)"
+                                            class="cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
+                                            <span x-text="material.name"></span>
+                                            <span class="text-xs text-gray-500 ml-1"
+                                                x-text="'(' + material.unit + ') - ₦' + parseFloat(material.unit_cost || 0).toFixed(2)"></span>
+                                        </div>
+                                    </template>
+                                    <div x-show="filteredMaterials.length === 0" class="px-4 py-2 text-sm text-gray-500">
+                                        No results found
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     @endif
 
@@ -90,172 +141,226 @@
                             <label class="block text-sm font-medium text-gray-900 dark:text-white">
                                 Prepared Item <span class="text-red-500">*</span>
                             </label>
-                            <select x-model="formData.prepared_inventory_id" @change="updateCost" required
-                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                <option value="">Select Prepared Item</option>
-                                <template x-for="item in preparedItems" :key="item.id">
-                                    <option :value="item.id"
-                                        x-text="item.item_name + ' (' + item.quantity + ' ' + item.unit + ') - ₦' + parseFloat(item.selling_price || 0).toFixed(2)">
-                                    </option>
-                                </template>
-                            </select>
-                        </div>
+                            <div x-data="{
+                                            open: false,
+                                            search: '',
+                                            filteredItems: [],
+                                            init() {
+                                                this.filteredItems = preparedItems;
+                                                this.$watch('preparedItems', value => {
+                                                    this.filteredItems = value;
+                                                    // If ID is already set, set the name
+                                                    if (formData.prepared_inventory_id) {
+                                                        const selected = value.find(i => i.id == formData.prepared_inventory_id);
+                                                        if (selected) this.search = selected.item_name;
+                                                    }
+                                                });
+                                            },
+                                            filterItems() {
+                                                if (this.search === '') {
+                                                    this.filteredItems = preparedItems;
+                                                } else {
+                                                    this.filteredItems = preparedItems.filter(i => 
+                                                        i.item_name.toLowerCase().includes(this.search.toLowerCase())
+                                                    );
+                                                }
+                                            },
+                                            selectItem(item) {
+                                                formData.prepared_inventory_id = item.id;
+                                                this.search = item.item_name;
+                                                this.open = false;
+                                                updateCost();
+                                            },
+                                            handleClickOutside() {
+                                                this.open = false;
+                                                const selected = preparedItems.find(i => i.id == formData.prepared_inventory_id);
+                                                if (selected) {
+                                                    this.search = selected.item_name;
+                                                } else {
+                                                    this.search = '';
+                                                }
+                                            }
+                                        }" class="relative" @click.outside="handleClickOutside()">
+                                            <input type="text" x-model="search" 
+                                                @input="filterItems(); open = true"
+                                                @click="open = true" 
+                                                @focus="open = true"
+                                                placeholder="Search prepared item..."
+                                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+
+                                            <div x-show="open" 
+                                                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                                style="display: none;">
+                                                <template x-for="item in filteredItems" :key="item.id">
+                                                    <div @click="selectItem(item)"
+                                                        class="cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
+                                                        <span x-text="item.item_name"></span>
+                                                        <span class="text-xs text-gray-500 ml-1" 
+                                                            x-text="'(' + item.quantity + ' ' + item.unit + ') - ₦' + parseFloat(item.selling_price || 0).toFixed(2)"></span>
+                                                    </div>
+                                                </template>
+                                                <div x-show="filteredItems.length === 0" class="px-4 py-2 text-sm text-gray-500">
+                                                    No results found
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                     @endif
 
-                    <!-- Quantity -->
-                    <div class="mt-3">
-                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                            Quantity Wasted <span class="text-red-500">*</span>
-                        </label>
-                        <input type="number" x-model="formData.quantity" @input="updateCost" required min="0.01" step="0.01"
-                            placeholder="Enter quantity"
-                            class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-                    </div>
+                            <!-- Quantity -->
+                            <div class="mt-3">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-white">
+                                    Quantity Wasted <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" x-model="formData.quantity" @input="updateCost" required min="0.01" step="0.01"
+                                    placeholder="Enter quantity"
+                                    class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                            </div>
 
-                    <!-- Estimated Cost (Read-only) -->
-                    <div class="mt-3">
-                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                            Estimated Cost
-                        </label>
-                        <input type="text" :value="formatCurrency(estimatedCost)" readonly
-                            class="w-full rounded border border-gray-300 bg-gray-100 px-5 py-3 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white" />
-                    </div>
+                            <!-- Estimated Cost (Read-only) -->
+                            <div class="mt-3">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-white">
+                                    Estimated Cost
+                                </label>
+                                <input type="text" :value="formatCurrency(estimatedCost)" readonly
+                                    class="w-full rounded border border-gray-300 bg-gray-100 px-5 py-3 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white" />
+                            </div>
 
-                    <!-- Notes -->
-                    <div class="mt-3">
-                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                            Notes / Explanation <span class="text-red-500">*</span>
-                        </label>
-                        <textarea x-model="formData.notes" rows="4" required
-                            placeholder="Explain what happened and why the waste occurred..."
-                            class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
-                    </div>
+                            <!-- Notes -->
+                            <div class="mt-3">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-white">
+                                    Notes / Explanation <span class="text-red-500">*</span>
+                                </label>
+                                <textarea x-model="formData.notes" rows="4" required
+                                    placeholder="Explain what happened and why the waste occurred..."
+                                    class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
+                            </div>
 
-                    <!-- Error Message -->
-                    <div x-show="error"
-                        class="mt-5.5 rounded-sm border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-                        <p class="text-sm text-red-800 dark:text-red-200" x-text="error"></p>
-                    </div>
+                            <!-- Error Message -->
+                            <div x-show="error"
+                                class="mt-5.5 rounded-sm border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+                                <p class="text-sm text-red-800 dark:text-red-200" x-text="error"></p>
+                            </div>
 
-                    <!-- Submit Button -->
-                    <div class="mt-6 flex justify-end gap-4">
-                        <a href="{{ route('waste.index') }}"
-                            class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-center font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-                            Cancel
-                        </a>
-                        <button type="submit" :disabled="loading"
-                            class="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span x-show="!loading">Submit Report</span>
-                            <span x-show="loading">Submitting...</span>
-                        </button>
+                            <!-- Submit Button -->
+                            <div class="mt-6 flex justify-end gap-4">
+                                <a href="{{ route('waste.index') }}"
+                                    class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-center font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                                    Cancel
+                                </a>
+                                <button type="submit" :disabled="loading"
+                                    class="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span x-show="!loading">Submit Report</span>
+                                    <span x-show="loading">Submitting...</span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
-        </div>
-    </div>
 
-    @push('scripts')
-        <script>
-            function reportWasteData() {
-                return {
-                    loading: false,
-                    error: '',
-                    sections: [],
-                    materials: [],
-                    preparedItems: [],
-                    formData: {
-                        section_id: '',
-                        raw_material_id: '',
-                        prepared_inventory_id: '',
-                        quantity: '',
-                        reason: '',
-                        notes: ''
-                    },
-                    estimatedCost: 0,
+            @push('scripts')
+                <script>
+                    function reportWasteData() {
+                        return {
+                            loading: false,
+                            error: '',
+                            sections: [],
+                            materials: [],
+                            preparedItems: [],
+                            formData: {
+                                section_id: '',
+                                raw_material_id: '',
+                                prepared_inventory_id: '',
+                                quantity: '',
+                                reason: '',
+                                notes: ''
+                            },
+                            estimatedCost: 0,
 
-                    async init() {
-                        @if(auth()->check() && auth()->user()->isChef())
-                            // Auto-set section for Chef users
-                            this.formData.section_id = {{ auth()->user()->section_id ?? 'null' }};
-                            await this.fetchPreparedItems();
-                        @else
-                                                    await this.fetchSections();
-                            await this.fetchMaterials();
-                        @endif
-                                    },
+                            async init() {
+                                @if(auth()->check() && auth()->user()->isChef())
+                                    // Auto-set section for Chef users
+                                    this.formData.section_id = {{ auth()->user()->section_id ?? 'null' }};
+                                    await this.fetchPreparedItems();
+                                @else
+                                                            await this.fetchSections();
+                                    await this.fetchMaterials();
+                                @endif
+                                            },
 
-                    async fetchSections() {
-                        try {
-                            const response = await API.get('/sections');
-                            this.sections = response.data || [];
-                        } catch (error) {
-                            console.error('Failed to fetch sections:', error);
-                        }
-                    },
+                            async fetchSections() {
+                                try {
+                                    const response = await API.get('/sections');
+                                    this.sections = response.data || [];
+                                } catch (error) {
+                                    console.error('Failed to fetch sections:', error);
+                                }
+                            },
 
-                    async fetchMaterials() {
-                        try {
-                            const response = await API.get('/raw-materials');
-                            this.materials = response.data?.data || response.data || [];
-                        } catch (error) {
-                            console.error('Failed to fetch materials:', error);
-                        }
-                    },
+                            async fetchMaterials() {
+                                try {
+                                    const response = await API.get('/raw-materials');
+                                    this.materials = response.data?.data || response.data || [];
+                                } catch (error) {
+                                    console.error('Failed to fetch materials:', error);
+                                }
+                            },
 
-                    async fetchPreparedItems() {
-                        try {
-                            const response = await API.get('/prepared-inventory');
-                            this.preparedItems = response.data?.data || response.data || [];
-                        } catch (error) {
-                            console.error('Failed to fetch prepared items:', error);
-                        }
-                    },
+                            async fetchPreparedItems() {
+                                try {
+                                    const response = await API.get('/prepared-inventory');
+                                    this.preparedItems = response.data?.data || response.data || [];
+                                } catch (error) {
+                                    console.error('Failed to fetch prepared items:', error);
+                                }
+                            },
 
-                    updateCost() {
-                        // For raw materials
-                        if (this.formData.raw_material_id) {
-                            const material = this.materials.find(m => m.id == this.formData.raw_material_id);
-                            if (material && this.formData.quantity) {
-                                this.estimatedCost = parseFloat(material.unit_cost || 0) * parseFloat(this.formData.quantity);
-                            } else {
-                                this.estimatedCost = 0;
+                            updateCost() {
+                                // For raw materials
+                                if (this.formData.raw_material_id) {
+                                    const material = this.materials.find(m => m.id == this.formData.raw_material_id);
+                                    if (material && this.formData.quantity) {
+                                        this.estimatedCost = parseFloat(material.unit_cost || 0) * parseFloat(this.formData.quantity);
+                                    } else {
+                                        this.estimatedCost = 0;
+                                    }
+                                }
+                                // For prepared items
+                                else if (this.formData.prepared_inventory_id) {
+                                    const item = this.preparedItems.find(i => i.id == this.formData.prepared_inventory_id);
+                                    if (item && this.formData.quantity) {
+                                        this.estimatedCost = parseFloat(item.selling_price || 0) * parseFloat(this.formData.quantity);
+                                    } else {
+                                        this.estimatedCost = 0;
+                                    }
+                                } else {
+                                    this.estimatedCost = 0;
+                                }
+                            },
+
+                            async submitWaste() {
+                                this.loading = true;
+                                this.error = '';
+
+                                try {
+                                    const response = await API.post('/waste', this.formData);
+
+                                    // Redirect to the new waste log details page
+                                    const wasteId = response.data?.id || response.id;
+                                    window.location.href = '/waste/' + wasteId;
+                                } catch (error) {
+                                    console.error('Submit error:', error);
+                                    this.error = error.message || 'Failed to submit waste report';
+                                    this.loading = false;
+                                }
+                            },
+
+                            formatCurrency(amount) {
+                                return '₦' + parseFloat(amount || 0).toFixed(2);
                             }
                         }
-                        // For prepared items
-                        else if (this.formData.prepared_inventory_id) {
-                            const item = this.preparedItems.find(i => i.id == this.formData.prepared_inventory_id);
-                            if (item && this.formData.quantity) {
-                                this.estimatedCost = parseFloat(item.selling_price || 0) * parseFloat(this.formData.quantity);
-                            } else {
-                                this.estimatedCost = 0;
-                            }
-                        } else {
-                            this.estimatedCost = 0;
-                        }
-                    },
-
-                    async submitWaste() {
-                        this.loading = true;
-                        this.error = '';
-
-                        try {
-                            const response = await API.post('/waste', this.formData);
-
-                            // Redirect to the new waste log details page
-                            const wasteId = response.data?.id || response.id;
-                            window.location.href = '/waste/' + wasteId;
-                        } catch (error) {
-                            console.error('Submit error:', error);
-                            this.error = error.message || 'Failed to submit waste report';
-                            this.loading = false;
-                        }
-                    },
-
-                    formatCurrency(amount) {
-                        return '₦' + parseFloat(amount || 0).toFixed(2);
                     }
-                }
-            }
-        </script>
-    @endpush
+                </script>
+            @endpush
 @endsection

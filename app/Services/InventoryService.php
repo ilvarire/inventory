@@ -36,9 +36,10 @@ class InventoryService
         float $quantity,
         string $toLocation,
         User $performedBy,
-        ?User $approvedBy = null
+        ?User $approvedBy = null,
+        ?int $referenceId = null
     ): void {
-        DB::transaction(function () use ($rawMaterialId, $quantity, $toLocation, $performedBy, $approvedBy) {
+        DB::transaction(function () use ($rawMaterialId, $quantity, $toLocation, $performedBy, $approvedBy, $referenceId) {
             $availableStock = $this->getStockBalance($rawMaterialId);
 
             if ($availableStock < $quantity) {
@@ -69,6 +70,7 @@ class InventoryService
                     'to_location' => $toLocation,
                     'quantity' => $used,
                     'movement_type' => 'issue_to_chef',
+                    'reference_id' => $referenceId,
                     'performed_by' => $performedBy->id,
                     'approved_by' => $approvedBy?->id,
                 ]);

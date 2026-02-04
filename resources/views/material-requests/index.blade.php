@@ -105,11 +105,11 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span :class="{
-                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': request.status === 'pending',
-                                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': request.status === 'approved',
-                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': request.status === 'fulfilled',
-                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': request.status === 'rejected'
-                                                        }"
+                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': request.status === 'pending',
+                                                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': request.status === 'approved',
+                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': request.status === 'fulfilled',
+                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': request.status === 'rejected'
+                                                                    }"
                                         class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
                                         x-text="request.status">
                                     </span>
@@ -120,6 +120,18 @@
                                             class="text-brand-500 hover:text-brand-600">
                                             View
                                         </a>
+
+
+                                        <!-- Delete button (Admin only) -->
+                                        @if(auth()->user()->isAdmin())
+                                            <button @click="deleteRequest(request)" class="text-red-500 hover:text-red-600"
+                                                title="Delete">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -142,6 +154,7 @@
                     loading: true,
                     error: '',
                     requests: [],
+                    pagination: {},
                     filterStatus: 'all',
 
                     async init() {
@@ -155,11 +168,25 @@
                         try {
                             const response = await API.get('/material-requests');
                             this.requests = response.data || [];
+                            this.pagination = response;
                         } catch (error) {
                             console.error('Fetch error:', error);
                             this.error = error.message || 'Failed to load material requests';
                         } finally {
                             this.loading = false;
+                        }
+                    },
+
+                    async deleteRequest(request) {
+                        if (!confirm(`Are you sure you want to delete this ${request.status} request? This will revert inventory changes if it was fulfilled.`)) return;
+
+                        try {
+                            const response = await API.delete(`/material-requests/${request.id}`);
+                            showSuccess(response.message || 'Request deleted successfully');
+                            await this.fetchRequests();
+                        } catch (error) {
+                            console.error('Delete error:', error);
+                            showError(error.message || 'Failed to delete request');
                         }
                     },
 

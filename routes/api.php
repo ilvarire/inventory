@@ -148,6 +148,8 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
             ->middleware(['role:Manager,Admin', 'throttle.custom:api.write']);
         Route::post('/{materialRequest}/fulfill', [MaterialRequestController::class, 'fulfill'])
             ->middleware(['role:Store Keeper,Manager,Admin', 'throttle.custom:api.write']);
+        Route::delete('/{materialRequest}', [MaterialRequestController::class, 'destroy'])
+            ->middleware(['role:Admin', 'throttle.custom:api.write']);
     });
 
     // Recipe routes

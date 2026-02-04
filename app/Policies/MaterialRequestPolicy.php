@@ -65,4 +65,12 @@ class MaterialRequestPolicy
         // Store Keeper, Manager and Admin can fulfill requests
         return $user->isManager() || $user->isStoreKeeper() || $user->isAdmin();
     }
+    /**
+     * Determine if the user can delete material requests.
+     */
+    public function delete(User $user, MaterialRequest $request): bool
+    {
+        // Only Admin can delete requests
+        return $user->isAdmin();
+    }
 }

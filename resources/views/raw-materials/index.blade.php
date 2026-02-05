@@ -199,7 +199,7 @@
             </div>
 
             <!-- Pagination -->
-            <div x-show="pagination.last_page > 1" class="border-t border-gray-200 px-4 py-3 sm:px-6 dark:border-gray-800">
+            <div x-show="pagination.total > 0" class="border-t border-gray-200 px-4 py-3 sm:px-6 dark:border-gray-800">
                 <div class="flex flex-1 justify-between sm:hidden">
                     <button @click="changePage(pagination.current_page - 1)" :disabled="pagination.current_page <= 1"
                         class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">

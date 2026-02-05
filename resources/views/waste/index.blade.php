@@ -137,11 +137,11 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                                                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': log.reason === 'spoilage',
-                                                                                                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': log.reason === 'damage',
-                                                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': log.reason === 'expiry',
-                                                                                                    'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': log.reason === 'other'
-                                                                                                }" x-text="log.reason">
+                                                                                                        'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': log.reason === 'spoilage',
+                                                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': log.reason === 'damage',
+                                                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': log.reason === 'expiry',
+                                                                                                        'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': log.reason === 'other'
+                                                                                                    }" x-text="log.reason">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -225,8 +225,8 @@
                             // 'rejected' isn't explicitly handled by 'approved' flag in the controller snippet I saw.
 
                             const response = await API.get('/waste?' + params.toString());
-                            this.logs = response.data?.data || response.data || [];
-                            this.pagination = response.data || response;
+                            this.logs = response.data || [];
+                            this.pagination = response;
 
                             // Calculate summary (Note: ideally this comes from backend for all pages)
                             // We will sum ONLY visible approved logs for now as per previous logic

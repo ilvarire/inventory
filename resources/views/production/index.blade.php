@@ -97,9 +97,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': (log.variance || 0) >= 0,
-                                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': (log.variance || 0) < 0
-                                                                                    }"
+                                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': (log.variance || 0) >= 0,
+                                                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': (log.variance || 0) < 0
+                                                                                        }"
                                         x-text="((log.variance || 0) >= 0 ? '+' : '') + (log.variance || 0)">
                                     </span>
                                 </td>
@@ -229,8 +229,8 @@
                             params.append('page', page);
 
                             const response = await API.get('/productions?' + params.toString());
-                            this.logs = response.data?.data || response.data || response || [];
-                            this.pagination = response.data || response;
+                            this.logs = response.data || [];
+                            this.pagination = response;
                         } catch (error) {
                             console.error('Fetch error:', error);
                             this.error = error.message || 'Failed to load production logs';

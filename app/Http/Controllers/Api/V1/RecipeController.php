@@ -45,8 +45,18 @@ class RecipeController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $recipes = $query->orderBy('created_at', 'desc')
-            ->paginate($request->get('per_page', 15));
+        // Sorting
+        $sortField = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $allowedSorts = ['name', 'created_at', 'expected_yield', 'selling_price'];
+
+        if (in_array($sortField, $allowedSorts)) {
+            $query->orderBy($sortField, $sortOrder);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $recipes = $query->paginate($request->get('per_page', 15));
 
         return response()->json($recipes);
     }

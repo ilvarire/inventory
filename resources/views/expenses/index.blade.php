@@ -116,14 +116,14 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': expense.type === 'utilities',
-                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': expense.type === 'salaries',
-                                                'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': expense.type === 'rent',
-                                                'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': expense.type === 'maintenance',
-                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': expense.type === 'marketing',
-                                                'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': expense.type === 'supplies',
-                                                'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': expense.type === 'other'
-                                            }" x-text="expense.type">
+                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': expense.type === 'utilities',
+                                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': expense.type === 'salaries',
+                                                        'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': expense.type === 'rent',
+                                                        'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': expense.type === 'maintenance',
+                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': expense.type === 'marketing',
+                                                        'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': expense.type === 'supplies',
+                                                        'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': expense.type === 'other'
+                                                    }" x-text="expense.type">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -150,6 +150,64 @@
                 </table>
             </div>
         </div>
+
+        <!-- Pagination -->
+        <div x-show="pagination.last_page > 1" class="mt-4 border-t border-gray-200 px-4 py-3 sm:px-6 dark:border-gray-800">
+            <div class="flex flex-1 justify-between sm:hidden">
+                <button @click="changePage(pagination.current_page - 1)" :disabled="pagination.current_page <= 1"
+                    class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                    Previous
+                </button>
+                <button @click="changePage(pagination.current_page + 1)"
+                    :disabled="pagination.current_page >= pagination.last_page"
+                    class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                    Next
+                </button>
+            </div>
+            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700 dark:text-gray-400">
+                        Showing
+                        <span class="font-medium" x-text="pagination.from"></span>
+                        to
+                        <span class="font-medium" x-text="pagination.to"></span>
+                        of
+                        <span class="font-medium" x-text="pagination.total"></span>
+                        results
+                    </p>
+                </div>
+                <div>
+                    <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        <button @click="changePage(pagination.current_page - 1)" :disabled="pagination.current_page <= 1"
+                            class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-gray-700 dark:hover:bg-gray-800">
+                            <span class="sr-only">Previous</span>
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+
+                        <span
+                            class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 dark:text-white dark:ring-gray-700">
+                            Page <span x-text="pagination.current_page" class="mx-1"></span> of <span
+                                x-text="pagination.last_page" class="mx-1"></span>
+                        </span>
+
+                        <button @click="changePage(pagination.current_page + 1)"
+                            :disabled="pagination.current_page >= pagination.last_page"
+                            class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-gray-700 dark:hover:bg-gray-800">
+                            <span class="sr-only">Next</span>
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
     </div>
 
     @push('scripts')
@@ -159,6 +217,7 @@
                     loading: true,
                     error: '',
                     expenses: [],
+                    pagination: {},
                     summary: {
                         total_expenses: 0
                     },
@@ -176,10 +235,14 @@
                         this.filters.start_date = firstDay.toISOString().split('T')[0];
                         this.filters.end_date = today.toISOString().split('T')[0];
 
+                        this.$watch('filters', () => {
+                            this.fetchExpenses(1);
+                        }, { deep: true });
+
                         await this.fetchExpenses();
                     },
 
-                    async fetchExpenses() {
+                    async fetchExpenses(page = 1) {
                         this.loading = true;
                         this.error = '';
 
@@ -188,11 +251,13 @@
                             if (this.filters.start_date) params.append('start_date', this.filters.start_date);
                             if (this.filters.end_date) params.append('end_date', this.filters.end_date);
                             if (this.filters.category) params.append('type', this.filters.category);
+                            params.append('page', page);
 
                             const response = await API.get('/expenses?' + params.toString());
                             this.expenses = response.data?.data || response.data || [];
+                            this.pagination = response.data || response;
 
-                            // Calculate summary
+                            // Calculate summary (Note: ideally this comes from backend for all pages, current implementation sums visible items)
                             this.summary.total_expenses = this.expenses.reduce((sum, expense) => sum + parseFloat(
                                 expense.amount || 0), 0);
                         } catch (error) {
@@ -201,6 +266,11 @@
                         } finally {
                             this.loading = false;
                         }
+                    },
+
+                    changePage(page) {
+                        if (page < 1 || page > this.pagination.last_page) return;
+                        this.fetchExpenses(page);
                     },
 
                     formatCurrency(amount) {

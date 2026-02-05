@@ -27,8 +27,12 @@ class RawMaterialController extends Controller
         }
 
         // Filter by section
-        if ($request->has('section_id')) {
-            $query->where('section_id', $request->section_id);
+        if ($request->has('section_id') && $request->section_id) {
+            if ($request->section_id === 'universal') {
+                $query->whereNull('section_id');
+            } else {
+                $query->where('section_id', $request->section_id);
+            }
         }
 
         // Filter by supplier

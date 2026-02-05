@@ -35,12 +35,9 @@
             <select x-model="filters.role"
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                 <option value="">All Roles</option>
-                <option value="Admin">Admin</option>
-                <option value="Manager">Manager</option>
-                <option value="Chef">Chef</option>
-                <option value="Procurement">Procurement</option>
-                <option value="Store Keeper">Store Keeper</option>
-                <option value="Frontline Sales">Frontline Sales</option>
+                <template x-for="role in roles" :key="role.id">
+                    <option :value="role.id" x-text="role.name"></option>
+                </template>
             </select>
 
             <select x-model="filters.status"
@@ -83,7 +80,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template x-for="user in filteredUsers" :key="user.id">
+                        <template x-for="user in users" :key="user.id">
                             <tr class="border-t border-gray-200 dark:border-gray-800">
                                 <td class="px-4 py-5 pl-9 xl:pl-11">
                                     <p class="font-medium text-gray-900 dark:text-white" x-text="user.name"></p>
@@ -93,13 +90,13 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                        'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': user.role?.name === 'Admin',
-                                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': user.role?.name === 'Manager',
-                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': user.role?.name === 'Chef',
-                                                        'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': user.role?.name === 'Procurement',
-                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': user.role?.name === 'Store Keeper',
-                                                        'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': user.role?.name === 'Frontline Sales'
-                                                    }" x-text="user.role?.name">
+                                                                        'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': user.role?.name === 'Admin',
+                                                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': user.role?.name === 'Manager',
+                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': user.role?.name === 'Chef',
+                                                                        'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': user.role?.name === 'Procurement',
+                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': user.role?.name === 'Store Keeper',
+                                                                        'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': user.role?.name === 'Frontline Sales'
+                                                                    }" x-text="user.role?.name">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -107,9 +104,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': user.is_active,
-                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': !user.is_active
-                                                    }" x-text="user.is_active ? 'Active' : 'Inactive'">
+                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': user.is_active,
+                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': !user.is_active
+                                                                    }" x-text="user.is_active ? 'Active' : 'Inactive'">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -122,7 +119,7 @@
                                 </td>
                             </tr>
                         </template>
-                        <tr x-show="filteredUsers.length === 0" class="border-t border-gray-200 dark:border-gray-800">
+                        <tr x-show="users.length === 0" class="border-t border-gray-200 dark:border-gray-800">
                             <td colspan="6" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                                 No users found
                             </td>
@@ -140,22 +137,48 @@
                     loading: true,
                     error: '',
                     users: [],
+                    roles: [],
+                    pagination: {},
                     filters: {
                         role: '',
                         status: ''
                     },
 
                     async init() {
+                        await this.fetchRoles();
+
+                        this.$watch('filters', () => {
+                            this.fetchUsers(1);
+                        }, { deep: true });
+
                         await this.fetchUsers();
                     },
 
-                    async fetchUsers() {
+                    async fetchRoles() {
+                        try {
+                            const response = await API.get('/users/roles');
+                            this.roles = response.data?.data || response.data || [];
+                        } catch (error) {
+                            console.error('Failed to fetch roles:', error);
+                        }
+                    },
+
+                    async fetchUsers(page = 1) {
                         this.loading = true;
                         this.error = '';
 
                         try {
-                            const response = await API.get('/users');
-                            this.users = response.data || [];
+                            const params = new URLSearchParams();
+                            params.append('page', page);
+
+                            if (this.filters.role) params.append('role_id', this.filters.role);
+
+                            if (this.filters.status === 'active') params.append('is_active', 'true');
+                            if (this.filters.status === 'inactive') params.append('is_active', 'false');
+
+                            const response = await API.get('/users?' + params.toString());
+                            this.users = response.data?.data || response.data || [];
+                            this.pagination = response.data || response;
                         } catch (error) {
                             console.error('Fetch error:', error);
                             this.error = error.message || 'Failed to load users';
@@ -164,15 +187,9 @@
                         }
                     },
 
-                    get filteredUsers() {
-                        return this.users.filter(user => {
-                            const roleMatch = !this.filters.role || user.role?.name === this.filters.role;
-                            const statusMatch = !this.filters.status || (
-                                (this.filters.status === 'active' && user.is_active) ||
-                                (this.filters.status === 'inactive' && !user.is_active)
-                            );
-                            return roleMatch && statusMatch;
-                        });
+                    changePage(page) {
+                        if (page < 1 || page > this.pagination.last_page) return;
+                        this.fetchUsers(page);
                     },
 
                     async toggleStatus(user) {

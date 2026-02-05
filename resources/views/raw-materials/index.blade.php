@@ -416,8 +416,8 @@
                             params.append('page', page);
 
                             const response = await API.get(`/raw-materials?${params.toString()}`);
-                            this.materials = response.data?.data || response.data || [];
-                            this.pagination = response.data || response;
+                            this.materials = response.data || [];
+                            this.pagination = response;
                         } catch (error) {
                             console.error('Fetch error:', error);
                             this.error = error.message || 'Failed to load raw materials';

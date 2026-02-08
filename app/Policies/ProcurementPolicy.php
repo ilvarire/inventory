@@ -30,8 +30,8 @@ class ProcurementPolicy
      */
     public function create(User $user): bool
     {
-        // Only Procurement role and Admin can create procurements
-        return $user->isProcurement() || $user->isAdmin();
+        // Only Procurement role can create procurements
+        return $user->isProcurement();
     }
 
     /**

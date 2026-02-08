@@ -16,7 +16,7 @@
                 </p>
             </div>
 
-            @if(in_array(auth()->user()->role->name ?? '', ['Admin', 'Procurement', 'Manager']))
+            @if(auth()->user()->isProcurement())
                 <a href="{{ route('procurement.create') }}"
                     class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,9 +129,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
-                                                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
-                                                                                                    }"
+                                                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
+                                                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
+                                                                                                        }"
                                         x-text="capitalize(procurement.status)"></span>
                                 </td>
                                 <td class="px-4 py-5">

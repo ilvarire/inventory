@@ -23,7 +23,7 @@ class MaterialRequestPolicy
     {
         // Chef can only view their own requests
         if ($user->isChef()) {
-            return $user->id === $request->chef_id;
+            return $user->id == $request->chef_id;
         }
 
         // Manager, Store Keeper, and Admin can view all

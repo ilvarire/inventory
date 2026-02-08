@@ -19,6 +19,7 @@ class MaterialRequest extends Model
     ];
 
     protected $casts = [
+        'chef_id' => 'integer',
         'approved_at' => 'datetime',
         'fulfilled_at' => 'datetime'
     ];

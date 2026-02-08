@@ -127,7 +127,7 @@ class SaleController extends Controller
 
                 // Update status if depleted
                 if ($preparedItem->fresh()->quantity == 0) {
-                    $preparedItem->update(['status' => 'sold_out']);
+                    $preparedItem->update(['status' => 'sold']);
                 }
             }
 

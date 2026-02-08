@@ -42,10 +42,10 @@
                             </h3>
                             <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize"
                                 :class="{
-                                                                                                                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
-                                                                                                                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
-                                                                                                                                                'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
-                                                                                                                                            }" x-text="sale.payment_method">
+                                                                                                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
+                                                                                                                                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
+                                                                                                                                                    'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
+                                                                                                                                                }" x-text="sale.payment_method">
                             </span>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
 
                         <!-- Footer -->
                         <div class="mt-8 border-t border-gray-200 pt-4 text-center dark:border-gray-800">
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Thank you for your business!</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Thank you for your patronage!</p>
                             <p class="text-xs text-gray-500 dark:text-gray-500">This is a computer-generated receipt</p>
                         </div>
                     </div>

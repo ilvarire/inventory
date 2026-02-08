@@ -111,8 +111,16 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
     Route::get('/prepared-inventory', function (Request $request) {
         $query = \App\Models\PreparedInventory::query();
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $query->where('item_name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('page')) {
+            return response()->json($query->paginate(15));
         }
 
         return response()->json([

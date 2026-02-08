@@ -157,102 +157,113 @@
 
     @push('scripts')
         <script>
-            return {
-                loading: true,
-                products: [],
-                pagination: {},
-                search: '',
-                filters: {
-                    status: ''
-                },
+            function preparedProductsData() {
+                return {
+                    loading: true,
+                    products: [],
+                    pagination: {},
+                    search: '',
+                    filters: {
+                        status: ''
+                    },
 
-                async init() {
-                    this.$watch('search', () => {
-                        this.fetchProducts(1);
-                    });
-                    this.$watch('filters.status', () => {
-                        this.fetchProducts(1);
-                    });
-                    await this.fetchProducts();
-                },
+                    async init() {
+                        this.$watch('search', () => {
+                            this.fetchProducts(1);
+                        });
+                        this.$watch('filters.status', () => {
+                            this.fetchProducts(1);
+                        });
+                        await this.fetchProducts();
+                    },
 
-                async fetchProducts(page = 1) {
-                    this.loading = true;
-                    try {
-                        const params = new URLSearchParams();
-                        if (this.search) params.append('search', this.search);
-                        if (this.filters.status) params.append('status', this.filters.status);
-                        params.append('page', page);
+                    async fetchProducts(page = 1) {
+                        this.loading = true;
+                        try {
+                            const params = new URLSearchParams();
+                            if (this.search) params.append('search', this.search);
+                            if (this.filters.status) params.append('status', this.filters.status);
+                            params.append('page', page);
 
-                        const response = await API.get(`/prepared-inventory?${params.toString()}`);
-                        this.products = response.data || [];
-                        this.pagination = response;
-                    } catch (error) {
-                        console.error('Fetch error:', error);
-                    } finally {
-                        this.loading = false;
-                    }
-                },
+                            const response = await API.get(`/prepared-inventory?${params.toString()}`);
+                            // Handle both paginated and non-paginated responses
+                            if (response.data && Array.isArray(response.data)) {
+                                // Paginated response usually has data inside data
+                                this.products = response.data; 
+                                this.pagination = response;
+                            } else if (Array.isArray(response.data)) {
+                                // Wrapped collection
+                                this.products = response.data;
+                                this.pagination = {}; // No pagination data
+                            } else {
+                                // Direct array?
+                                this.products = response || [];
+                                this.pagination = {};
+                            }
+                        } catch (error) {
+                            console.error('Fetch error:', error);
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
 
-                changePage(page) {
-                    if (page < 1 || page > this.pagination.last_page) return;
-                    this.fetchProducts(page);
-                },
+                    changePage(page) {
+                        if (page < 1 || page > (this.pagination.last_page || 1)) return;
+                        this.fetchProducts(page);
+                    },
 
-                // Removed filteredProducts as filtering is now server-side
+                    getStatus(product) {
+                        if (!product.expiry_date) return 'Available';
 
-                getStatus(product) {
-                    if (!product.expiry_date) return 'Available';
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0); // Start of today
 
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0); // Start of today
+                        // Parse expiry as local date
+                        let expiry;
+                        if (product.expiry_date.length === 10 && product.expiry_date.includes('-')) {
+                            const [year, month, day] = product.expiry_date.split('-');
+                            expiry = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                        } else {
+                            expiry = new Date(product.expiry_date);
+                        }
+                        expiry.setHours(0, 0, 0, 0); // Start of expiry day
 
-                    // Parse expiry as local date
-                    let expiry;
-                    if (product.expiry_date.length === 10 && product.expiry_date.includes('-')) {
-                        const [year, month, day] = product.expiry_date.split('-');
-                        expiry = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                    } else {
-                        expiry = new Date(product.expiry_date);
-                    }
-                    expiry.setHours(0, 0, 0, 0); // Start of expiry day
+                        if (expiry < today) return 'Expired';
+                        if (parseFloat(product.quantity) <= 0) return 'Sold Out';
+                        if (parseFloat(product.quantity) <= 5) return 'Low Stock';
+                        return 'Available';
+                    },
 
-                    if (expiry < today) return 'Expired';
-                    if (parseFloat(product.quantity) <= 0) return 'Sold Out';
-                    if (parseFloat(product.quantity) <= 5) return 'Low Stock';
-                    return 'Available';
-                },
+                    formatCurrency(amount) {
+                        return '₦' + parseFloat(amount || 0).toLocaleString('en-NG', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                    },
 
-                formatCurrency(amount) {
-                    return '₦' + parseFloat(amount || 0).toLocaleString('en-NG', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                },
-
-                formatDate(dateString) {
-                    if (!dateString) return 'N/A';
-                    // Check if it's a YYYY-MM-DD string
-                    if (dateString.length === 10 && dateString.includes('-')) {
-                        const parts = dateString.split('-');
-                        const year = parseInt(parts[0]);
-                        const month = parseInt(parts[1]) - 1;
-                        const day = parseInt(parts[2]);
-                        const date = new Date(year, month, day);
-                        return date.toLocaleDateString('en-US', {
+                    formatDate(dateString) {
+                        if (!dateString) return 'N/A';
+                        // Check if it's a YYYY-MM-DD string
+                        if (dateString.length === 10 && dateString.includes('-')) {
+                            const parts = dateString.split('-');
+                            const year = parseInt(parts[0]);
+                            const month = parseInt(parts[1]) - 1;
+                            const day = parseInt(parts[2]);
+                            const date = new Date(year, month, day);
+                            return date.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                        }
+                        return new Date(dateString).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric'
                         });
                     }
-                    return new Date(dateString).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    });
                 }
             }
-                                    }
         </script>
     @endpush
 @endsection

@@ -74,33 +74,33 @@
                                     <tr class="border-b border-gray-100 dark:border-gray-800">
                                         <td class="px-1 py-3" style="min-width: 150px;">
                                             <div x-data="{
-                                                                    open: false,
-                                                                    search: '',
-                                                                    filteredMaterials: [],
-                                                                    init() {
-                                                                        this.filteredMaterials = materials;
-                                                                        // Initialize search with selected item name if exists
-                                                                        if (item.raw_material_id) {
-                                                                            const selected = materials.find(m => m.id == item.raw_material_id);
-                                                                            if (selected) this.search = selected.name;
-                                                                        }
-                                                                    },
-                                                                    filterMaterials() {
-                                                                        if (this.search === '') {
+                                                                        open: false,
+                                                                        search: '',
+                                                                        filteredMaterials: [],
+                                                                        init() {
                                                                             this.filteredMaterials = materials;
-                                                                        } else {
-                                                                            this.filteredMaterials = materials.filter(m => 
-                                                                                m.name.toLowerCase().includes(this.search.toLowerCase())
-                                                                            );
+                                                                            // Initialize search with selected item name if exists
+                                                                            if (item.raw_material_id) {
+                                                                                const selected = materials.find(m => m.id == item.raw_material_id);
+                                                                                if (selected) this.search = selected.name;
+                                                                            }
+                                                                        },
+                                                                        filterMaterials() {
+                                                                            if (this.search === '') {
+                                                                                this.filteredMaterials = materials;
+                                                                            } else {
+                                                                                this.filteredMaterials = materials.filter(m => 
+                                                                                    m.name.toLowerCase().includes(this.search.toLowerCase())
+                                                                                );
+                                                                            }
+                                                                        },
+                                                                        selectMaterial(material) {
+                                                                            item.raw_material_id = material.id;
+                                                                            this.search = material.name;
+                                                                            this.open = false;
+                                                                            updateUnit(index);
                                                                         }
-                                                                    },
-                                                                    selectMaterial(material) {
-                                                                        item.raw_material_id = material.id;
-                                                                        this.search = material.name;
-                                                                        this.open = false;
-                                                                        updateUnit(index);
-                                                                    }
-                                                                }" class="relative">
+                                                                    }" class="relative">
                                                 <input type="text" x-model="search" @input="filterMaterials(); open = true"
                                                     @click="open = true" @click.away="open = false"
                                                     placeholder="Search material..."
@@ -292,7 +292,22 @@
                             }, 1000);
                         } catch (error) {
                             console.error('Submission error:', error);
-                            showError(error.message || 'Failed to create procurement');
+                            let msg = error.message || 'Failed to create procurement';
+
+                            // Check for API response error
+                            if (error.response) {
+                                if (error.response.data && error.response.data.message) {
+                                    msg = error.response.data.message;
+                                }
+
+                                // Append validation errors if any
+                                if (error.response.data && error.response.data.errors) {
+                                    const validationErrors = Object.values(error.response.data.errors).flat().join('\n');
+                                    msg += '\n' + validationErrors;
+                                }
+                            }
+
+                            showError(msg);
                             this.loading = false;
                         }
                     }

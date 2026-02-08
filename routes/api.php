@@ -78,18 +78,23 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
     Route::get('/raw-materials-list', function () {
         $materials = \App\Models\RawMaterial::select('id', 'name', 'unit', 'category')->get();
 
-        $materials->transform(function ($material) {
+        $data = $materials->map(function ($material) {
             // Get most recent unit cost
             $lastItem = \App\Models\ProcurementItem::where('raw_material_id', $material->id)
                 ->orderBy('created_at', 'desc')
                 ->first();
 
-            $material->unit_cost = $lastItem ? $lastItem->unit_cost : 0;
-            return $material;
+            return [
+                'id' => $material->id,
+                'name' => $material->name,
+                'unit' => $material->unit,
+                'category' => $material->category,
+                'unit_cost' => $lastItem ? (float) $lastItem->unit_cost : 0,
+            ];
         });
 
         return response()->json([
-            'data' => $materials
+            'data' => $data
         ]);
     });
 

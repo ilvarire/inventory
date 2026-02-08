@@ -61,18 +61,26 @@ class ProcurementController extends Controller
     {
         $this->authorize('create', Procurement::class);
 
-        $validated = $request->validate([
-            'supplier_id' => 'required|string|max:255',
-            'section_id' => 'required|exists:sections,id',
-            'purchase_date' => 'required|date',
-            'items' => 'required|array|min:1',
-            'items.*.raw_material_id' => 'required|exists:raw_materials,id',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit_cost' => 'required|numeric|min:0',
-            'items.*.quality_note' => 'nullable|string',
-            'items.*.notes' => 'nullable|string',
-            'items.*.expiry_date' => 'nullable|date|after:today',
-        ]);
+        try {
+            $validated = $request->validate([
+                'supplier_id' => 'required|string|max:255',
+                'section_id' => 'required|exists:sections,id',
+                'purchase_date' => 'required|date',
+                'items' => 'required|array|min:1',
+                'items.*.raw_material_id' => 'required|exists:raw_materials,id',
+                'items.*.quantity' => 'required|numeric|min:0.01',
+                'items.*.unit_cost' => 'required|numeric|min:0',
+                'items.*.quality_note' => 'nullable|string',
+                'items.*.notes' => 'nullable|string',
+                'items.*.expiry_date' => 'nullable|date|after:today',
+            ]);
+        } catch (ValidationException $e) {
+            \Illuminate\Support\Facades\Log::error('Procurement Validation Failed', [
+                'errors' => $e->errors(),
+                'data' => $request->all()
+            ]);
+            throw $e;
+        }
 
         try {
             DB::beginTransaction();

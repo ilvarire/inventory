@@ -56,7 +56,16 @@ class RecipeController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $recipes = $query->paginate($request->get('per_page', 15));
+        // Return all or paginated results
+        $perPage = $request->get('per_page', 15);
+
+        if ($perPage == -1) {
+            // Return all recipes (for dropdowns)
+            $recipes = $query->get();
+            return response()->json(['data' => $recipes]);
+        }
+
+        $recipes = $query->paginate($perPage);
 
         return response()->json($recipes);
     }

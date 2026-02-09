@@ -204,7 +204,7 @@
 
                     async fetchRecipes() {
                         try {
-                            const response = await API.get('/recipes');
+                            const response = await API.get('/recipes?per_page=-1');
                             // Handle both paginated and non-paginated responses
                             this.recipes = response.data?.data ? response.data.data : (response.data || []);
                         } catch (error) {

@@ -146,7 +146,7 @@
                     <ul class="flex flex-col overflow-y-auto border-b border-gray-200 dark:border-gray-800">
                         <li>
                             <a href="{{ route('profile.index') }}"
-                                class="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-800 lg:text-base">
+                                class="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 lg:text-base">
                                 <svg class="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path
@@ -162,7 +162,7 @@
                     </ul>
 
                     <button onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                        class="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-800 lg:text-base">
+                        class="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 lg:text-base">
                         <svg class="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none"
                             xmlns="http://www.w3.org/2000/svg">
                             <path

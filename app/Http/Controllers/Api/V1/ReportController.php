@@ -145,6 +145,7 @@ class ReportController extends Controller
         $totalSales = $sales->count();
 
         // Calculate profit from sale items
+        // Calculate profit from sale items
         $totalProfit = $sales->sum(function ($sale) {
             return $sale->items->sum(function ($item) {
                 // Profit = (selling_price - cost_price) * quantity
@@ -249,9 +250,8 @@ class ReportController extends Controller
         $grossProfit = $totalRevenue - $totalCogs;
         $grossMargin = $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0;
 
-        // Get expenses
-        $expenseQuery = Expense::whereBetween('expense_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', 'approved');
+        // Get expenses (Expenses table does not have status column)
+        $expenseQuery = Expense::whereBetween('expense_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         if (isset($validated['section_id'])) {
             $expenseQuery->where('section_id', $validated['section_id']);
         }

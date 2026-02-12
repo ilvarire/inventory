@@ -132,7 +132,7 @@ class ReportController extends Controller
         $startDate = $validated['start_date'] ?? now()->subDays(30)->format('Y-m-d');
         $endDate = $validated['end_date'] ?? now()->format('Y-m-d');
 
-        $query = Sale::whereBetween('sale_date', [$startDate, $endDate]);
+        $query = Sale::whereBetween('sale_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 
         if (isset($validated['section_id'])) {
             $query->where('section_id', $validated['section_id']);
@@ -218,8 +218,8 @@ class ReportController extends Controller
         $startDate = $validated['start_date'] ?? now()->startOfMonth()->format('Y-m-d');
         $endDate = $validated['end_date'] ?? now()->format('Y-m-d');
 
-        // Get sales revenue
-        $salesQuery = Sale::whereRaw('DATE(sale_date) BETWEEN ? AND ?', [$startDate, $endDate]);
+        // Get sales revenue - use whereBetween for cross-DB compatibility
+        $salesQuery = Sale::whereBetween('sale_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         if (isset($validated['section_id'])) {
             $salesQuery->where('section_id', $validated['section_id']);
         }
@@ -227,7 +227,7 @@ class ReportController extends Controller
         $totalRevenue = $sales->sum('total_amount');
 
         // Calculate material costs from procurements
-        $procurementQuery = \App\Models\Procurement::whereRaw('DATE(purchase_date) BETWEEN ? AND ?', [$startDate, $endDate])
+        $procurementQuery = \App\Models\Procurement::whereBetween('purchase_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('status', 'received');
         if (isset($validated['section_id'])) {
             $procurementQuery->where('section_id', $validated['section_id']);
@@ -236,7 +236,7 @@ class ReportController extends Controller
         $materialCosts = $procurements->sum('total_cost');
 
         // Calculate waste costs
-        $wasteQuery = WasteLog::whereRaw('DATE(created_at) BETWEEN ? AND ?', [$startDate, $endDate])
+        $wasteQuery = WasteLog::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('status', 'approved');
         if (isset($validated['section_id'])) {
             $wasteQuery->where('section_id', $validated['section_id']);
@@ -251,7 +251,7 @@ class ReportController extends Controller
         $grossMargin = $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0;
 
         // Get expenses
-        $expenseQuery = Expense::whereRaw('DATE(expense_date) BETWEEN ? AND ?', [$startDate, $endDate])
+        $expenseQuery = Expense::whereBetween('expense_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('status', 'approved');
         if (isset($validated['section_id'])) {
             $expenseQuery->where('section_id', $validated['section_id']);

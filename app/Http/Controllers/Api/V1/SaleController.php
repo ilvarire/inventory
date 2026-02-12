@@ -31,9 +31,9 @@ class SaleController extends Controller
         $query = Sale::with(['section', 'salesUser', 'items']);
 
         // Sales user can only see sales from their section
-        if ($user->isSales()) {
-            $query->where('section_id', $user->section_id);
-        }
+        // if ($user->isSales()) {
+        //     $query->where('section_id', $user->section_id);
+        // }
 
         // Filter by section
         if ($request->has('section_id') && $request->section_id) {

@@ -48,8 +48,24 @@ class SaleController extends Controller
             $query->whereDate('sale_date', '<=', $request->end_date);
         }
 
+        // DEBUG LOGGING
+        \Illuminate\Support\Facades\Log::info('SaleController@index called', [
+            'user_id' => $user->id,
+            'is_admin' => $user->isAdmin(),
+            'is_sales' => $user->isSales(),
+            'section_id' => $user->section_id,
+            'request_params' => $request->all(),
+        ]);
+
         $sales = $query->orderBy('sale_date', 'desc')
             ->paginate($request->get('per_page', 15));
+
+        \Illuminate\Support\Facades\Log::info('SaleController@index query result', [
+            'count' => $sales->count(),
+            'total' => $sales->total(),
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings()
+        ]);
 
         return response()->json($sales);
     }

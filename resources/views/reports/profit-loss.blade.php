@@ -127,26 +127,26 @@
 
                 <!-- Net Profit -->
                 <div class="rounded border p-4" :class="{
-                                    'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
-                                    'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
-                                }">
+                                        'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
+                                        'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
+                                    }">
                     <div class="flex justify-between">
                         <span class="font-bold" :class="{
-                                            'text-green-800 dark:text-green-200': report.net_profit >= 0,
-                                            'text-red-800 dark:text-red-200': report.net_profit < 0
-                                        }">
+                                                'text-green-800 dark:text-green-200': report.net_profit >= 0,
+                                                'text-red-800 dark:text-red-200': report.net_profit < 0
+                                            }">
                             Net Profit
                         </span>
                         <span class="text-2xl font-bold" :class="{
-                                            'text-green-600 dark:text-green-400': report.net_profit >= 0,
-                                            'text-red-600 dark:text-red-400': report.net_profit < 0
-                                        }" x-text="formatCurrency(report.net_profit)">
+                                                'text-green-600 dark:text-green-400': report.net_profit >= 0,
+                                                'text-red-600 dark:text-red-400': report.net_profit < 0
+                                            }" x-text="formatCurrency(report.net_profit)">
                         </span>
                     </div>
                     <p class="mt-1 text-sm" :class="{
-                                        'text-green-700 dark:text-green-300': report.net_profit >= 0,
-                                        'text-red-700 dark:text-red-300': report.net_profit < 0
-                                    }">
+                                            'text-green-700 dark:text-green-300': report.net_profit >= 0,
+                                            'text-red-700 dark:text-red-300': report.net_profit < 0
+                                        }">
                         Margin: <span x-text="report.net_margin + '%'"></span>
                     </p>
                 </div>
@@ -213,7 +213,7 @@
                             if (this.filters.section_id) params.append('section_id', this.filters.section_id);
 
                             const response = await API.get('/reports/profit-loss?' + params.toString());
-                            this.report = response.data;
+                            this.report = response;
                         } catch (error) {
                             console.error('Fetch error:', error);
                             this.error = error.message || 'Failed to load report';

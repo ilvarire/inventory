@@ -187,7 +187,7 @@
                             if (this.filters.end_date) params.append('end_date', this.filters.end_date);
 
                             const response = await API.get('/reports/sales?' + params.toString());
-                            this.report = response.data;
+                            this.report = response;
 
                             // Wait for DOM update
                             await this.$nextTick();

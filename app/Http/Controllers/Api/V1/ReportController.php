@@ -148,7 +148,7 @@ class ReportController extends Controller
         $totalProfit = $sales->sum(function ($sale) {
             return $sale->items->sum(function ($item) {
                 // Profit = (selling_price - cost_price) * quantity
-                $costPrice = $item->preparedInventory->cost_price ?? 0;
+                $costPrice = $item->cost_price ?? 0;
                 return ($item->unit_price - $costPrice) * $item->quantity;
             });
         });
@@ -159,7 +159,7 @@ class ReportController extends Controller
         $bySection = $sales->groupBy('section_id')->map(function ($sectionSales) {
             $sectionProfit = $sectionSales->sum(function ($sale) {
                 return $sale->items->sum(function ($item) {
-                    $costPrice = $item->preparedInventory->cost_price ?? 0;
+                    $costPrice = $item->cost_price ?? 0;
                     return ($item->unit_price - $costPrice) * $item->quantity;
                 });
             });
@@ -226,14 +226,13 @@ class ReportController extends Controller
         $sales = $salesQuery->with('items.preparedInventory')->get();
         $totalRevenue = $sales->sum('total_amount');
 
-        // Calculate material costs from procurements
-        $procurementQuery = \App\Models\Procurement::whereBetween('purchase_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', 'received');
-        if (isset($validated['section_id'])) {
-            $procurementQuery->where('section_id', $validated['section_id']);
-        }
-        $procurements = $procurementQuery->with('items')->get();
-        $materialCosts = $procurements->sum('total_cost');
+        // Calculate material costs (COGS) based on sold items
+        // We use the cost_price stored on the sale_items at the time of sale
+        $materialCosts = $sales->sum(function ($sale) {
+            return $sale->items->sum(function ($item) {
+                return $item->quantity * ($item->cost_price ?? 0);
+            });
+        });
 
         // Calculate waste costs
         $wasteQuery = WasteLog::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])

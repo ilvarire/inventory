@@ -151,7 +151,7 @@
                             if (this.filters.end_date) params.append('end_date', this.filters.end_date);
 
                             const response = await API.get('/reports/waste?' + params.toString());
-                            this.report = response;
+                            this.report = response.data;
 
                             await this.$nextTick();
                             this.renderCharts();

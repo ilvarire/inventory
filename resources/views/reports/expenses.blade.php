@@ -143,7 +143,7 @@
                             if (this.filters.end_date) params.append('end_date', this.filters.end_date);
 
                             const response = await API.get('/reports/expenses?' + params.toString());
-                            this.report = response; // ensure backend returns strict JSON, may need response.data depending on wrapper
+                            this.report = response.data;
 
                             await this.$nextTick();
                             this.renderCharts();

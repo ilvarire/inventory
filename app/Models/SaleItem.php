@@ -23,7 +23,6 @@ class SaleItem extends Model
 
     public function preparedInventory()
     {
-        return $this->belongsTo(PreparedInventory::class, 'source_id')
-            ->where('source_type', 'prepared_inventory');
+        return $this->belongsTo(PreparedInventory::class, 'source_id');
     }
 }

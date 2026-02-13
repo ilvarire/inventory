@@ -20,10 +20,10 @@
                         x-text="procurement?.reference_number || 'Loading...'">
                     </h2>
                     <span x-show="procurement" class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement?.status === 'completed',
-                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement?.status === 'pending',
-                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': procurement?.status === 'cancelled'
-                                            }" x-text="capitalize(procurement?.status)"></span>
+                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement?.status === 'completed',
+                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement?.status === 'pending',
+                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': procurement?.status === 'cancelled'
+                                                    }" x-text="capitalize(procurement?.status)"></span>
                 </div>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 ml-7">
                     Created on <span x-text="formatDate(procurement?.created_at)"></span> by <span
@@ -35,20 +35,24 @@
                 @if(auth()->user()->isStoreKeeper() || auth()->user()->isAdmin())
                     <template x-if="procurement?.status === 'pending'">
                         <div class="flex gap-2">
-                            <button @click="approveProcurement()"
-                                class="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white dark:text-black shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button @click="approveProcurement()" :disabled="actionLoading"
+                                class="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white dark:text-black shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg x-show="!actionLoading" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Approve
+                                <svg x-show="actionLoading" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="actionLoading ? 'Processing...' : 'Approve'"></span>
                             </button>
-                            <button @click="rejectProcurement()"
-                                class="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white dark:text-black shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button @click="rejectProcurement()" :disabled="actionLoading"
+                                class="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white dark:text-black shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg x-show="!actionLoading" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                                Reject
+                                <span x-text="actionLoading ? 'Processing...' : 'Reject'"></span>
                             </button>
                         </div>
                     </template>
@@ -189,6 +193,7 @@
                 return {
                     loading: true,
                     error: '',
+                    actionLoading: false,
                     procurement: null,
 
                     async init() {
@@ -211,6 +216,7 @@
                     async approveProcurement() {
                         if (!confirm(`Approve procurement ${this.procurement.reference_number}?`)) return;
 
+                        this.actionLoading = true;
                         try {
                             const response = await API.post(`/procurements/${this.procurement.id}/approve`);
                             showSuccess(response.message || 'Procurement approved successfully');
@@ -218,6 +224,8 @@
                         } catch (error) {
                             console.error('Approval error:', error);
                             showError(error.message || 'Failed to approve procurement');
+                        } finally {
+                            this.actionLoading = false;
                         }
                     },
 
@@ -225,6 +233,7 @@
                         const reason = prompt(`Reject procurement ${this.procurement.reference_number}?\n\nPlease provide a reason:`);
                         if (!reason || reason.trim() === '') return;
 
+                        this.actionLoading = true;
                         try {
                             const response = await API.post(`/procurements/${this.procurement.id}/reject`, {
                                 rejection_reason: reason.trim()
@@ -234,6 +243,8 @@
                         } catch (error) {
                             console.error('Rejection error:', error);
                             showError(error.message || 'Failed to reject procurement');
+                        } finally {
+                            this.actionLoading = false;
                         }
                     },
 

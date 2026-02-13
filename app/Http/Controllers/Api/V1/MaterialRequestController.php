@@ -216,6 +216,22 @@ class MaterialRequestController extends Controller
         try {
             DB::beginTransaction();
 
+            // Lock the record to prevent concurrent fulfillments
+            $materialRequest = MaterialRequest::lockForUpdate()->find($materialRequest->id);
+
+            if (!$materialRequest) {
+                DB::rollBack();
+                return response()->json(['message' => 'Request not found or already deleted'], 404);
+            }
+
+            // Re-check status after acquiring lock
+            if ($materialRequest->status !== 'approved') {
+                DB::rollBack();
+                throw ValidationException::withMessages([
+                    'status' => 'Request is no longer in approved status (already fulfilled?)'
+                ]);
+            }
+
             foreach ($materialRequest->items as $item) {
                 // Issue materials using FIFO from InventoryService
                 $this->inventoryService->issueToChef(
@@ -263,8 +279,6 @@ class MaterialRequestController extends Controller
 
             DB::commit();
 
-            DB::commit();
-
             return response()->json([
                 'message' => 'Material request fulfilled successfully',
                 'data' => $materialRequest
@@ -286,6 +300,14 @@ class MaterialRequestController extends Controller
         try {
             DB::beginTransaction();
 
+            // Lock record to prevent concurrent fulfillment
+            $materialRequest = MaterialRequest::lockForUpdate()->find($materialRequest->id);
+
+            if (!$materialRequest) {
+                DB::rollBack();
+                return response()->json(['message' => 'Request already deleted'], 404);
+            }
+
             // If it was fulfilled, we need to replenish inventory
             if ($materialRequest->status === 'fulfilled') {
                 // Find associated inventory movements
@@ -303,6 +325,9 @@ class MaterialRequestController extends Controller
                     if ($movement->procurement_item_id) {
                         $batch = \App\Models\ProcurementItem::find($movement->procurement_item_id);
                         if ($batch) {
+                            // We use 'received_quantity' as the 'used' tracker in InventoryService logic
+                            // So we DECREMENT received_quantity to "free up" the stock
+                            // (Logic: Current Used = received_quantity. To RESTORE, we reduce Used amount)
                             $batch->decrement('received_quantity', $movement->quantity);
                         }
                     }

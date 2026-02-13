@@ -89,9 +89,10 @@ class SaleController extends Controller
         try {
             DB::beginTransaction();
 
-            // Validate prepared inventory availability
+            // Validate prepared inventory availability with LOCK
             foreach ($validated['items'] as $item) {
-                $preparedItem = PreparedInventory::findOrFail($item['prepared_inventory_id']);
+                // Lock the row to prevent concurrent sales of the same item
+                $preparedItem = PreparedInventory::lockForUpdate()->findOrFail($item['prepared_inventory_id']);
 
                 if ($preparedItem->quantity < $item['quantity']) {
                     throw ValidationException::withMessages([

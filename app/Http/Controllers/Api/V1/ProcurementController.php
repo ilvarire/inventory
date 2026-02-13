@@ -241,6 +241,17 @@ class ProcurementController extends Controller
         try {
             DB::beginTransaction();
 
+            // Lock the procurement record
+            $procurement = Procurement::lockForUpdate()->find($procurement->id);
+
+            // Re-check status
+            if ($procurement->status !== 'pending') {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Procurement is no longer pending (already approved/rejected?)'
+                ], 400);
+            }
+
             // Update procurement status
             $procurement->update([
                 'status' => 'received',

@@ -129,9 +129,9 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
-                                                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
-                                                                                                        }"
+                                                                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': procurement.status === 'received',
+                                                                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': procurement.status === 'pending'
+                                                                                                                }"
                                         x-text="capitalize(procurement.status)"></span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -155,21 +155,31 @@
                                             <template x-if="procurement.status === 'pending'">
                                                 <div class="flex items-center gap-2">
                                                     <button @click="approveProcurement(procurement)"
-                                                        class="text-green-600 hover:text-green-700 dark:text-green-400"
+                                                        :disabled="processingId === procurement.id"
+                                                        class="text-green-600 hover:text-green-700 dark:text-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         title="Approve">
-                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                        <svg x-show="processingId !== procurement.id" class="w-5 h-5" fill="none" stroke="currentColor"
                                                             viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 stroke-width="2" d="M5 13l4 4L19 7" />
                                                         </svg>
+                                                        <svg x-show="processingId === procurement.id" class="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
                                                     </button>
                                                     <button @click="rejectProcurement(procurement)"
-                                                        class="text-red-600 hover:text-red-700 dark:text-red-400"
+                                                        :disabled="processingId === procurement.id"
+                                                        class="text-red-600 hover:text-red-700 dark:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         title="Reject">
-                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                        <svg x-show="processingId !== procurement.id" class="w-5 h-5" fill="none" stroke="currentColor"
                                                             viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                        <svg x-show="processingId === procurement.id" class="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                         </svg>
                                                     </button>
                                                 </div>
@@ -280,6 +290,7 @@
                 return {
                     loading: true,
                     error: '',
+                    processingId: null,
                     procurements: [],
                     pagination: {
                         current_page: 1,
@@ -375,6 +386,7 @@
                     async approveProcurement(procurement) {
                         if (!confirm(`Approve procurement ${procurement.reference_number}?`)) return;
 
+                        this.processingId = procurement.id;
                         try {
                             const response = await API.post(`/procurements/${procurement.id}/approve`);
                             showSuccess(response.message || 'Procurement approved successfully');
@@ -382,6 +394,8 @@
                         } catch (error) {
                             console.error('Approval error:', error);
                             showError(error.message || 'Failed to approve procurement');
+                        } finally {
+                            this.processingId = null;
                         }
                     },
 
@@ -389,6 +403,7 @@
                         const reason = prompt(`Reject procurement ${procurement.reference_number}?\n\nPlease provide a reason:`);
                         if (!reason || reason.trim() === '') return;
 
+                        this.processingId = procurement.id;
                         try {
                             const response = await API.post(`/procurements/${procurement.id}/reject`, {
                                 rejection_reason: reason.trim()
@@ -398,6 +413,8 @@
                         } catch (error) {
                             console.error('Rejection error:', error);
                             showError(error.message || 'Failed to reject procurement');
+                        } finally {
+                            this.processingId = null;
                         }
                     },
 

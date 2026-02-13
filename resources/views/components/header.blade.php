@@ -78,7 +78,7 @@
                         <template x-for="notification in notifications" :key="notification.id">
                             <li>
                                 <a class="flex flex-col gap-2.5 border-t border-gray-200 px-4.5 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800"
-                                    :href="notification.action_url || '#'" @click="markAsRead(notification)">
+                                    href="#" @click.prevent="onNotificationClick(notification)">
                                     <div class="flex justify-between items-start">
                                         <p class="text-sm text-gray-800 dark:text-white" x-text="notification.message">
                                         </p>
@@ -220,6 +220,16 @@
                         this.notifications = response.data || response;
                     } catch (error) {
                         console.error('Failed to fetch notifications:', error);
+                    }
+                },
+
+                async onNotificationClick(notification) {
+                    // Mark as read first
+                    await this.markAsRead(notification);
+
+                    // Then navigate if there is a URL
+                    if (notification.action_url) {
+                        window.location.href = notification.action_url;
                     }
                 },
 

@@ -126,9 +126,6 @@ class WasteController extends Controller
 
             // Immediately update inventory quantities
             if ($wasteType === 'raw_material') {
-                // Decrement raw material quantity
-                RawMaterial::where('id', $request->raw_material_id)
-                    ->decrement('current_quantity', $validated['quantity']);
 
                 // Create inventory movement record
                 InventoryMovement::create([
@@ -193,11 +190,8 @@ class WasteController extends Controller
                 'approved_at' => now(),
             ]);
 
-            // Decrement inventory quantities
+            // Update inventory
             if ($waste->raw_material_id) {
-                // Decrement raw material quantity
-                RawMaterial::where('id', $waste->raw_material_id)
-                    ->decrement('current_quantity', $waste->quantity);
 
                 // Create inventory movement record
                 InventoryMovement::create([

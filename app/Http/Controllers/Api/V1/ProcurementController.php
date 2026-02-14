@@ -126,9 +126,6 @@ class ProcurementController extends Controller
                         'performed_by' => auth()->id(),
                     ]);
 
-                    // Update raw material quantity
-                    \App\Models\RawMaterial::find($item->raw_material_id)
-                        ->increment('current_quantity', $item->quantity);
                 }
             } else {
                 // If pending, notify admins/managers
@@ -196,11 +193,6 @@ class ProcurementController extends Controller
                 // Assuming we force correction.
 
                 foreach ($procurement->items as $item) {
-                    // Revert RawMaterial stock
-                    $material = \App\Models\RawMaterial::find($item->raw_material_id);
-                    if ($material) {
-                        $material->decrement('current_quantity', $item->quantity);
-                    }
 
                     // Delete associated inventory movements to keep history clean of this "mistake"
                     // Or we could soft delete checks if we added that, but hard delete for movements is ok for now
@@ -271,9 +263,6 @@ class ProcurementController extends Controller
                     'performed_by' => auth()->id(),
                 ]);
 
-                // Update raw material quantity
-                \App\Models\RawMaterial::find($item->raw_material_id)
-                    ->increment('current_quantity', $item->quantity);
             }
 
             // Notify creator

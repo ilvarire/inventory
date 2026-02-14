@@ -16,10 +16,12 @@ use Illuminate\Validation\ValidationException;
 class ProductionController extends Controller
 {
     protected CostingService $costingService;
+    protected \App\Services\InventoryService $inventoryService;
 
-    public function __construct(CostingService $costingService)
+    public function __construct(CostingService $costingService, \App\Services\InventoryService $inventoryService)
     {
         $this->costingService = $costingService;
+        $this->inventoryService = $inventoryService;
     }
 
     /**
@@ -95,12 +97,27 @@ class ProductionController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
-            // Record materials used
+            // Record materials used and deduct from inventory
             foreach ($recipe->items as $item) {
                 $qtyUsed = $item->quantity_required * $validated['actual_yield'];
 
-                // In a real system, we would find specific batches to deduce cost from (FIFO/LIFO)
-                // For simplified version, we use the current unit cost of the raw material
+                // 1. Issue stock using InventoryService (Handles Batches, FIFO, Movements, and current_quantity)
+                // We use the Production Log ID as the reference
+                $this->inventoryService->issueToChef(
+                    rawMaterialId: $item->raw_material_id,
+                    quantity: $qtyUsed,
+                    toLocation: 'production',
+                    performedBy: auth()->user(),
+                    approvedBy: null, // Chef authorizes their own production?
+                    referenceId: $production->id
+                );
+
+                // 2. Log Production Material (for Costing/Yield tracking)
+                // Note: InventoryService handles the "Real" cost via FIFO batches. 
+                // Here we store a record linked to the Production Log. 
+                // Ideally this should use the specific batches from InventoryService, but for now we keep existing logic 
+                // or we could fetch the Weighted Average Cost. 
+                // Checking current implementation: it uses latest() procurement cost.
                 $unitCost = $item->rawMaterial->procurementItems()->latest()->value('unit_cost') ?? 0;
 
                 \App\Models\ProductionMaterial::create([
@@ -109,9 +126,6 @@ class ProductionController extends Controller
                     'quantity_used' => $qtyUsed,
                     'unit_cost' => $unitCost
                 ]);
-
-                // Decrement stock (simplified)
-                $item->rawMaterial->decrement('current_quantity', $qtyUsed);
             }
 
             // Create or update prepared inventory

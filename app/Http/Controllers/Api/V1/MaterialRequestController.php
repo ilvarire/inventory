@@ -233,6 +233,19 @@ class MaterialRequestController extends Controller
             }
 
             foreach ($materialRequest->items as $item) {
+                // DEBUG: Log each item being issued
+                \Log::info('FULFILL_DEBUG: Issuing item', [
+                    'material_request_id' => $materialRequest->id,
+                    'request_status' => $materialRequest->status,
+                    'raw_material_id' => $item->raw_material_id,
+                    'quantity' => $item->quantity,
+                    'fulfilled_by' => auth()->id(),
+                    'timestamp' => now()->toDateTimeString(),
+                    'call_stack' => collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10))
+                        ->map(fn($frame) => ($frame['class'] ?? '') . '::' . ($frame['function'] ?? '') . ':' . ($frame['line'] ?? ''))
+                        ->toArray()
+                ]);
+
                 // Issue materials using FIFO from InventoryService
                 $this->inventoryService->issueToChef(
                     rawMaterialId: $item->raw_material_id,

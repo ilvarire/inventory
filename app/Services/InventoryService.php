@@ -78,6 +78,14 @@ class InventoryService
                 $batch->increment('received_quantity', $used);
                 $remaining -= $used;
             }
+
+            if ($remaining > 0) {
+                // This means getStockBalance() said we had enough, but the Batches didn't sum up to that.
+                // Data integrity mismatch (Phantom Stock).
+                throw ValidationException::withMessages([
+                    'quantity' => "Data integrity error: System indicates stock exists ({$availableStock}), but valid batches could not be found to fulfill request. Discrepancy: {$remaining}."
+                ]);
+            }
         });
     }
 
@@ -90,15 +98,42 @@ class InventoryService
         User $performedBy,
         User $approvedBy
     ): void {
-        InventoryMovement::create([
-            'raw_material_id' => $rawMaterialId,
-            'quantity' => $quantity,
-            'movement_type' => 'return_to_store',
-            'from_location' => 'chef',
-            'to_location' => 'store',
-            'performed_by' => $performedBy->id,
-            'approved_by' => $approvedBy->id,
-        ]);
+        DB::transaction(function () use ($rawMaterialId, $quantity, $performedBy, $approvedBy) {
+            InventoryMovement::create([
+                'raw_material_id' => $rawMaterialId,
+                'quantity' => $quantity,
+                'movement_type' => 'return_to_store',
+                'from_location' => 'chef',
+                'to_location' => 'store',
+                'performed_by' => $performedBy->id,
+                'approved_by' => $approvedBy->id,
+            ]);
+
+            // Restore capacity to batches (LIFO - typically returning what was just taken)
+            $remainingToRestore = $quantity;
+
+            $batches = ProcurementItem::where('raw_material_id', $rawMaterialId)
+                ->where('received_quantity', '>', 0)
+                ->orderBy('created_at', 'desc') // Newest batches first
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($batches as $batch) {
+                if ($remainingToRestore <= 0)
+                    break;
+
+                // We can decrement up to the amount currently 'received' (issued)
+                $restorable = $batch->received_quantity;
+                $restoreAmount = min($restorable, $remainingToRestore);
+
+                $batch->decrement('received_quantity', $restoreAmount);
+                $remainingToRestore -= $restoreAmount;
+            }
+
+            // If remainingToRestore > 0 here, it means we are returning more than was ever issued from untracked sources? 
+            // For now, we allow the Movement to record it (system stock increases), 
+            // even if we can't credit a specific batch (maybe legacy data).
+        });
     }
 
     /**

@@ -62,7 +62,7 @@ class MaterialRequestController extends Controller
 
         $validated = $request->validate([
             'items' => 'required|array|min:1',
-            'items.*.raw_material_id' => 'required|exists:raw_materials,id',
+            'items.*.raw_material_id' => 'required|distinct|exists:raw_materials,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
         ]);
 

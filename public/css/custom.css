@@ -66,3 +66,25 @@
 .hover\:bg-red-600:hover {
     background-color: #dc2626;
 }
+
+/* Movement Quantity Colors - Light Mode */
+.text-green-600 {
+    color: #16a34a;
+}
+.text-red-600 {
+    color: #dc2626;
+}
+.text-blue-600 {
+    color: #2563eb;
+}
+
+/* Movement Quantity Colors - Dark Mode */
+.dark .dark\:text-green-400 {
+    color: #4ade80;
+}
+.dark .dark\:text-red-400 {
+    color: #f87171;
+}
+.dark .dark\:text-blue-400 {
+    color: #60a5fa;
+}

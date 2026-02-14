@@ -40,6 +40,14 @@
         <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300"></span>
         <span class="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"></span>
         <span class="bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"></span>
+        <!-- Movement quantity colors (used in inventory/movements.blade.php) -->
+        <span class="text-green-600 dark:text-green-400"></span>
+        <span class="text-red-600 dark:text-red-400"></span>
+        <span class="text-blue-600 dark:text-blue-400"></span>
+        <!-- Additional dark mode badge colors (used in movements type badges) -->
+        <span class="bg-green-900/20 dark:text-green-400"></span>
+        <span class="bg-red-900/20 dark:text-red-400"></span>
+        <span class="bg-blue-900/20 dark:text-blue-400"></span>
         <!-- Button colors -->
         <button class="bg-brand-500 hover:bg-brand-600"></button>
         <button class="bg-green-500 hover:bg-green-600"></button>

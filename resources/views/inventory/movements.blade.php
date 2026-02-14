@@ -91,21 +91,21 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium" :class="{
-                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': movement
-                                                                .type === 'in',
-                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': movement.type ===
-                                                                'out',
-                                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400': movement
-                                                                .type === 'adjustment'
-                                                        }" x-text="movement.type.toUpperCase()">
+                                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': movement
+                                                                    .type === 'in',
+                                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': movement.type ===
+                                                                    'out',
+                                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400': movement
+                                                                    .type === 'adjustment'
+                                                            }" x-text="movement.movement_type_label">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="font-medium" :class="{
-                                                            'text-green-600 dark:text-green-400': movement.type === 'in',
-                                                            'text-red-600 dark:text-red-400': movement.type === 'out',
-                                                            'text-blue-600 dark:text-blue-400': movement.type === 'adjustment'
-                                                        }">
+                                                                'text-green-600 dark:text-green-400': movement.type === 'in',
+                                                                'text-red-600 dark:text-red-400': movement.type === 'out',
+                                                                'text-blue-600 dark:text-blue-400': movement.type === 'adjustment'
+                                                            }">
                                         <span x-text="movement.type === 'out' ? '-' : '+'"></span>
                                         <span x-text="movement.quantity"></span>
                                         <span x-text="material.unit"></span>
@@ -237,54 +237,113 @@
                         try {
                             const response = await API.get(`/inventory/${materialId}/movements?page=${page}`);
 
-                            // Map the movements data to the format expected by the view
-                            this.movements = (response.data || []).map(movement => ({
-                                id: movement.id,
-                                type: movement.movement_type, // Map movement_type to type
-                                quantity: movement.quantity,
-                                balance_after: movement.balance_after,
-                                reference_type: movement.reference_type,
-                                reference_id: movement.reference_id,
-                                user: movement.performer, // Map performer to user
-                                notes: movement.notes,
-                                created_at: movement.created_at
-                            }));
+                            // Helper to classify movement types
+                                    const classifyType = (movementType) => {
+                                        const inTypes = ['procurement', 'return_to_store'];
+                                        const outTypes = ['issue_to_chef', 'waste', 'sale'];
+                                        if (inTypes.includes(movementType)) return 'in';
+                                        if (outTypes.includes(movementType)) return 'out';
+                                        return 'adjustment';
+                                    };
 
-                            this.pagination = {
-                                current_page: response.current_page,
-                                last_page: response.last_page,
-                                per_page: response.per_page,
-                                total: response.total,
-                                from: response.from,
-                                to: response.to
-                            };
-                        } catch (error) {
-                            console.error('Movements fetch error:', error);
-                            this.error = error.message || 'Failed to load movement history';
-                        } finally {
-                            this.loading = false;
+                                    // Helper to get a readable label from movement_type
+                                    const formatMovementType = (movementType) => {
+                                        const labels = {
+                                            'procurement': 'Procurement',
+                                            'issue_to_chef': 'Issued to Chef',
+                                            'return_to_store': 'Return to Store',
+                                            'waste': 'Waste',
+                                            'sale': 'Sale',
+                                            'adjustment': 'Adjustment',
+                                            'prepared_to_manager': 'Prepared to Manager'
+                                        };
+                                        return labels[movementType] || movementType;
+                                    };
+
+                                    // Movements are ordered desc (newest first) from API
+                                    // Compute running balance: start from current stock and work backwards
+                                    const rawMovements = (response.data || []);
+                                    let runningBalance = this.material.quantity || 0;
+
+                                    // For the first page, runningBalance = current stock
+                                    // For subsequent pages, we'd need the balance from the previous page
+                                    // For simplicity, we compute balance_after per movement on the current page
+                                    // Since movements are desc, the first movement's balance_after = current stock
+                                    // Then we add back outgoing / subtract incoming as we go backwards
+                                    this.movements = rawMovements.map((movement, index) => {
+                                        const type = classifyType(movement.movement_type);
+                                        const qty = parseFloat(movement.quantity);
+
+                                        // For the first (newest) entry, balance_after = current stock
+                                        // For each subsequent (older) entry, reverse the effect of the previous movement
+                                        let balanceAfter;
+                                        if (index === 0) {
+                                            balanceAfter = runningBalance;
+                                        } else {
+                                            // Reverse the previous movement to get this movement's balance
+                                            const prevMovement = rawMovements[index - 1];
+                                            const prevType = classifyType(prevMovement.movement_type);
+                                            const prevQty = parseFloat(prevMovement.quantity);
+
+                                            if (prevType === 'in') {
+                                                runningBalance -= prevQty; // undo the incoming
+                                            } else if (prevType === 'out') {
+                                                runningBalance += prevQty; // undo the outgoing
+                                            }
+                                            balanceAfter = runningBalance;
+                                        }
+
+                                        return {
+                                            id: movement.id,
+                                            type: type,
+                                            movement_type_label: formatMovementType(movement.movement_type),
+                                            quantity: qty,
+                                            balance_after: parseFloat(balanceAfter).toFixed(2),
+                                            reference_type: formatMovementType(movement.movement_type),
+                                            reference_id: movement.reference_id,
+                                            user: movement.performer,
+                                            notes: movement.from_location && movement.to_location
+                                                ? `${movement.from_location} → ${movement.to_location}`
+                                                : (movement.from_location || movement.to_location || '-'),
+                                            created_at: movement.created_at
+                                        };
+                                    });
+
+                                    this.pagination = {
+                                        current_page: response.current_page,
+                                        last_page: response.last_page,
+                                        per_page: response.per_page,
+                                        total: response.total,
+                                        from: response.from,
+                                        to: response.to
+                                    };
+                                } catch (error) {
+                                    console.error('Movements fetch error:', error);
+                                    this.error = error.message || 'Failed to load movement history';
+                                } finally {
+                                    this.loading = false;
+                                }
+                            },
+
+                            async changePage(page) {
+                                if (page >= 1 && page <= this.pagination.last_page) {
+                                    await this.fetchMovements(page);
+                                }
+                            },
+
+                            formatDate(dateString) {
+                                if (!dateString) return 'N/A';
+                                const date = new Date(dateString);
+                                return date.toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                            }
                         }
-                    },
-
-                    async changePage(page) {
-                        if (page >= 1 && page <= this.pagination.last_page) {
-                            await this.fetchMovements(page);
-                        }
-                    },
-
-                    formatDate(dateString) {
-                        if (!dateString) return 'N/A';
-                        const date = new Date(dateString);
-                        return date.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        });
                     }
-                }
-            }
-        </script>
+                </script>
     @endpush
 @endsection

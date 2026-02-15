@@ -138,56 +138,33 @@ class ReportController extends Controller
             $query->where('section_id', $validated['section_id']);
         }
 
-        $sales = $query->with(['section', 'items'])->get();
+        $sales = $query->with(['section', 'items.preparedInventory'])->get();
 
         // Calculate totals
         $totalRevenue = $sales->sum('total_amount');
         $totalSales = $sales->count();
 
-        // Calculate profit using ACTUAL procurement costs (not inflated cost_price)
-        $procurementCosts = \App\Models\ProcurementItem::whereHas('procurement', function ($q) use ($startDate, $endDate, $validated) {
-            $q->where('status', 'received')
-                ->whereBetween('purchase_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
-            if (isset($validated['section_id'])) {
-                $q->where('section_id', $validated['section_id']);
-            }
-        })->sum(\DB::raw('quantity * unit_cost'));
-
-        // Waste costs in the period
-        $wasteQuery = WasteLog::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', 'approved');
-        if (isset($validated['section_id'])) {
-            $wasteQuery->where('section_id', $validated['section_id']);
-        }
-        $wasteCosts = $wasteQuery->sum('cost_amount');
-
-        $totalProfit = $totalRevenue - $procurementCosts - $wasteCosts;
+        // Calculate recipe-based COGS: for each sold item, trace to recipe,
+        // compute ingredient costs using latest procurement prices
+        $materialCosts = $this->costingService->getRecipeBasedCOGS($sales);
+        $totalProfit = $totalRevenue - $materialCosts;
 
         $averageSale = $totalSales > 0 ? $totalRevenue / $totalSales : 0;
 
+        // Pre-fetch latest prices once for section-level calculations
+        $latestPrices = $this->costingService->getLatestProcurementPrices();
+
         // Group by section
-        $bySection = $sales->groupBy('section_id')->map(function ($sectionSales) use ($startDate, $endDate) {
-            $sectionId = $sectionSales->first()->section_id;
+        $bySection = $sales->groupBy('section_id')->map(function ($sectionSales) use ($latestPrices) {
             $sectionRevenue = $sectionSales->sum('total_amount');
-
-            // Procurement costs for this section
-            $sectionProcCost = \App\Models\ProcurementItem::whereHas('procurement', function ($q) use ($startDate, $endDate, $sectionId) {
-                $q->where('status', 'received')
-                    ->whereBetween('purchase_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-                    ->where('section_id', $sectionId);
-            })->sum(\DB::raw('quantity * unit_cost'));
-
-            $sectionWaste = WasteLog::where('section_id', $sectionId)
-                ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-                ->where('status', 'approved')
-                ->sum('cost_amount');
+            $sectionCOGS = $this->costingService->getRecipeBasedCOGS($sectionSales, $latestPrices);
 
             return [
-                'section_id' => $sectionId,
+                'section_id' => $sectionSales->first()->section_id,
                 'section_name' => $sectionSales->first()->section->name ?? 'N/A',
                 'sales_count' => $sectionSales->count(),
                 'revenue' => $sectionRevenue,
-                'profit' => $sectionRevenue - $sectionProcCost - $sectionWaste,
+                'profit' => $sectionRevenue - $sectionCOGS,
             ];
         })->values();
 
@@ -236,24 +213,17 @@ class ReportController extends Controller
         $startDate = $validated['start_date'] ?? now()->subDays(30)->format('Y-m-d');
         $endDate = $validated['end_date'] ?? now()->format('Y-m-d');
 
-        // Get sales revenue
+        // Get sales with items and their recipes for COGS calculation
         $salesQuery = Sale::whereBetween('sale_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         if (isset($validated['section_id'])) {
             $salesQuery->where('section_id', $validated['section_id']);
         }
-        $sales = $salesQuery->with('items')->get();
+        $sales = $salesQuery->with('items.preparedInventory')->get();
         $totalRevenue = $sales->sum('total_amount');
 
-        // Calculate ACTUAL procurement costs (Raw Materials purchased in this period)
-        // This is the real money spent on raw materials, from received procurements
-        $procurementQuery = \App\Models\ProcurementItem::whereHas('procurement', function ($q) use ($startDate, $endDate, $validated) {
-            $q->where('status', 'received')
-                ->whereBetween('purchase_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
-            if (isset($validated['section_id'])) {
-                $q->where('section_id', $validated['section_id']);
-            }
-        });
-        $materialCosts = $procurementQuery->sum(\DB::raw('quantity * unit_cost'));
+        // Calculate recipe-based material costs (COGS)
+        // For each sold item: trace to recipe → ingredient costs at latest procurement prices
+        $materialCosts = $this->costingService->getRecipeBasedCOGS($sales);
 
         // Calculate waste costs
         $wasteQuery = WasteLog::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
@@ -263,7 +233,7 @@ class ReportController extends Controller
         }
         $wasteCosts = $wasteQuery->sum('cost_amount');
 
-        // Total COGS = procurement spend + waste
+        // Total COGS = material costs of items sold + waste
         $totalCogs = $materialCosts + $wasteCosts;
 
         // Gross Profit
@@ -657,14 +627,14 @@ class ReportController extends Controller
      */
     protected function getBusinessPnLData($startDate, $endDate)
     {
-        $revenue = Sale::whereBetween('sale_date', [$startDate, $endDate])
-            ->sum('total_amount');
+        $sales = Sale::whereBetween('sale_date', [$startDate, $endDate])
+            ->with('items.preparedInventory')
+            ->get();
 
-        // Actual procurement costs (not inflated cost_price from sale_items)
-        $costOfSales = \App\Models\ProcurementItem::whereHas('procurement', function ($q) use ($startDate, $endDate) {
-            $q->where('status', 'received')
-                ->whereBetween('purchase_date', [$startDate, $endDate]);
-        })->sum(\DB::raw('quantity * unit_cost'));
+        $revenue = $sales->sum('total_amount');
+
+        // Recipe-based COGS: cost of raw materials used to make what was sold
+        $costOfSales = $this->costingService->getRecipeBasedCOGS($sales);
 
         $expenses = Expense::whereBetween('expense_date', [$startDate, $endDate])->sum('amount');
         $waste = WasteLog::whereBetween('created_at', [$startDate, $endDate])->sum('cost_amount');

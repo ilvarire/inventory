@@ -82,6 +82,13 @@ class CostingService
             $items = $sale->relationLoaded('items') ? $sale->items : $sale->items()->get();
 
             foreach ($items as $saleItem) {
+                // Priority 1: Use the snapshot cost_price recorded at the time of sale
+                if ($saleItem->cost_price > 0) {
+                    $materialCosts += $saleItem->cost_price * $saleItem->quantity;
+                    continue;
+                }
+
+                // Priority 2: Fallback to Recipe-based calculation (for legacy data)
                 $preparedInventory = $saleItem->relationLoaded('preparedInventory')
                     ? $saleItem->preparedInventory
                     : $saleItem->preparedInventory()->first();

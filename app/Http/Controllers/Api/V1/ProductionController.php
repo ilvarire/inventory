@@ -97,27 +97,14 @@ class ProductionController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
-            // Record materials used and deduct from inventory
+            // Record materials used (for Costing/Yield tracking)
             foreach ($recipe->items as $item) {
                 $qtyUsed = $item->quantity_required * $validated['actual_yield'];
 
-                // 1. Issue stock using InventoryService (Handles Batches, FIFO, Movements, and current_quantity)
-                // We use the Production Log ID as the reference
-                $this->inventoryService->issueToChef(
-                    rawMaterialId: $item->raw_material_id,
-                    quantity: $qtyUsed,
-                    toLocation: 'production',
-                    performedBy: auth()->user(),
-                    approvedBy: null, // Chef authorizes their own production?
-                    referenceId: $production->id
-                );
-
-                // 2. Log Production Material (for Costing/Yield tracking)
-                // Note: InventoryService handles the "Real" cost via FIFO batches. 
-                // Here we store a record linked to the Production Log. 
-                // Ideally this should use the specific batches from InventoryService, but for now we keep existing logic 
-                // or we could fetch the Weighted Average Cost. 
-                // Checking current implementation: it uses latest() procurement cost.
+                // Log Production Material (for Costing/Yield tracking)
+                // Note: Since materials are already issued via Material Requests, 
+                // we don't deduct from inventory here to avoid double-deduction.
+                // We record the cost based on the latest procurement price for reporting.
                 $unitCost = $item->rawMaterial->procurementItems()->latest()->value('unit_cost') ?? 0;
 
                 \App\Models\ProductionMaterial::create([

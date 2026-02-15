@@ -22,6 +22,42 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     Route::get('/user', [AuthController::class, 'user'])->middleware('auth:sanctum');
+
+    // One-time batch sync utility — recalculates received_quantity from actual movements
+    // DELETE THIS ROUTE after use
+    Route::get('/sync-batches', function (Request $request) {
+        $dryRun = $request->query('dry_run', false);
+        $results = [];
+
+        $batches = \App\Models\ProcurementItem::all();
+
+        foreach ($batches as $batch) {
+            $actualUsed = \App\Models\InventoryMovement::where('procurement_item_id', $batch->id)
+                ->whereIn('movement_type', ['issue_to_chef', 'waste', 'sale'])
+                ->sum('quantity');
+
+            if (abs($batch->received_quantity - $actualUsed) > 0.001) {
+                $results[] = [
+                    'batch_id' => $batch->id,
+                    'raw_material_id' => $batch->raw_material_id,
+                    'batch_quantity' => $batch->quantity,
+                    'old_received_quantity' => $batch->received_quantity,
+                    'correct_received_quantity' => $actualUsed,
+                    'diff' => round($batch->received_quantity - $actualUsed, 4),
+                ];
+
+                if (!$dryRun) {
+                    $batch->update(['received_quantity' => $actualUsed]);
+                }
+            }
+        }
+
+        return response()->json([
+            'mode' => $dryRun ? 'DRY RUN' : 'APPLIED',
+            'batches_fixed' => count($results),
+            'details' => $results,
+        ]);
+    });
 });
 
 // Protected routes (require authentication)

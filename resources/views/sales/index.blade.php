@@ -164,10 +164,11 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
-                                                                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
-                                                                                            'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
-                                                                                        }" x-text="sale.payment_method">
+                                                                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
+                                                                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
+                                                                                                'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
+                                                                                            }"
+                                        x-text="sale.payment_method">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
@@ -329,10 +330,12 @@
                     formatDate(dateString) {
                         if (!dateString) return 'N/A';
                         const date = new Date(dateString);
-                        return date.toLocaleDateString('en-US', {
+                        return date.toLocaleString('en-US', {
                             year: 'numeric',
                             month: 'short',
-                            day: 'numeric'
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
                         });
                     }
                 }

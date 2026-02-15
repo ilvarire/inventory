@@ -138,39 +138,56 @@ class ReportController extends Controller
             $query->where('section_id', $validated['section_id']);
         }
 
-        $sales = $query->with(['section', 'items.preparedInventory'])->get();
+        $sales = $query->with(['section', 'items'])->get();
 
         // Calculate totals
         $totalRevenue = $sales->sum('total_amount');
         $totalSales = $sales->count();
 
-        // Calculate profit from sale items
-        // Calculate profit from sale items
-        $totalProfit = $sales->sum(function ($sale) {
-            return $sale->items->sum(function ($item) {
-                // Profit = (selling_price - cost_price) * quantity
-                $costPrice = $item->cost_price ?? 0;
-                return ($item->unit_price - $costPrice) * $item->quantity;
-            });
-        });
+        // Calculate profit using ACTUAL procurement costs (not inflated cost_price)
+        $procurementCosts = \App\Models\ProcurementItem::whereHas('procurement', function ($q) use ($startDate, $endDate, $validated) {
+            $q->where('status', 'received')
+                ->whereBetween('purchase_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+            if (isset($validated['section_id'])) {
+                $q->where('section_id', $validated['section_id']);
+            }
+        })->sum(\DB::raw('quantity * unit_cost'));
+
+        // Waste costs in the period
+        $wasteQuery = WasteLog::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('status', 'approved');
+        if (isset($validated['section_id'])) {
+            $wasteQuery->where('section_id', $validated['section_id']);
+        }
+        $wasteCosts = $wasteQuery->sum('cost_amount');
+
+        $totalProfit = $totalRevenue - $procurementCosts - $wasteCosts;
 
         $averageSale = $totalSales > 0 ? $totalRevenue / $totalSales : 0;
 
         // Group by section
-        $bySection = $sales->groupBy('section_id')->map(function ($sectionSales) {
-            $sectionProfit = $sectionSales->sum(function ($sale) {
-                return $sale->items->sum(function ($item) {
-                    $costPrice = $item->cost_price ?? 0;
-                    return ($item->unit_price - $costPrice) * $item->quantity;
-                });
-            });
+        $bySection = $sales->groupBy('section_id')->map(function ($sectionSales) use ($startDate, $endDate) {
+            $sectionId = $sectionSales->first()->section_id;
+            $sectionRevenue = $sectionSales->sum('total_amount');
+
+            // Procurement costs for this section
+            $sectionProcCost = \App\Models\ProcurementItem::whereHas('procurement', function ($q) use ($startDate, $endDate, $sectionId) {
+                $q->where('status', 'received')
+                    ->whereBetween('purchase_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                    ->where('section_id', $sectionId);
+            })->sum(\DB::raw('quantity * unit_cost'));
+
+            $sectionWaste = WasteLog::where('section_id', $sectionId)
+                ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->where('status', 'approved')
+                ->sum('cost_amount');
 
             return [
-                'section_id' => $sectionSales->first()->section_id,
+                'section_id' => $sectionId,
                 'section_name' => $sectionSales->first()->section->name ?? 'N/A',
                 'sales_count' => $sectionSales->count(),
-                'revenue' => $sectionSales->sum('total_amount'),
-                'profit' => $sectionProfit,
+                'revenue' => $sectionRevenue,
+                'profit' => $sectionRevenue - $sectionProcCost - $sectionWaste,
             ];
         })->values();
 
@@ -640,13 +657,14 @@ class ReportController extends Controller
      */
     protected function getBusinessPnLData($startDate, $endDate)
     {
-        $revenue = \App\Models\SaleItem::whereHas('sale', function ($q) use ($startDate, $endDate) {
-            $q->whereBetween('sale_date', [$startDate, $endDate]);
-        })->sum(\DB::raw('quantity * unit_price'));
+        $revenue = Sale::whereBetween('sale_date', [$startDate, $endDate])
+            ->sum('total_amount');
 
-        $costOfSales = \App\Models\SaleItem::whereHas('sale', function ($q) use ($startDate, $endDate) {
-            $q->whereBetween('sale_date', [$startDate, $endDate]);
-        })->sum(\DB::raw('quantity * cost_price'));
+        // Actual procurement costs (not inflated cost_price from sale_items)
+        $costOfSales = \App\Models\ProcurementItem::whereHas('procurement', function ($q) use ($startDate, $endDate) {
+            $q->where('status', 'received')
+                ->whereBetween('purchase_date', [$startDate, $endDate]);
+        })->sum(\DB::raw('quantity * unit_cost'));
 
         $expenses = Expense::whereBetween('expense_date', [$startDate, $endDate])->sum('amount');
         $waste = WasteLog::whereBetween('created_at', [$startDate, $endDate])->sum('cost_amount');

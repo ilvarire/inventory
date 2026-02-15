@@ -91,23 +91,23 @@ class CostingService
         string $startDate,
         string $endDate
     ): float {
-        $salesProfit = Sale::whereBetween('sale_date', [$startDate, $endDate])
-            ->get()
-            ->sum(fn($sale) => $this->getSaleProfit($sale->id));
+        // Revenue from sales
+        $revenue = Sale::whereBetween('sale_date', [$startDate, $endDate])
+            ->sum('total_amount');
 
-        $generalExpenses = Expense::whereNull('section_id')
-            ->whereBetween('expense_date', [$startDate, $endDate])
-            ->sum('amount');
+        // Actual procurement costs (not inflated cost_price from sale_items)
+        $procurementCosts = \App\Models\ProcurementItem::whereHas('procurement', function ($q) use ($startDate, $endDate) {
+            $q->where('status', 'received')
+                ->whereBetween('purchase_date', [$startDate, $endDate]);
+        })->sum(\DB::raw('quantity * unit_cost'));
 
-        $sectionExpenses = Expense::whereNotNull('section_id')
-            ->whereBetween('expense_date', [$startDate, $endDate])
+        $expenses = Expense::whereBetween('expense_date', [$startDate, $endDate])
             ->sum('amount');
 
         $wasteCost = WasteLog::whereBetween('created_at', [$startDate, $endDate])
             ->sum('cost_amount');
 
-        return $salesProfit
-            - ($generalExpenses + $sectionExpenses + $wasteCost);
+        return $revenue - $procurementCosts - $expenses - $wasteCost;
     }
 
     /**

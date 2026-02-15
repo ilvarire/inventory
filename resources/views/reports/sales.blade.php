@@ -129,7 +129,8 @@
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="section.sales_count"></td>
                                     <td class="px-4 py-3 font-medium text-brand-500"
                                         x-text="formatCurrency(section.revenue)"></td>
-                                    <td class="px-4 py-3 font-medium text-blue-500" x-text="formatCurrency(section.profit)">
+                                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-white"
+                                        x-text="formatCurrency(section.profit)">
                                     </td>
                                 </tr>
                             </template>

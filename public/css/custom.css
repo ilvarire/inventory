@@ -88,3 +88,183 @@
 .dark .dark\:text-blue-400 {
     color: #60a5fa;
 }
+
+/* --- Added for Profit & Loss Report --- */
+
+/* Brand Colors */
+.text-brand-500 {
+    color: #3c50e0;
+}
+.bg-brand-500 {
+    background-color: #3c50e0;
+}
+.hover\:bg-brand-600:hover {
+    background-color: #3040b3;
+}
+.bg-brand-50 {
+    background-color: #eff2fe;
+}
+.text-brand-600 {
+    color: #3040b3;
+}
+.fill-brand-500 {
+    fill: #3c50e0 !important;
+}
+
+/* Dark Mode Brand */
+.dark .dark\:bg-brand-900\/20 {
+    background-color: rgba(60, 80, 224, 0.2);
+}
+
+/* Amber Colors (Unsold Prepared) */
+.text-amber-600 {
+    color: #d97706;
+}
+.text-amber-700 {
+    color: #b45309;
+}
+.text-amber-800 {
+    color: #92400e;
+}
+.text-amber-900 {
+    color: #78350f;
+}
+.bg-amber-50 {
+    background-color: #fffbeb;
+}
+.bg-amber-100 {
+    background-color: #fef3c7;
+}
+.bg-amber-200 {
+    background-color: #fde68a;
+}
+.border-amber-200 {
+    border-color: #fde68a;
+}
+
+/* Dark Mode Amber */
+.dark .dark\:text-amber-100 {
+    color: #fef3c7;
+}
+.dark .dark\:text-amber-200 {
+    color: #fde68a;
+}
+.dark .dark\:text-amber-300 {
+    color: #fcd34d;
+}
+.dark .dark\:text-amber-400 {
+    color: #fbbf24;
+}
+.dark .dark\:bg-amber-900\/20 {
+    background-color: rgba(120, 53, 15, 0.2);
+}
+.dark .dark\:border-amber-700 {
+    border-color: #b45309;
+}
+.dark .dark\:border-amber-800 {
+    border-color: #92400e;
+}
+
+/* Missing Light Backgrounds (50) & Borders (200) */
+.bg-green-50 {
+    background-color: #f0fdf4;
+}
+.border-green-200 {
+    border-color: #bbf7d0;
+}
+
+.bg-blue-50 {
+    background-color: #eff6ff;
+}
+.border-blue-200 {
+    border-color: #bfdbfe;
+}
+
+.bg-red-50 {
+    background-color: #fef2f2;
+}
+.border-red-200 {
+    border-color: #fecaca;
+}
+
+/* Missing Dark Borders & Backgrounds */
+.dark .dark\:bg-green-900\/20 {
+    background-color: rgba(20, 83, 45, 0.2);
+}
+.dark .dark\:border-green-800 {
+    border-color: #166534;
+}
+.dark .dark\:text-green-200 {
+    color: #bbf7d0;
+}
+
+.dark .dark\:bg-blue-900\/20 {
+    background-color: rgba(30, 58, 138, 0.2);
+}
+.dark .dark\:border-blue-800 {
+    border-color: #1e40af;
+}
+.dark .dark\:text-blue-200 {
+    color: #bfdbfe;
+}
+
+.dark .dark\:bg-red-900\/20 {
+    background-color: rgba(127, 29, 29, 0.2);
+}
+.dark .dark\:border-red-800 {
+    border-color: #991b1b;
+}
+.dark .dark\:text-red-200 {
+    color: #fecaca;
+}
+
+/* Missing Text Colors */
+.text-green-700 {
+    color: #15803d;
+}
+.text-blue-700 {
+    color: #1d4ed8;
+}
+.text-red-700 {
+    color: #b91c1c;
+}
+
+.dark .dark\:text-green-300 {
+    color: #86efac;
+}
+.dark .dark\:text-blue-300 {
+    color: #93c5fd;
+}
+.dark .dark\:text-red-300 {
+    color: #fca5a5;
+}
+
+/* General Grays (ensure availability) */
+.text-gray-900 {
+    color: #111827;
+}
+.text-gray-600 {
+    color: #4b5563;
+}
+.text-gray-500 {
+    color: #6b7280;
+}
+.border-gray-200 {
+    border-color: #e5e7eb;
+}
+
+.dark .dark\:text-white {
+    color: #ffffff;
+}
+.dark .dark\:text-gray-300 {
+    color: #d1d5db;
+}
+.dark .dark\:text-gray-400 {
+    color: #9ca3af;
+}
+.dark .dark\:border-gray-700 {
+    border-color: #374151;
+}
+.dark .dark\:border-gray-800 {
+    border-color: #1f2937;
+}

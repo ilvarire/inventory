@@ -154,12 +154,16 @@ class WasteController extends Controller
         }
     }
 
-    /**
-     * Display the specified waste log.
-     */
     public function show(WasteLog $waste)
     {
         // Authorization handled by route middleware
+
+        // Auto-clear matching notifications when viewing the waste record
+        $notificationService = app(\App\Services\NotificationService::class);
+        $notificationService->markAsReadByActionUrl(
+            "/waste/{$waste->id}",
+            auth()->user()
+        );
 
         $waste->load(['section', 'rawMaterial', 'preparedItem', 'loggedBy', 'approvedBy']);
 

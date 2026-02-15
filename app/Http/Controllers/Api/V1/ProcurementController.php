@@ -168,6 +168,13 @@ class ProcurementController extends Controller
     {
         $this->authorize('view', $procurement);
 
+        // Auto-clear matching notifications when viewing the procurement
+        $notificationService = app(\App\Services\NotificationService::class);
+        $notificationService->markAsReadByActionUrl(
+            "/procurement/{$procurement->id}",
+            auth()->user()
+        );
+
         $procurement->load(['user', 'section', 'items.rawMaterial']);
 
         return response()->json($procurement);

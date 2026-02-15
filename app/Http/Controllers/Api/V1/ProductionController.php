@@ -174,10 +174,15 @@ class ProductionController extends Controller
     {
         // Authorization handled by route middleware
 
+        // Auto-clear matching notifications when viewing the production
+        $notificationService = app(\App\Services\NotificationService::class);
+        $notificationService->markAsReadByActionUrl(
+            "/productions/{$production->id}",
+            auth()->user()
+        );
+
         $production->load(['recipe.items.rawMaterial', 'section', 'chef']);
 
-        // Costing service needs update to handle flattened structure
-        // For now preventing error if service not updated
         try {
             $totalCost = $this->costingService->getProductionCost($production->id);
             $costPerUnit = $this->costingService->getCostPerUnit($production->id);

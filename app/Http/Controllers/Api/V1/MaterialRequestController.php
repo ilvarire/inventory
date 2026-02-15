@@ -112,12 +112,15 @@ class MaterialRequestController extends Controller
         }
     }
 
-    /**
-     * Display the specified material request.
-     */
     public function show(MaterialRequest $materialRequest)
     {
         $this->authorize('view', $materialRequest);
+
+        // Auto-clear matching notifications when viewing the request
+        $this->notificationService->markAsReadByActionUrl(
+            "/material-requests/{$materialRequest->id}",
+            auth()->user()
+        );
 
         $materialRequest->load(['chef', 'section', 'approver', 'fulfiller', 'items.rawMaterial']);
 

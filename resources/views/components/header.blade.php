@@ -231,22 +231,17 @@
                         this.unreadCount = Math.max(0, this.unreadCount - 1);
                     }
 
-                    // 2. Fire and forget the API call (or wait briefly)
-                    // We don't want to block navigation too long if the API is slow,
-                    // but we do want to try and ensure it's sent.
+                    // 2. Perform the API call and WAIT for it if we are about to navigate
+                    // This prevents the browser from canceling the request during navigation
                     if (wasUnread) {
-                        API.post(`/notifications/${notification.id}/read`).catch(err => {
-                            console.error('Failed to mark as read:', err);
-                            // Rollback UI state if it failed? 
-                            // Usually better to leave it "read" in UI to avoid flickering
-                        });
+                        try {
+                            await API.post(`/notifications/${notification.id}/read`);
+                        } catch (error) {
+                            console.error('Failed to mark as read:', error);
+                        }
                     }
 
-                    // 3. Briefly wait to allow the browser to initiate the fetch 
-                    // before potential page navigation
-                    await new Promise(resolve => setTimeout(resolve, 50));
-
-                    // 4. Then navigate if there is a URL
+                    // 3. Then navigate if there is a URL
                     if (notification.action_url) {
                         window.location.href = notification.action_url;
                     }

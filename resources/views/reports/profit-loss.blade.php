@@ -125,135 +125,164 @@
                     </div>
                 </div>
 
-                <!-- Net Profit -->
-                <div class="rounded border p-4" :class="{
-                                        'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
-                                        'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
-                                    }">
-                    <div class="flex justify-between">
-                        <span class="font-bold" :class="{
-                                                'text-green-800 dark:text-green-200': report.net_profit >= 0,
-                                                'text-red-800 dark:text-red-200': report.net_profit < 0
-                                            }">
-                            Net Profit
-                        </span>
-                        <span class="text-2xl font-bold" :class="{
-                                                'text-green-600 dark:text-green-400': report.net_profit >= 0,
-                                                'text-red-600 dark:text-red-400': report.net_profit < 0
-                                            }" x-text="formatCurrency(report.net_profit)">
-                        </span>
+                <!-- Unsold Prepared Products -->
+                    <div class="mb-6" x-show="report.unsold_prepared_cost > 0">
+                        <h4 class="mb-3 font-medium text-gray-900 dark:text-white">Unsold Prepared Products</h4>
+                        <div class="rounded border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-amber-700 dark:text-amber-300">Raw Material Cost (tied up)</span>
+                                    <span class="font-medium text-amber-800 dark:text-amber-200"
+                                        x-text="formatCurrency(report.unsold_prepared_cost)"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-amber-700 dark:text-amber-300">Potential Revenue (if sold)</span>
+                                    <span class="font-medium text-amber-800 dark:text-amber-200"
+                                        x-text="formatCurrency(report.unsold_prepared_revenue)"></span>
+                                </div>
+                                <div class="flex justify-between border-t border-amber-200 pt-2 dark:border-amber-700">
+                                    <span class="font-medium text-amber-800 dark:text-amber-200">Potential Profit</span>
+                                    <span class="font-bold text-amber-900 dark:text-amber-100"
+                                        x-text="formatCurrency(report.unsold_prepared_revenue - report.unsold_prepared_cost)"></span>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                                This represents prepared items ready for sale. Their raw material cost is not included in COGS above.
+                            </p>
+                        </div>
                     </div>
-                    <p class="mt-1 text-sm" :class="{
-                                            'text-green-700 dark:text-green-300': report.net_profit >= 0,
-                                            'text-red-700 dark:text-red-300': report.net_profit < 0
+
+                    <!-- Net Profit -->
+                    <div class="rounded border p-4" :class="{
+                                            'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
+                                            'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
                                         }">
-                        Margin: <span x-text="report.net_margin + '%'"></span>
-                    </p>
+                        <div class="flex justify-between">
+                            <span class="font-bold" :class="{
+                                                    'text-green-800 dark:text-green-200': report.net_profit >= 0,
+                                                    'text-red-800 dark:text-red-200': report.net_profit < 0
+                                                }">
+                                Net Profit
+                            </span>
+                            <span class="text-2xl font-bold" :class="{
+                                                    'text-green-600 dark:text-green-400': report.net_profit >= 0,
+                                                    'text-red-600 dark:text-red-400': report.net_profit < 0
+                                                }" x-text="formatCurrency(report.net_profit)">
+                            </span>
+                        </div>
+                        <p class="mt-1 text-sm" :class="{
+                                                'text-green-700 dark:text-green-300': report.net_profit >= 0,
+                                                'text-red-700 dark:text-red-300': report.net_profit < 0
+                                            }">
+                            Margin: <span x-text="report.net_margin + '%'"></span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    @push('scripts')
-        <script>
-            function profitLossData() {
-                return {
-                    loading: true,
-                    error: '',
-                    report: {
-                        total_revenue: 0,
-                        material_costs: 0,
-                        waste_costs: 0,
-                        total_cogs: 0,
-                        gross_profit: 0,
-                        gross_margin: 0,
-                        total_expenses: 0,
-                        net_profit: 0,
-                        net_margin: 0,
-                        expenses_by_category: []
-                    },
-                    sections: [],
-                    filters: {
-                        start_date: '',
-                        end_date: '',
-                        section_id: ''
-                    },
+        @push('scripts')
+            <script>
+                function profitLossData() {
+                    return {
+                        loading: true,
+                        error: '',
+                        report: {
+                            total_revenue: 0,
+                            material_costs: 0,
+                            waste_costs: 0,
+                            total_cogs: 0,
+                            gross_profit: 0,
+                            gross_margin: 0,
+                            total_expenses: 0,
+                            net_profit: 0,
+                            net_margin: 0,
+                            expenses_by_category: [],
+                            unsold_prepared_cost: 0,
+                            unsold_prepared_revenue: 0
+                        },
+                        sections: [],
+                        filters: {
+                            start_date: '',
+                            end_date: '',
+                            section_id: ''
+                        },
 
-                    async init() {
-                        // Set default date range (last 30 days)
-                        const today = new Date();
-                        const thirtyDaysAgo = new Date(today);
-                        thirtyDaysAgo.setDate(today.getDate() - 30);
+                        async init() {
+                            // Set default date range (last 30 days)
+                            const today = new Date();
+                            const thirtyDaysAgo = new Date(today);
+                            thirtyDaysAgo.setDate(today.getDate() - 30);
 
-                        this.filters.start_date = thirtyDaysAgo.toISOString().split('T')[0];
-                        this.filters.end_date = today.toISOString().split('T')[0];
+                            this.filters.start_date = thirtyDaysAgo.toISOString().split('T')[0];
+                            this.filters.end_date = today.toISOString().split('T')[0];
 
-                        await Promise.all([
-                            this.fetchSections(),
-                            this.fetchReport()
-                        ]);
-                    },
+                            await Promise.all([
+                                this.fetchSections(),
+                                this.fetchReport()
+                            ]);
+                        },
 
-                    async fetchSections() {
-                        try {
-                            const response = await API.get('/sections');
-                            this.sections = response.data || response || [];
-                        } catch (error) {
-                            console.error('Failed to fetch sections:', error);
-                        }
-                    },
+                        async fetchSections() {
+                            try {
+                                const response = await API.get('/sections');
+                                this.sections = response.data || response || [];
+                            } catch (error) {
+                                console.error('Failed to fetch sections:', error);
+                            }
+                        },
 
-                    async fetchReport() {
-                        this.loading = true;
-                        this.error = '';
+                        async fetchReport() {
+                            this.loading = true;
+                            this.error = '';
 
-                        try {
-                            const params = new URLSearchParams();
-                            if (this.filters.start_date) params.append('start_date', this.filters.start_date);
-                            if (this.filters.end_date) params.append('end_date', this.filters.end_date);
-                            if (this.filters.section_id) params.append('section_id', this.filters.section_id);
+                            try {
+                                const params = new URLSearchParams();
+                                if (this.filters.start_date) params.append('start_date', this.filters.start_date);
+                                if (this.filters.end_date) params.append('end_date', this.filters.end_date);
+                                if (this.filters.section_id) params.append('section_id', this.filters.section_id);
 
-                            const response = await API.get('/reports/profit-loss?' + params.toString());
-                            this.report = response;
-                        } catch (error) {
-                            console.error('Fetch error:', error);
-                            this.error = error.message || 'Failed to load report';
-                        } finally {
-                            this.loading = false;
-                        }
-                    },
+                                const response = await API.get('/reports/profit-loss?' + params.toString());
+                                this.report = response;
+                            } catch (error) {
+                                console.error('Fetch error:', error);
+                                this.error = error.message || 'Failed to load report';
+                            } finally {
+                                this.loading = false;
+                            }
+                        },
 
-                    formatCurrency(amount) {
-                        return '₦' + parseFloat(amount || 0).toLocaleString('en-NG', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        });
-                    },
-
-                    formatDateRange() {
-                        if (!this.filters.start_date || !this.filters.end_date) return '';
-
-                        const formatDate = (dateStr) => {
-                            if (!dateStr) return '';
-                            // Create date using local time components to avoid timezone shifts
-                            const parts = dateStr.split('-');
-                            const year = parseInt(parts[0]);
-                            const month = parseInt(parts[1]) - 1; // Months are 0-indexed
-                            const day = parseInt(parts[2]);
-
-                            const date = new Date(year, month, day);
-
-                            return date.toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
+                        formatCurrency(amount) {
+                            return '₦' + parseFloat(amount || 0).toLocaleString('en-NG', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
                             });
-                        };
+                        },
 
-                        return `${formatDate(this.filters.start_date)} - ${formatDate(this.filters.end_date)}`;
+                        formatDateRange() {
+                            if (!this.filters.start_date || !this.filters.end_date) return '';
+
+                            const formatDate = (dateStr) => {
+                                if (!dateStr) return '';
+                                // Create date using local time components to avoid timezone shifts
+                                const parts = dateStr.split('-');
+                                const year = parseInt(parts[0]);
+                                const month = parseInt(parts[1]) - 1; // Months are 0-indexed
+                                const day = parseInt(parts[2]);
+
+                                const date = new Date(year, month, day);
+
+                                return date.toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                });
+                            };
+
+                            return `${formatDate(this.filters.start_date)} - ${formatDate(this.filters.end_date)}`;
+                        }
                     }
                 }
-            }
-        </script>
-    @endpush
+            </script>
+        @endpush
 @endsection

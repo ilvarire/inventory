@@ -260,6 +260,26 @@ class ReportController extends Controller
         $netProfit = $grossProfit - $totalExpenses;
         $netMargin = $totalRevenue > 0 ? ($netProfit / $totalRevenue) * 100 : 0;
 
+        // Calculate unsold prepared products (available inventory)
+        // This shows the potential cost tied up in prepared-but-unsold items
+        $unsoldQuery = \App\Models\PreparedInventory::where('status', 'available');
+        if (isset($validated['section_id'])) {
+            $unsoldQuery->where('section_id', $validated['section_id']);
+        }
+        $unsoldItems = $unsoldQuery->get();
+
+        $latestPrices = $this->costingService->getLatestProcurementPrices();
+        $unsoldPreparedCost = 0;
+        $unsoldPreparedRevenue = 0;
+
+        foreach ($unsoldItems as $item) {
+            if ($item->recipe_id) {
+                $costPerUnit = $this->costingService->getRecipeCostPerUnit($item->recipe_id, $latestPrices);
+                $unsoldPreparedCost += $costPerUnit * $item->quantity;
+            }
+            $unsoldPreparedRevenue += ($item->selling_price ?? 0) * $item->quantity;
+        }
+
         return response()->json([
             'total_revenue' => $totalRevenue,
             'material_costs' => $materialCosts,
@@ -271,6 +291,8 @@ class ReportController extends Controller
             'expenses_by_category' => $expensesByCategory,
             'net_profit' => $netProfit,
             'net_margin' => round($netMargin, 2),
+            'unsold_prepared_cost' => $unsoldPreparedCost,
+            'unsold_prepared_revenue' => $unsoldPreparedRevenue,
         ]);
     }
 

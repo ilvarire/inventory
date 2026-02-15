@@ -251,6 +251,12 @@ class ProcurementController extends Controller
                 'approved_at' => now(),
             ]);
 
+            // Auto-clear matching notifications for the approver (Store Keeper/Admin)
+            $this->notificationService->markAsReadByActionUrl(
+                "/procurement/{$procurement->id}",
+                auth()->user()
+            );
+
             // Create inventory movements for all items
             foreach ($procurement->items as $item) {
                 InventoryMovement::create([
@@ -312,6 +318,12 @@ class ProcurementController extends Controller
             'approved_by' => auth()->id(),
             'approved_at' => now(),
         ]);
+
+        // Auto-clear matching notifications for the approver
+        $this->notificationService->markAsReadByActionUrl(
+            "/procurement/{$procurement->id}",
+            auth()->user()
+        );
 
         // Notify creator
         if ($procurement->user) {

@@ -208,6 +208,22 @@ class NotificationService
     }
 
     /**
+     * Mark notifications as read based on an action URL and user.
+     * Useful for automatically clearing notifications when an item is settled.
+     */
+    public function markAsReadByActionUrl(string $actionUrl, ?User $user = null): void
+    {
+        $query = NotificationLog::where('action_url', $actionUrl)
+            ->whereNull('read_at');
+
+        if ($user) {
+            $query->where('user_id', $user->id);
+        }
+
+        $query->update(['read_at' => now()]);
+    }
+
+    /**
      * Log notification to database
      */
     public function logNotification(User $user, string $type, string $message, ?string $actionUrl = null): void

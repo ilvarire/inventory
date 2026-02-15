@@ -190,6 +190,13 @@ class WasteController extends Controller
                 'approved_at' => now(),
             ]);
 
+            // Auto-clear matching notifications for the approver
+            $notificationService = app(\App\Services\NotificationService::class);
+            $notificationService->markAsReadByActionUrl(
+                "/waste/{$waste->id}",
+                auth()->user()
+            );
+
             // Update inventory
             if ($waste->raw_material_id) {
 
@@ -244,6 +251,13 @@ class WasteController extends Controller
             'rejected_at' => now(),
             'rejection_reason' => $validated['rejection_reason'],
         ]);
+
+        // Auto-clear matching notifications for the approver
+        $notificationService = app(\App\Services\NotificationService::class);
+        $notificationService->markAsReadByActionUrl(
+            "/waste/{$waste->id}",
+            auth()->user()
+        );
 
         return response()->json([
             'message' => 'Waste log rejected successfully',

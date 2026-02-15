@@ -143,6 +143,12 @@ class MaterialRequestController extends Controller
             'approved_at' => now(),
         ]);
 
+        // Auto-clear matching notifications for the approver
+        $this->notificationService->markAsReadByActionUrl(
+            "/material-requests/{$materialRequest->id}",
+            auth()->user()
+        );
+
         // Notify chef
         if ($materialRequest->chef) {
             $this->notificationService->sendApprovalStatusChanged(
@@ -182,6 +188,12 @@ class MaterialRequestController extends Controller
             'approved_by' => auth()->id(),
             'approved_at' => now(),
         ]);
+
+        // Auto-clear matching notifications for the approver
+        $this->notificationService->markAsReadByActionUrl(
+            "/material-requests/{$materialRequest->id}",
+            auth()->user()
+        );
 
         // Notify chef
         if ($materialRequest->chef) {
@@ -287,6 +299,12 @@ class MaterialRequestController extends Controller
                 'fulfilled_by' => auth()->id(),
                 'fulfilled_at' => now(),
             ]);
+
+            // Auto-clear matching notifications for the fulfiller (Store Keeper/Manager)
+            $this->notificationService->markAsReadByActionUrl(
+                "/material-requests/{$materialRequest->id}",
+                auth()->user()
+            );
 
             // Notify chef
             if ($materialRequest->chef) {

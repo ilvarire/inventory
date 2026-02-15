@@ -200,6 +200,13 @@ class ProductionController extends Controller
     {
         $this->authorize('approve', $production);
 
+        // Auto-clear matching notifications for the approver
+        $notificationService = app(\App\Services\NotificationService::class);
+        $notificationService->markAsReadByActionUrl(
+            "/productions/{$production->id}",
+            auth()->user()
+        );
+
         return response()->json([
             'message' => 'Production approved successfully',
             'data' => $production

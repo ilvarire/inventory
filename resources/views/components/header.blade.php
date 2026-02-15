@@ -224,10 +224,29 @@
                 },
 
                 async onNotificationClick(notification) {
-                    // Mark as read first
-                    await this.markAsRead(notification);
+                    // 1. Mark as read in UI immediately for better UX
+                    const wasUnread = !notification.read_at;
+                    if (wasUnread) {
+                        notification.read_at = new Date().toISOString();
+                        this.unreadCount = Math.max(0, this.unreadCount - 1);
+                    }
 
-                    // Then navigate if there is a URL
+                    // 2. Fire and forget the API call (or wait briefly)
+                    // We don't want to block navigation too long if the API is slow,
+                    // but we do want to try and ensure it's sent.
+                    if (wasUnread) {
+                        API.post(`/notifications/${notification.id}/read`).catch(err => {
+                            console.error('Failed to mark as read:', err);
+                            // Rollback UI state if it failed? 
+                            // Usually better to leave it "read" in UI to avoid flickering
+                        });
+                    }
+
+                    // 3. Briefly wait to allow the browser to initiate the fetch 
+                    // before potential page navigation
+                    await new Promise(resolve => setTimeout(resolve, 50));
+
+                    // 4. Then navigate if there is a URL
                     if (notification.action_url) {
                         window.location.href = notification.action_url;
                     }
@@ -236,8 +255,8 @@
                 async markAsRead(notification) {
                     if (notification.read_at) return;
                     try {
-                        await API.post(`/notifications/${notification.id}/read`);
                         notification.read_at = new Date().toISOString();
+                        await API.post(`/notifications/${notification.id}/read`);
                         this.unreadCount = Math.max(0, this.unreadCount - 1);
                     } catch (error) {
                         console.error('Failed to mark as read:', error);

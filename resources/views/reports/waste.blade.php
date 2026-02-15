@@ -33,7 +33,8 @@
         <div x-show="!loading" class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
             <div
                 class="rounded-sm border border-gray-200 bg-white p-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
-                <h4 class="text-title-md font-bold text-red-500" x-text="formatCurrency(report.total_waste_cost)"></h4>
+                <h4 class="text-title-md font-bold text-gray-900 dark:text-white"
+                    x-text="formatCurrency(report.total_waste_cost)"></h4>
                 <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Waste Cost</span>
             </div>
 

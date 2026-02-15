@@ -70,7 +70,8 @@
                                     <p class="text-gray-900 dark:text-white" x-text="product.unit"></p>
                                 </td>
                                 <td class="px-4 py-5">
-                                    <p class="font-medium text-green-500" x-text="formatCurrency(product.selling_price)">
+                                    <p class="font-medium text-gray-900 dark:text-white"
+                                        x-text="formatCurrency(product.selling_price)">
                                     </p>
                                 </td>
                                 <td class="px-4 py-5">
@@ -78,10 +79,10 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': getStatus(product) === 'Available',
-                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': getStatus(product) === 'Low Stock',
-                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': getStatus(product) === 'Expired' || getStatus(product) === 'Sold Out'
-                                                                    }" x-text="getStatus(product)">
+                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': getStatus(product) === 'Available',
+                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': getStatus(product) === 'Low Stock',
+                                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': getStatus(product) === 'Expired' || getStatus(product) === 'Sold Out'
+                                                                        }" x-text="getStatus(product)">
                                     </span>
                                 </td>
                             </tr>
@@ -189,7 +190,7 @@
                             // Handle both paginated and non-paginated responses
                             if (response.data && Array.isArray(response.data)) {
                                 // Paginated response usually has data inside data
-                                this.products = response.data; 
+                                this.products = response.data;
                                 this.pagination = response;
                             } else if (Array.isArray(response.data)) {
                                 // Wrapped collection

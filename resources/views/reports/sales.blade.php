@@ -68,7 +68,8 @@
                 class="rounded-sm border border-gray-200 bg-white p-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-sm font-bold text-blue-500" x-text="formatCurrency(report.total_profit)">
+                        <h4 class="text-title-sm font-bold text-gray-900 dark:text-white"
+                            x-text="formatCurrency(report.total_profit)">
                         </h4>
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Revenue (Profit)</span>
                     </div>

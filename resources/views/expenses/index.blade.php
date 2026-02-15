@@ -33,7 +33,8 @@
                 class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-sm font-bold text-red-500" x-text="formatCurrency(summary.total_expenses)">
+                        <h4 class="text-title-sm font-bold text-gray-900 dark:text-white"
+                            x-text="formatCurrency(summary.total_expenses)">
                             ₦0.00
                         </h4>
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Expenses</span>
@@ -116,21 +117,22 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': expense.type === 'utilities',
-                                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': expense.type === 'salaries',
-                                                            'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': expense.type === 'rent',
-                                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': expense.type === 'maintenance',
-                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': expense.type === 'marketing',
-                                                            'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': expense.type === 'supplies',
-                                                            'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': expense.type === 'other'
-                                                        }" x-text="expense.type">
+                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': expense.type === 'utilities',
+                                                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': expense.type === 'salaries',
+                                                                    'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': expense.type === 'rent',
+                                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': expense.type === 'maintenance',
+                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': expense.type === 'marketing',
+                                                                    'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300': expense.type === 'supplies',
+                                                                    'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': expense.type === 'other'
+                                                                }" x-text="expense.type">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">
                                     <p class="text-gray-900 dark:text-white" x-text="expense.description"></p>
                                 </td>
                                 <td class="px-4 py-5">
-                                    <p class="font-medium text-red-500" x-text="formatCurrency(expense.amount)"></p>
+                                    <p class="font-medium text-gray-900 dark:text-white"
+                                        x-text="formatCurrency(expense.amount)"></p>
                                 </td>
                                 <td class="px-4 py-5">
                                     <div class="flex items-center gap-3">

@@ -133,7 +133,7 @@
                     <div class="mt-3 border-t border-gray-200 pt-3 dark:border-gray-800">
                         <div class="flex justify-between">
                             <span class="font-medium text-gray-900 dark:text-white">Total Expenses</span>
-                            <span class="text-lg font-bold text-red-500"
+                            <span class="text-lg font-bold text-gray-900 dark:text-white"
                                 x-text="formatCurrency(report.total_expenses)"></span>
                         </div>
                     </div>
@@ -145,22 +145,22 @@
                     <div class="rounded border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
                         <div class="space-y-2">
                             <div class="flex justify-between">
-                                <span class="text-amber-700 dark:text-amber-300">Raw Material Cost (tied up)</span>
-                                <span class="font-medium text-amber-800 dark:text-amber-200"
+                                <span class="text-gray-900 dark:text-white">Raw Material Cost (tied up)</span>
+                                <span class="font-medium text-gray-900 dark:text-white"
                                     x-text="formatCurrency(report.unsold_prepared_cost)"></span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-amber-700 dark:text-amber-300">Potential Revenue (if sold)</span>
-                                <span class="font-medium text-amber-800 dark:text-amber-200"
+                                <span class="text-gray-900 dark:text-white">Potential Revenue (if sold)</span>
+                                <span class="font-medium text-gray-900 dark:text-white"
                                     x-text="formatCurrency(report.unsold_prepared_revenue)"></span>
                             </div>
                             <div class="flex justify-between border-t border-amber-200 pt-2 dark:border-amber-700">
-                                <span class="font-medium text-amber-800 dark:text-amber-200">Potential Profit</span>
-                                <span class="font-bold text-amber-900 dark:text-amber-100"
+                                <span class="font-medium text-gray-900 dark:text-white">Potential Profit</span>
+                                <span class="font-bold text-gray-900 dark:text-white"
                                     x-text="formatCurrency(report.unsold_prepared_revenue - report.unsold_prepared_cost)"></span>
                             </div>
                         </div>
-                        <p class="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                        <p class="mt-2 text-xs text-gray-600 dark:text-gray-400">
                             This represents prepared items ready for sale. Their raw material cost is not included in COGS
                             above.
                         </p>
@@ -169,26 +169,26 @@
 
                 <!-- Net Profit -->
                 <div class="rounded border p-4" :class="{
-                                                            'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
-                                                            'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
-                                                        }">
+                                                                'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
+                                                                'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
+                                                            }">
                     <div class="flex justify-between">
                         <span class="font-bold" :class="{
-                                                                    'text-green-800 dark:text-green-200': report.net_profit >= 0,
-                                                                    'text-red-800 dark:text-red-200': report.net_profit < 0
-                                                                }">
+                                                                        'text-green-800 dark:text-green-200': report.net_profit >= 0,
+                                                                        'text-red-800 dark:text-red-200': report.net_profit < 0
+                                                                    }">
                             Net Profit
                         </span>
                         <span class="text-2xl font-bold" :class="{
-                                                                    'text-green-600 dark:text-green-400': report.net_profit >= 0,
-                                                                    'text-red-600 dark:text-red-400': report.net_profit < 0
-                                                                }" x-text="formatCurrency(report.net_profit)">
+                                                                        'text-green-600 dark:text-green-400': report.net_profit >= 0,
+                                                                        'text-red-600 dark:text-red-400': report.net_profit < 0
+                                                                    }" x-text="formatCurrency(report.net_profit)">
                         </span>
                     </div>
                     <p class="mt-1 text-sm" :class="{
-                                                                'text-green-700 dark:text-green-300': report.net_profit >= 0,
-                                                                'text-red-700 dark:text-red-300': report.net_profit < 0
-                                                            }">
+                                                                    'text-green-700 dark:text-green-300': report.net_profit >= 0,
+                                                                    'text-red-700 dark:text-red-300': report.net_profit < 0
+                                                                }">
                         Margin: <span x-text="report.net_margin + '%'"></span>
                     </p>
                 </div>

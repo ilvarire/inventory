@@ -37,7 +37,8 @@
                 class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-sm font-bold text-red-500" x-text="formatCurrency(summary.total_cost)">
+                        <h4 class="text-title-sm font-bold text-gray-900 dark:text-white"
+                            x-text="formatCurrency(summary.total_cost)">
                             ₦0.00
                         </h4>
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Waste Cost</span>
@@ -137,11 +138,12 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                                                                                        'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': log.reason === 'spoilage',
-                                                                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': log.reason === 'damage',
-                                                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': log.reason === 'expiry',
-                                                                                                        'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': log.reason === 'other'
-                                                                                                    }" x-text="log.reason">
+                                                                                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': log.reason === 'spoilage',
+                                                                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': log.reason === 'damage',
+                                                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': log.reason === 'expiry',
+                                                                                                            'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300': log.reason === 'other'
+                                                                                                        }"
+                                        x-text="log.reason">
                                     </span>
                                 </td>
                                 <td class="px-4 py-5">

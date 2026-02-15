@@ -219,21 +219,24 @@ class ReportController extends Controller
         $startDate = $validated['start_date'] ?? now()->subDays(30)->format('Y-m-d');
         $endDate = $validated['end_date'] ?? now()->format('Y-m-d');
 
-        // Get sales revenue - use whereBetween for cross-DB compatibility
+        // Get sales revenue
         $salesQuery = Sale::whereBetween('sale_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         if (isset($validated['section_id'])) {
             $salesQuery->where('section_id', $validated['section_id']);
         }
-        $sales = $salesQuery->with('items.preparedInventory')->get();
+        $sales = $salesQuery->with('items')->get();
         $totalRevenue = $sales->sum('total_amount');
 
-        // Calculate material costs (COGS) based on sold items
-        // We use the cost_price stored on the sale_items at the time of sale
-        $materialCosts = $sales->sum(function ($sale) {
-            return $sale->items->sum(function ($item) {
-                return $item->quantity * ($item->cost_price ?? 0);
-            });
+        // Calculate ACTUAL procurement costs (Raw Materials purchased in this period)
+        // This is the real money spent on raw materials, from received procurements
+        $procurementQuery = \App\Models\ProcurementItem::whereHas('procurement', function ($q) use ($startDate, $endDate, $validated) {
+            $q->where('status', 'received')
+                ->whereBetween('purchase_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+            if (isset($validated['section_id'])) {
+                $q->where('section_id', $validated['section_id']);
+            }
         });
+        $materialCosts = $procurementQuery->sum(\DB::raw('quantity * unit_cost'));
 
         // Calculate waste costs
         $wasteQuery = WasteLog::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
@@ -243,14 +246,14 @@ class ReportController extends Controller
         }
         $wasteCosts = $wasteQuery->sum('cost_amount');
 
-        // Total COGS
+        // Total COGS = procurement spend + waste
         $totalCogs = $materialCosts + $wasteCosts;
 
         // Gross Profit
         $grossProfit = $totalRevenue - $totalCogs;
         $grossMargin = $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0;
 
-        // Get expenses (Expenses table does not have status column)
+        // Get expenses
         $expenseQuery = Expense::whereBetween('expense_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         if (isset($validated['section_id'])) {
             $expenseQuery->where('section_id', $validated['section_id']);

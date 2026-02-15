@@ -178,4 +178,99 @@ class InventoryController extends Controller
 
         return response()->json($expiringBatches);
     }
+    /**
+     * Update an inventory movement (Admin only).
+     */
+    public function updateMovement(Request $request, \App\Models\InventoryMovement $movement)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['message' => 'Only admins can edit movements'], 403);
+        }
+
+        $validated = $request->validate([
+            'quantity' => 'required|numeric|min:0.01',
+            'movement_type' => 'required|in:procurement,issue_to_chef,return_to_store,waste,sale,adjustment',
+            'from_location' => 'nullable|string|max:255',
+            'to_location' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $oldQuantity = (float) $movement->quantity;
+            $oldType = $movement->movement_type;
+            $newQuantity = (float) $validated['quantity'];
+            $newType = $validated['movement_type'];
+
+            // Adjust batch received_quantity if movement is linked to a batch
+            if ($movement->procurement_item_id) {
+                $batch = ProcurementItem::find($movement->procurement_item_id);
+                if ($batch) {
+                    // Reverse old effect on batch
+                    $outTypes = ['issue_to_chef', 'waste', 'sale'];
+                    if (in_array($oldType, $outTypes)) {
+                        $batch->decrement('received_quantity', $oldQuantity);
+                    }
+
+                    // Apply new effect on batch
+                    if (in_array($newType, $outTypes)) {
+                        $batch->increment('received_quantity', $newQuantity);
+                    }
+                }
+            }
+
+            $movement->update([
+                'quantity' => $newQuantity,
+                'movement_type' => $newType,
+                'from_location' => $validated['from_location'] ?? $movement->from_location,
+                'to_location' => $validated['to_location'] ?? $movement->to_location,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Movement updated successfully',
+                'data' => $movement->fresh(['performer', 'approver', 'batch'])
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete an inventory movement (Admin only).
+     */
+    public function destroyMovement(\App\Models\InventoryMovement $movement)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['message' => 'Only admins can delete movements'], 403);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Reverse batch received_quantity if movement is linked to a batch
+            if ($movement->procurement_item_id) {
+                $batch = ProcurementItem::find($movement->procurement_item_id);
+                if ($batch) {
+                    $outTypes = ['issue_to_chef', 'waste', 'sale'];
+                    if (in_array($movement->movement_type, $outTypes)) {
+                        $batch->decrement('received_quantity', $movement->quantity);
+                    }
+                }
+            }
+
+            $movement->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Movement deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
 }

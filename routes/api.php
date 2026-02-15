@@ -140,6 +140,11 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
         Route::get('/expiring', [InventoryController::class, 'expiring']);
         Route::get('/{material}', [InventoryController::class, 'show']);
         Route::get('/{material}/movements', [InventoryController::class, 'movements']);
+        // Admin-only movement management
+        Route::put('/movements/{movement}', [InventoryController::class, 'updateMovement'])
+            ->middleware(['role:Admin', 'throttle.custom:api.write']);
+        Route::delete('/movements/{movement}', [InventoryController::class, 'destroyMovement'])
+            ->middleware(['role:Admin', 'throttle.custom:api.write']);
     });
 
     // Sections route (for dropdowns)
@@ -258,51 +263,52 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
             Route::get('/top-selling/export/excel', [ReportController::class, 'exportTopSellingExcel']);
         });
     });
+});
 
-    // ONE-TIME FIX: Sync procurement_items.received_quantity from InventoryMovement records
-    // Usage: GET /api/v1/sync-batches?dry_run=1  (preview changes)
-    //        GET /api/v1/sync-batches             (apply changes)
-    Route::get('/sync-batches', function (\Illuminate\Http\Request $request) {
-        $dryRun = $request->boolean('dry_run', false);
-        $batches = \App\Models\ProcurementItem::all();
-        $fixes = [];
-        $totalFixed = 0;
+// ONE-TIME FIX: Sync procurement_items.received_quantity from InventoryMovement records
+// Usage: GET /api/v1/sync-batches?dry_run=1  (preview changes)
+//        GET /api/v1/sync-batches             (apply changes)
+// DELETE THIS ROUTE AFTER USE
+Route::get('/sync-batches', function (\Illuminate\Http\Request $request) {
+    $dryRun = $request->boolean('dry_run', false);
+    $batches = \App\Models\ProcurementItem::all();
+    $fixes = [];
+    $totalFixed = 0;
 
-        foreach ($batches as $batch) {
-            // Sum all outgoing movements linked to this specific batch
-            $actualConsumed = \App\Models\InventoryMovement::where('procurement_item_id', $batch->id)
-                ->whereIn('movement_type', ['issue_to_chef', 'waste', 'sale'])
-                ->sum('quantity');
+    foreach ($batches as $batch) {
+        // Sum all outgoing movements linked to this specific batch
+        $actualConsumed = \App\Models\InventoryMovement::where('procurement_item_id', $batch->id)
+            ->whereIn('movement_type', ['issue_to_chef', 'waste', 'sale'])
+            ->sum('quantity');
 
-            $oldValue = (float) $batch->received_quantity;
-            $newValue = (float) $actualConsumed;
+        $oldValue = (float) $batch->received_quantity;
+        $newValue = (float) $actualConsumed;
 
-            if (abs($oldValue - $newValue) > 0.001) {
-                $materialName = $batch->rawMaterial->name ?? 'Unknown';
+        if (abs($oldValue - $newValue) > 0.001) {
+            $materialName = $batch->rawMaterial->name ?? 'Unknown';
 
-                $fixes[] = [
-                    'procurement_item_id' => $batch->id,
-                    'raw_material' => $materialName,
-                    'batch_quantity' => $batch->quantity,
-                    'old_received_quantity' => $oldValue,
-                    'new_received_quantity' => $newValue,
-                    'difference' => round($oldValue - $newValue, 2),
-                    'old_available' => round($batch->quantity - $oldValue, 2),
-                    'new_available' => round($batch->quantity - $newValue, 2),
-                ];
+            $fixes[] = [
+                'procurement_item_id' => $batch->id,
+                'raw_material' => $materialName,
+                'batch_quantity' => $batch->quantity,
+                'old_received_quantity' => $oldValue,
+                'new_received_quantity' => $newValue,
+                'difference' => round($oldValue - $newValue, 2),
+                'old_available' => round($batch->quantity - $oldValue, 2),
+                'new_available' => round($batch->quantity - $newValue, 2),
+            ];
 
-                if (!$dryRun) {
-                    $batch->update(['received_quantity' => $newValue]);
-                }
-                $totalFixed++;
+            if (!$dryRun) {
+                $batch->update(['received_quantity' => $newValue]);
             }
+            $totalFixed++;
         }
+    }
 
-        return response()->json([
-            'mode' => $dryRun ? 'DRY RUN (no changes made)' : 'APPLIED',
-            'total_batches_checked' => $batches->count(),
-            'total_fixed' => $totalFixed,
-            'fixes' => $fixes,
-        ]);
-    });
+    return response()->json([
+        'mode' => $dryRun ? 'DRY RUN (no changes made)' : 'APPLIED',
+        'total_batches_checked' => $batches->count(),
+        'total_fixed' => $totalFixed,
+        'fixes' => $fixes,
+    ]);
 });

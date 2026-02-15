@@ -39,54 +39,55 @@ class InventoryService
         ?User $approvedBy = null,
         ?int $referenceId = null
     ): void {
-        DB::transaction(function () use ($rawMaterialId, $quantity, $toLocation, $performedBy, $approvedBy, $referenceId) {
-            $availableStock = $this->getStockBalance($rawMaterialId);
+        // NOTE: Caller MUST wrap this in a DB::transaction() 
+        // Do NOT add DB::transaction() here — it creates nested savepoints
+        // that can independently commit/rollback, causing data corruption
 
-            if ($availableStock < $quantity) {
-                throw ValidationException::withMessages([
-                    'quantity' => 'Insufficient stock available'
-                ]);
-            }
+        $availableStock = $this->getStockBalance($rawMaterialId);
 
-            $remaining = $quantity;
+        if ($availableStock < $quantity) {
+            $material = RawMaterial::find($rawMaterialId);
+            throw ValidationException::withMessages([
+                'quantity' => "Insufficient stock for {$material->name}: requested {$quantity}, available {$availableStock}"
+            ]);
+        }
 
-            $batches = ProcurementItem::where('raw_material_id', $rawMaterialId)
-                ->whereRaw('quantity > received_quantity')
-                ->orderBy('created_at')
-                ->lockForUpdate()
-                ->get();
+        $remaining = $quantity;
 
-            foreach ($batches as $batch) {
-                if ($remaining <= 0)
-                    break;
+        $batches = ProcurementItem::where('raw_material_id', $rawMaterialId)
+            ->whereRaw('quantity > received_quantity')
+            ->orderBy('created_at')
+            ->lockForUpdate()
+            ->get();
 
-                $availableInBatch = $batch->quantity - $batch->received_quantity;
-                $used = min($availableInBatch, $remaining);
+        foreach ($batches as $batch) {
+            if ($remaining <= 0)
+                break;
 
-                InventoryMovement::create([
-                    'raw_material_id' => $rawMaterialId,
-                    'procurement_item_id' => $batch->id,
-                    'from_location' => 'store',
-                    'to_location' => $toLocation,
-                    'quantity' => $used,
-                    'movement_type' => 'issue_to_chef',
-                    'reference_id' => $referenceId,
-                    'performed_by' => $performedBy->id,
-                    'approved_by' => $approvedBy?->id,
-                ]);
+            $availableInBatch = $batch->quantity - $batch->received_quantity;
+            $used = min($availableInBatch, $remaining);
 
-                $batch->increment('received_quantity', $used);
-                $remaining -= $used;
-            }
+            InventoryMovement::create([
+                'raw_material_id' => $rawMaterialId,
+                'procurement_item_id' => $batch->id,
+                'from_location' => 'store',
+                'to_location' => $toLocation,
+                'quantity' => $used,
+                'movement_type' => 'issue_to_chef',
+                'reference_id' => $referenceId,
+                'performed_by' => $performedBy->id,
+                'approved_by' => $approvedBy?->id,
+            ]);
 
-            if ($remaining > 0) {
-                // This means getStockBalance() said we had enough, but the Batches didn't sum up to that.
-                // Data integrity mismatch (Phantom Stock).
-                throw ValidationException::withMessages([
-                    'quantity' => "Data integrity error: System indicates stock exists ({$availableStock}), but valid batches could not be found to fulfill request. Discrepancy: {$remaining}."
-                ]);
-            }
-        });
+            $batch->increment('received_quantity', $used);
+            $remaining -= $used;
+        }
+
+        if ($remaining > 0) {
+            throw ValidationException::withMessages([
+                'quantity' => "Data integrity error: System indicates stock exists ({$availableStock}), but valid batches could not be found to fulfill request. Discrepancy: {$remaining}."
+            ]);
+        }
     }
 
     /**

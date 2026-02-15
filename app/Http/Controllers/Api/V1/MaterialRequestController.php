@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\MaterialRequest;
 use App\Models\MaterialRequestItem;
+use App\Models\InventoryMovement;
 use App\Services\InventoryService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -216,8 +217,10 @@ class MaterialRequestController extends Controller
         try {
             DB::beginTransaction();
 
-            // Lock the record to prevent concurrent fulfillments
-            $materialRequest = MaterialRequest::lockForUpdate()->find($materialRequest->id);
+            // Lock the record AND eagerly load items to prevent lazy-load issues
+            $materialRequest = MaterialRequest::with('items')
+                ->lockForUpdate()
+                ->find($materialRequest->id);
 
             if (!$materialRequest) {
                 DB::rollBack();
@@ -228,28 +231,50 @@ class MaterialRequestController extends Controller
             if ($materialRequest->status !== 'approved') {
                 DB::rollBack();
                 throw ValidationException::withMessages([
-                    'status' => 'Request is no longer in approved status (already fulfilled?)'
+                    'status' => 'Request is no longer in approved status (already fulfilled or status changed)'
                 ]);
             }
 
-            foreach ($materialRequest->items as $item) {
-                // DEBUG: Log each item being issued
-                \Log::info('FULFILL_DEBUG: Issuing item', [
-                    'material_request_id' => $materialRequest->id,
-                    'request_status' => $materialRequest->status,
-                    'raw_material_id' => $item->raw_material_id,
-                    'quantity' => $item->quantity,
+            // IDEMPOTENCY CHECK: If movements already exist for this request, don't duplicate
+            $existingMovements = InventoryMovement::where('reference_id', $materialRequest->id)
+                ->where('movement_type', 'issue_to_chef')
+                ->exists();
+
+            if ($existingMovements) {
+                // Movements already created — just mark as fulfilled if not already
+                $materialRequest->update([
+                    'status' => 'fulfilled',
                     'fulfilled_by' => auth()->id(),
-                    'timestamp' => now()->toDateTimeString(),
-                    'call_stack' => collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10))
-                        ->map(fn($frame) => ($frame['class'] ?? '') . '::' . ($frame['function'] ?? '') . ':' . ($frame['line'] ?? ''))
-                        ->toArray()
+                    'fulfilled_at' => now(),
+                ]);
+                DB::commit();
+                return response()->json([
+                    'message' => 'Material request was already processed — marked as fulfilled',
+                    'data' => $materialRequest
+                ]);
+            }
+
+            // Get items snapshot BEFORE processing (prevent re-loading during loop)
+            $items = $materialRequest->items->toArray();
+
+            \Log::info('FULFILL_START', [
+                'material_request_id' => $materialRequest->id,
+                'total_items' => count($items),
+                'fulfilled_by' => auth()->id(),
+                'timestamp' => now()->toDateTimeString(),
+            ]);
+
+            foreach ($items as $item) {
+                \Log::info('FULFILL_ITEM', [
+                    'material_request_id' => $materialRequest->id,
+                    'raw_material_id' => $item['raw_material_id'],
+                    'quantity' => $item['quantity'],
                 ]);
 
                 // Issue materials using FIFO from InventoryService
                 $this->inventoryService->issueToChef(
-                    rawMaterialId: $item->raw_material_id,
-                    quantity: $item->quantity,
+                    rawMaterialId: $item['raw_material_id'],
+                    quantity: $item['quantity'],
                     toLocation: $materialRequest->section->name,
                     performedBy: auth()->user(),
                     approvedBy: $materialRequest->approver,

@@ -41,7 +41,7 @@
                     <div>
                         <h4 class="text-title-sm font-bold text-brand-500" x-text="formatCurrency(report.total_revenue)">
                         </h4>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Revenue</span>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales</span>
                     </div>
                     <div
                         class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-900/20">
@@ -59,7 +59,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h4 class="text-title-sm font-bold text-gray-900 dark:text-white" x-text="report.total_sales"></h4>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales</span>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Transaction Count</span>
                     </div>
                 </div>
             </div>
@@ -68,9 +68,9 @@
                 class="rounded-sm border border-gray-200 bg-white p-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-title-sm font-bold text-green-500" x-text="formatCurrency(report.total_profit)">
+                        <h4 class="text-title-sm font-bold text-blue-500" x-text="formatCurrency(report.total_profit)">
                         </h4>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Profit</span>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Revenue (Profit)</span>
                     </div>
                 </div>
             </div>
@@ -93,7 +93,7 @@
             <!-- Revenue Trend Chart -->
             <div
                 class="rounded-sm border border-gray-200 bg-white p-7 shadow-default dark:border-gray-800 dark:bg-gray-900">
-                <h3 class="mb-4 font-medium text-gray-900 dark:text-white">Revenue Trend</h3>
+                <h3 class="mb-4 font-medium text-gray-900 dark:text-white">Sales Trend</h3>
                 <canvas id="revenueTrendChart"></canvas>
             </div>
 
@@ -118,8 +118,8 @@
                             <tr class="bg-gray-50 text-left dark:bg-gray-800">
                                 <th class="px-4 py-3 font-medium text-gray-900 dark:text-white">Section</th>
                                 <th class="px-4 py-3 font-medium text-gray-900 dark:text-white">Sales Count</th>
+                                <th class="px-4 py-3 font-medium text-gray-900 dark:text-white">Total Sales</th>
                                 <th class="px-4 py-3 font-medium text-gray-900 dark:text-white">Revenue</th>
-                                <th class="px-4 py-3 font-medium text-gray-900 dark:text-white">Profit</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -129,8 +129,8 @@
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="section.sales_count"></td>
                                     <td class="px-4 py-3 font-medium text-brand-500"
                                         x-text="formatCurrency(section.revenue)"></td>
-                                    <td class="px-4 py-3 font-medium text-green-500"
-                                        x-text="formatCurrency(section.profit)"></td>
+                                    <td class="px-4 py-3 font-medium text-blue-500" x-text="formatCurrency(section.profit)">
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>

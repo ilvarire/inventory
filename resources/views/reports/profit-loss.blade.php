@@ -50,19 +50,19 @@
             </div>
 
             <div class="p-7">
-                <!-- Revenue Section -->
+                <!-- Total Sales Section -->
                 <div class="mb-6">
-                    <h4 class="mb-3 font-medium text-gray-900 dark:text-white">Revenue</h4>
+                    <h4 class="mb-3 font-medium text-gray-900 dark:text-white">Total Sales</h4>
                     <div class="space-y-2">
                         <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">Total Sales</span>
+                            <span class="text-gray-600 dark:text-gray-400">Total Transactions</span>
                             <span class="font-medium text-gray-900 dark:text-white"
                                 x-text="formatCurrency(report.total_revenue)"></span>
                         </div>
                     </div>
                     <div class="mt-3 border-t border-gray-200 pt-3 dark:border-gray-800">
                         <div class="flex justify-between">
-                            <span class="font-medium text-gray-900 dark:text-white">Total Revenue</span>
+                            <span class="font-medium text-gray-900 dark:text-white">Total Sales</span>
                             <span class="text-lg font-bold text-brand-500"
                                 x-text="formatCurrency(report.total_revenue)"></span>
                         </div>
@@ -82,10 +82,10 @@
                             </div>
                         </div>
 
-                        <!-- Sales Profit (Revenue - Ingredients) -->
+                        <!-- Revenue (Sales Profit in Code) -->
                         <div class="rounded border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
                             <div class="flex justify-between">
-                                <span class="font-medium text-blue-800 dark:text-blue-200">Sales Profit</span>
+                                <span class="font-medium text-blue-800 dark:text-blue-200">Revenue</span>
                                 <span class="font-bold text-blue-600 dark:text-blue-400"
                                     x-text="formatCurrency(report.sales_profit)"></span>
                             </div>
@@ -169,26 +169,26 @@
 
                 <!-- Net Profit -->
                 <div class="rounded border p-4" :class="{
-                                                'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
-                                                'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
-                                            }">
+                                                    'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': report.net_profit >= 0,
+                                                    'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': report.net_profit < 0
+                                                }">
                     <div class="flex justify-between">
                         <span class="font-bold" :class="{
-                                                        'text-green-800 dark:text-green-200': report.net_profit >= 0,
-                                                        'text-red-800 dark:text-red-200': report.net_profit < 0
-                                                    }">
+                                                            'text-green-800 dark:text-green-200': report.net_profit >= 0,
+                                                            'text-red-800 dark:text-red-200': report.net_profit < 0
+                                                        }">
                             Net Profit
                         </span>
                         <span class="text-2xl font-bold" :class="{
-                                                        'text-green-600 dark:text-green-400': report.net_profit >= 0,
-                                                        'text-red-600 dark:text-red-400': report.net_profit < 0
-                                                    }" x-text="formatCurrency(report.net_profit)">
+                                                            'text-green-600 dark:text-green-400': report.net_profit >= 0,
+                                                            'text-red-600 dark:text-red-400': report.net_profit < 0
+                                                        }" x-text="formatCurrency(report.net_profit)">
                         </span>
                     </div>
                     <p class="mt-1 text-sm" :class="{
-                                                    'text-green-700 dark:text-green-300': report.net_profit >= 0,
-                                                    'text-red-700 dark:text-red-300': report.net_profit < 0
-                                                }">
+                                                        'text-green-700 dark:text-green-300': report.net_profit >= 0,
+                                                        'text-red-700 dark:text-red-300': report.net_profit < 0
+                                                    }">
                         Margin: <span x-text="report.net_margin + '%'"></span>
                     </p>
                 </div>

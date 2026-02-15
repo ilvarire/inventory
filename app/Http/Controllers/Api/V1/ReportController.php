@@ -236,9 +236,14 @@ class ReportController extends Controller
         // Total COGS = material costs of items sold + waste
         $totalCogs = $materialCosts + $wasteCosts;
 
-        // Gross Profit
+        // Sales Profit (Revenue - Material Costs only)
+        // This matches the cumulative "Profit" from recipe analysis
+        $salesProfit = $totalRevenue - $materialCosts;
+
+        // Gross Profit (Sales Profit - Waste)
         $grossProfit = $totalRevenue - $totalCogs;
         $grossMargin = $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0;
+        $salesMargin = $totalRevenue > 0 ? ($salesProfit / $totalRevenue) * 100 : 0;
 
         // Get expenses
         $expenseQuery = Expense::whereBetween('expense_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
@@ -285,6 +290,8 @@ class ReportController extends Controller
             'material_costs' => $materialCosts,
             'waste_costs' => $wasteCosts,
             'total_cogs' => $totalCogs,
+            'sales_profit' => $salesProfit,
+            'sales_margin' => round($salesMargin, 2),
             'gross_profit' => $grossProfit,
             'gross_margin' => round($grossMargin, 2),
             'total_expenses' => $totalExpenses,

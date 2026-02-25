@@ -42,10 +42,10 @@ class SaleController extends Controller
 
         // Filter by date range - use whereDate for proper date comparison
         if ($request->has('start_date') && $request->start_date) {
-            $query->whereDate('sale_date', '>=', $request->start_date);
+            $query->whereDate('created_at', '>=', $request->start_date);
         }
         if ($request->has('end_date') && $request->end_date) {
-            $query->whereDate('sale_date', '<=', $request->end_date);
+            $query->whereDate('created_at', '<=', $request->end_date);
         }
 
         // DEBUG LOGGING
@@ -57,7 +57,7 @@ class SaleController extends Controller
             'request_params' => $request->all(),
         ]);
 
-        $sales = $query->orderBy('sale_date', 'desc')
+        $sales = $query->orderBy('created_at', 'desc')
             ->paginate($request->get('per_page', 15));
 
         // Calculate aggregate totals for the filtered query (ignoring pagination)

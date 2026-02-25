@@ -30,67 +30,53 @@ class SaleController extends Controller
         $user = auth()->user();
         $query = Sale::with(['section', 'salesUser', 'items']);
 
-        // Sales user can only see sales from their section
-        // if ($user->isSales()) {
-        //     $query->where('section_id', $user->section_id);
-        // }
-
         // Filter by section
-        if ($request->has('section_id') && $request->section_id) {
+        if ($request->filled('section_id')) {
             $query->where('section_id', $request->section_id);
         }
 
-        // Filter by date range - use whereDate for proper date comparison
-        if ($request->has('start_date') && $request->start_date) {
+        // Filter by date range
+        if ($request->filled('start_date')) {
             $query->whereDate('created_at', '>=', $request->start_date);
         }
-        if ($request->has('end_date') && $request->end_date) {
+        if ($request->filled('end_date')) {
             $query->whereDate('created_at', '<=', $request->end_date);
         }
 
-        // DEBUG LOGGING
-        \Illuminate\Support\Facades\Log::info('SaleController@index called', [
-            'user_id' => $user->id,
-            'is_admin' => $user->isAdmin(),
-            'is_sales' => $user->isSales(),
-            'section_id' => $user->section_id,
-            'request_params' => $request->all(),
-        ]);
+        // Filter by payment method
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->payment_method);
+        }
 
         $sales = $query->orderBy('created_at', 'desc')
             ->paginate($request->get('per_page', 15));
 
-        // Calculate aggregate totals for the filtered query (ignoring pagination)
-        $aggregateQuery = clone $query;
-        // Strip the order by for the aggregates to improve performance
-        $aggregateQuery->getQuery()->orders = null;
+        // Calculate aggregate totals for the filtered range
+        $totalRevenue = (float) Sale::query()
+            ->when($request->filled('section_id'), fn($q) => $q->where('section_id', $request->section_id))
+            ->when($request->filled('start_date'), fn($q) => $q->whereDate('created_at', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn($q) => $q->whereDate('created_at', '<=', $request->end_date))
+            ->when($request->filled('payment_method'), fn($q) => $q->where('payment_method', $request->payment_method))
+            ->sum('total_amount');
 
-        $totalRevenue = (float) $aggregateQuery->sum('total_amount');
-        $totalSalesCount = (int) $aggregateQuery->count();
+        $totalSalesCount = $sales->total();
 
-        // Calculate profit (Total Sales - Ingredient Costs)
-        // We use Join to get SaleItems and sum the profit
-        $totalProfit = (float) DB::table('sales')
-            ->join('sale_items', 'sales.id', '=', 'sale_items.sale_id')
-            ->whereIn('sales.id', $query->pluck('id')) // This might be problematic if pluck limit is high, but $query here is the base query
-            ->select(DB::raw('SUM((sale_items.unit_price - sale_items.cost_price) * sale_items.quantity) as profit'))
-            ->whereNull('sales.deleted_at')
-            ->value('profit');
-
-        // Better way for Profit to respect the filters:
-        // We need to apply the same filters to a query on SaleItems joined with Sales
+        // Calculate profit from sale_items joined with sales
         $profitQuery = DB::table('sale_items')
             ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
             ->whereNull('sales.deleted_at');
 
-        if ($request->has('section_id') && $request->section_id) {
+        if ($request->filled('section_id')) {
             $profitQuery->where('sales.section_id', $request->section_id);
         }
-        if ($request->has('start_date') && $request->start_date) {
-            $profitQuery->whereDate('sales.sale_date', '>=', $request->start_date);
+        if ($request->filled('start_date')) {
+            $profitQuery->whereDate('sales.created_at', '>=', $request->start_date);
         }
-        if ($request->has('end_date') && $request->end_date) {
-            $profitQuery->whereDate('sales.sale_date', '<=', $request->end_date);
+        if ($request->filled('end_date')) {
+            $profitQuery->whereDate('sales.created_at', '<=', $request->end_date);
+        }
+        if ($request->filled('payment_method')) {
+            $profitQuery->where('sales.payment_method', $request->payment_method);
         }
 
         $totalProfit = (float) $profitQuery->sum(DB::raw('(sale_items.unit_price - sale_items.cost_price) * sale_items.quantity'));

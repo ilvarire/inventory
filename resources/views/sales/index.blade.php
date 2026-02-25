@@ -164,10 +164,10 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium capitalize" :class="{
-                                                                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
-                                                                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
-                                                                                                'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
-                                                                                            }"
+                                                                                                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': sale.payment_method === 'cash',
+                                                                                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': sale.payment_method === 'card',
+                                                                                                    'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300': sale.payment_method === 'transfer'
+                                                                                                }"
                                         x-text="sale.payment_method">
                                     </span>
                                 </td>
@@ -297,14 +297,14 @@
                             params.append('page', page);
 
                             const response = await API.get('/sales?' + params.toString());
-                            this.sales = response.data || [];
-                            this.pagination = response;
 
-                            // Calculate summary (Note: ideally this comes from backend for all pages, but we'll sum current page for now unless backend provides global summary)
-                            if (this.sales) {
-                                this.summary.total_sales = this.sales.length; // This is per page now
-                                this.summary.total_revenue = this.sales.reduce((sum, sale) => sum + parseFloat(sale.total_amount || 0), 0);
-                                this.summary.total_profit = this.sales.reduce((sum, sale) => sum + parseFloat(sale.profit || 0), 0); // Note: profit might not be in list response
+                            // Updated structure: { pagination: {...}, summary: {...} }
+                            const salesData = response.pagination || {};
+                            this.sales = salesData.data || [];
+                            this.pagination = salesData;
+
+                            if (response.summary) {
+                                this.summary = response.summary;
                             }
 
                         } catch (error) {

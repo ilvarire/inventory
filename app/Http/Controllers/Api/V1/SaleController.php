@@ -60,14 +60,49 @@ class SaleController extends Controller
         $sales = $query->orderBy('sale_date', 'desc')
             ->paginate($request->get('per_page', 15));
 
-        \Illuminate\Support\Facades\Log::info('SaleController@index query result', [
-            'count' => $sales->count(),
-            'total' => $sales->total(),
-            'sql' => $query->toSql(),
-            'bindings' => $query->getBindings()
-        ]);
+        // Calculate aggregate totals for the filtered query (ignoring pagination)
+        $aggregateQuery = clone $query;
+        // Strip the order by for the aggregates to improve performance
+        $aggregateQuery->getQuery()->orders = null;
 
-        return response()->json($sales);
+        $totalRevenue = (float) $aggregateQuery->sum('total_amount');
+        $totalSalesCount = (int) $aggregateQuery->count();
+
+        // Calculate profit (Total Sales - Ingredient Costs)
+        // We use Join to get SaleItems and sum the profit
+        $totalProfit = (float) DB::table('sales')
+            ->join('sale_items', 'sales.id', '=', 'sale_items.sale_id')
+            ->whereIn('sales.id', $query->pluck('id')) // This might be problematic if pluck limit is high, but $query here is the base query
+            ->select(DB::raw('SUM((sale_items.unit_price - sale_items.cost_price) * sale_items.quantity) as profit'))
+            ->whereNull('sales.deleted_at')
+            ->value('profit');
+
+        // Better way for Profit to respect the filters:
+        // We need to apply the same filters to a query on SaleItems joined with Sales
+        $profitQuery = DB::table('sale_items')
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->whereNull('sales.deleted_at');
+
+        if ($request->has('section_id') && $request->section_id) {
+            $profitQuery->where('sales.section_id', $request->section_id);
+        }
+        if ($request->has('start_date') && $request->start_date) {
+            $profitQuery->whereDate('sales.sale_date', '>=', $request->start_date);
+        }
+        if ($request->has('end_date') && $request->end_date) {
+            $profitQuery->whereDate('sales.sale_date', '<=', $request->end_date);
+        }
+
+        $totalProfit = (float) $profitQuery->sum(DB::raw('(sale_items.unit_price - sale_items.cost_price) * sale_items.quantity'));
+
+        return response()->json([
+            'pagination' => $sales,
+            'summary' => [
+                'total_revenue' => $totalRevenue,
+                'total_sales' => $totalSalesCount,
+                'total_profit' => $totalProfit,
+            ]
+        ]);
     }
 
     /**

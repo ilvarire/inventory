@@ -27,8 +27,8 @@
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                 <option value="">All Status</option>
                 <option value="available">Available</option>
-                <option value="low_stock">Low Stock</option>
                 <option value="expired">Expired</option>
+                <option value="wasted">Wasted</option>
             </select>
         </div>
 
@@ -79,10 +79,12 @@
                                 </td>
                                 <td class="px-4 py-5">
                                     <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium" :class="{
-                                                                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': getStatus(product) === 'Available',
-                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': getStatus(product) === 'Low Stock',
-                                                                            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': getStatus(product) === 'Expired' || getStatus(product) === 'Sold Out'
-                                                                        }" x-text="getStatus(product)">
+                                                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300': product.status === 'available',
+                                                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300': product.status === 'sold',
+                                                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': product.status === 'expired',
+                                                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': product.status === 'wasted'
+                                                                            }"
+                                        x-text="product.status.charAt(0).toUpperCase() + product.status.slice(1)">
                                     </span>
                                 </td>
                             </tr>

@@ -150,7 +150,8 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
 
     // Prepared Inventory routes (for sales)
     Route::get('/prepared-inventory', function (Request $request) {
-        $query = \App\Models\PreparedInventory::query();
+        $query = \App\Models\PreparedInventory::query()
+            ->where('quantity', '>', 0.5);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);

@@ -9,11 +9,13 @@ use Illuminate\Http\Request;
 class NotificationController extends Controller
 {
     /**
-     * Get paginated notifications for the authenticated user.
+     * Get unread notifications for the authenticated user.
      */
     public function index(Request $request)
     {
         $notifications = $request->user()->notifications()
+            ->whereNull('read_at')
+            ->latest()
             ->paginate($request->get('per_page', 20));
 
         return response()->json($notifications);

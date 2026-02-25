@@ -35,8 +35,8 @@ class RecipePolicy
      */
     public function create(User $user): bool
     {
-        // Chef, Manager, and Admin can create recipes
-        return $user->isChef() || $user->isManager() || $user->isAdmin();
+        // Only Manager and Admin can create recipes (Chef is view-only)
+        return $user->isManager() || $user->isAdmin();
     }
 
     /**
@@ -44,10 +44,9 @@ class RecipePolicy
      */
     public function update(User $user, Recipe $recipe): bool
     {
-        // Chef can only update recipes from their section
+        // Chef is view-only, cannot update
         if ($user->isChef()) {
-            return $user->id === $recipe->created_by
-                && $user->canAccessSection($recipe->section_id);
+            return false;
         }
 
         // Manager and Admin can update any recipe

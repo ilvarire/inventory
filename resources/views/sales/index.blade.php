@@ -29,7 +29,7 @@
         </div>
 
         <!-- Revenue Summary Cards -->
-        <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div
                 class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex items-center justify-between">
@@ -69,26 +69,6 @@
                 </div>
             </div>
 
-            <div
-                class="rounded-sm border border-gray-200 bg-white px-6 py-6 shadow-default dark:border-gray-800 dark:bg-gray-900">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h4 class="text-title-sm font-bold text-gray-900 dark:text-white"
-                            x-text="formatCurrency(summary.total_profit)">
-                            ₦0.00
-                        </h4>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Profit</span>
-                    </div>
-                    <div
-                        class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-900/20">
-                        <svg class="fill-brand-500" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                            <path
-                                d="M11.7531 0.171875H10.2469C9.64062 0.171875 9.10938 0.703125 9.10938 1.30937V2.64062C9.10938 3.24687 9.64062 3.77812 10.2469 3.77812H11.7531C12.3594 3.77812 12.8906 3.24687 12.8906 2.64062V1.30937C12.8906 0.703125 12.3594 0.171875 11.7531 0.171875Z"
-                                fill="" />
-                        </svg>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Filters -->

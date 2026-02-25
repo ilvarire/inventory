@@ -118,10 +118,12 @@
                                 class="grow rounded-md border border-gray-300 bg-white px-4 py-2 text-center text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
                                 View Details
                             </a>
-                            <a :href="'/production/create?recipe=' + recipe.id"
-                                class="grow rounded-md bg-brand-500 px-4 py-2 text-center text-sm text-white hover:bg-brand-600">
-                                Log Production
-                            </a>
+                            @if(!auth()->user()->isChef())
+                                <a :href="'/production/create?recipe=' + recipe.id"
+                                    class="grow rounded-md bg-brand-500 px-4 py-2 text-center text-sm text-white hover:bg-brand-600">
+                                    Log Production
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -82,15 +82,13 @@
                                     <div class="flex justify-between items-start">
                                         <p class="text-sm text-gray-800 dark:text-white" x-text="notification.message">
                                         </p>
-                                        <span x-show="!notification.read_at"
-                                            class="inline-block h-2 w-2 rounded-full bg-brand-500 shrink-0 mt-1.5 ml-2"></span>
                                     </div>
                                     <p class="text-xs text-gray-500" x-text="formatDate(notification.created_at)"></p>
                                 </a>
                             </li>
                         </template>
                         <li x-show="notifications.length === 0" class="px-4.5 py-3 text-center text-sm text-gray-500">
-                            No notifications
+                            No new notifications
                         </li>
                     </ul>
                 </div>
@@ -224,24 +222,18 @@
                 },
 
                 async onNotificationClick(notification) {
-                    // 1. Mark as read in UI immediately for better UX
-                    const wasUnread = !notification.read_at;
-                    if (wasUnread) {
-                        notification.read_at = new Date().toISOString();
-                        this.unreadCount = Math.max(0, this.unreadCount - 1);
+                    // 1. Remove from list immediately (since we only show unread)
+                    this.notifications = this.notifications.filter(n => n.id !== notification.id);
+                    this.unreadCount = Math.max(0, this.unreadCount - 1);
+
+                    // 2. Mark as read on the server
+                    try {
+                        await API.post(`/notifications/${notification.id}/read`);
+                    } catch (error) {
+                        console.error('Failed to mark as read:', error);
                     }
 
-                    // 2. Perform the API call and WAIT for it if we are about to navigate
-                    // This prevents the browser from canceling the request during navigation
-                    if (wasUnread) {
-                        try {
-                            await API.post(`/notifications/${notification.id}/read`);
-                        } catch (error) {
-                            console.error('Failed to mark as read:', error);
-                        }
-                    }
-
-                    // 3. Then navigate if there is a URL
+                    // 3. Navigate if there is a URL
                     if (notification.action_url) {
                         window.location.href = notification.action_url;
                     }

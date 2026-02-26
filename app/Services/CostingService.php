@@ -130,8 +130,7 @@ class CostingService
             return 0;
         }
 
-        return $this->getProductionCost($productionLogId)
-            / $production->quantity_produced;
+        return $this->getProductionCost($productionLogId);
     }
 
     /**

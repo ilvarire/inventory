@@ -142,43 +142,43 @@
                                     <div class="w-full flex flex-row gap-3 items-center justify-center">
                                         <div class="w-1/2">
                                             <div x-data="{
-                                                            open: false,
-                                                            search: '',
-                                                            filteredMaterials: [],
-                                                            init() {
-                                                                this.filteredMaterials = materials;
-                                                                if (ingredient.raw_material_id) {
-                                                                    const selected = materials.find(m => m.id == ingredient.raw_material_id);
-                                                                    if (selected) this.search = selected.name;
-                                                                }
-                                                                this.$watch('materials', value => {
-                                                                    this.filteredMaterials = value;
-                                                                });
-                                                            },
-                                                            filterMaterials() {
-                                                                if (this.search === '') {
+                                                                open: false,
+                                                                search: '',
+                                                                filteredMaterials: [],
+                                                                init() {
                                                                     this.filteredMaterials = materials;
-                                                                } else {
-                                                                    this.filteredMaterials = materials.filter(m => 
-                                                                        m.name.toLowerCase().includes(this.search.toLowerCase())
-                                                                    );
+                                                                    if (ingredient.raw_material_id) {
+                                                                        const selected = materials.find(m => m.id == ingredient.raw_material_id);
+                                                                        if (selected) this.search = selected.name;
+                                                                    }
+                                                                    this.$watch('materials', value => {
+                                                                        this.filteredMaterials = value;
+                                                                    });
+                                                                },
+                                                                filterMaterials() {
+                                                                    if (this.search === '') {
+                                                                        this.filteredMaterials = materials;
+                                                                    } else {
+                                                                        this.filteredMaterials = materials.filter(m => 
+                                                                            m.name.toLowerCase().includes(this.search.toLowerCase())
+                                                                        );
+                                                                    }
+                                                                },
+                                                                selectMaterial(material) {
+                                                                    ingredient.raw_material_id = material.id;
+                                                                    this.search = material.name;
+                                                                    this.open = false;
+                                                                },
+                                                                handleClickOutside() {
+                                                                    this.open = false;
+                                                                    const selected = materials.find(m => m.id == ingredient.raw_material_id);
+                                                                    if (selected) {
+                                                                        this.search = selected.name;
+                                                                    } else {
+                                                                        this.search = '';
+                                                                    }
                                                                 }
-                                                            },
-                                                            selectMaterial(material) {
-                                                                ingredient.raw_material_id = material.id;
-                                                                this.search = material.name;
-                                                                this.open = false;
-                                                            },
-                                                            handleClickOutside() {
-                                                                this.open = false;
-                                                                const selected = materials.find(m => m.id == ingredient.raw_material_id);
-                                                                if (selected) {
-                                                                    this.search = selected.name;
-                                                                } else {
-                                                                    this.search = '';
-                                                                }
-                                                            }
-                                                        }" class="relative" @click.outside="handleClickOutside()">
+                                                            }" class="relative" @click.outside="handleClickOutside()">
                                                 <input type="text" x-model="search" @input="filterMaterials(); open = true"
                                                     @click="open = true" @focus="open = true"
                                                     placeholder="Search ingredient..."
@@ -372,7 +372,6 @@
 
                     getMaterialCost(materialId) {
                         const material = this.materials.find(m => m.id == materialId);
-                        console.log(material.unit_cost);
                         return material ? parseFloat(material.unit_cost || 0) : 0;
                     },
 

@@ -12,13 +12,23 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('production_logs', function (Blueprint $table) {
-            $table->dropForeign(['material_request_id']);
-            $table->dropColumn('material_request_id');
+            // Try to drop FK — may not exist if original migration partially failed
+            try {
+                $table->dropForeign(['material_request_id']);
+            } catch (\Exception $e) {
+                // FK doesn't exist, that's fine
+            }
+
+            if (Schema::hasColumn('production_logs', 'material_request_id')) {
+                $table->dropColumn('material_request_id');
+            }
         });
 
-        Schema::table('material_requests', function (Blueprint $table) {
-            $table->dropColumn('used_in_production');
-        });
+        if (Schema::hasColumn('material_requests', 'used_in_production')) {
+            Schema::table('material_requests', function (Blueprint $table) {
+                $table->dropColumn('used_in_production');
+            });
+        }
     }
 
     /**

@@ -13,7 +13,6 @@ class ProductionLog extends Model
         'recipe_id',
         'section_id',
         'chef_id',
-        'material_request_id',
         'quantity_produced',
         'production_date',
         'variance',
@@ -23,11 +22,6 @@ class ProductionLog extends Model
     protected $casts = [
         'production_date' => 'date'
     ];
-
-    public function materialRequest()
-    {
-        return $this->belongsTo(\App\Models\MaterialRequest::class);
-    }
 
     public function recipe()
     {

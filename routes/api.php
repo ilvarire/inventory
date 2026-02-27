@@ -161,19 +161,6 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle.custom:api.read'])->g
         Route::get('/', [MaterialRequestController::class, 'index']);
         Route::post('/', [MaterialRequestController::class, 'store'])
             ->middleware(['role:Chef', 'throttle.custom:api.write']);
-
-        // Unused fulfilled requests for current chef (for production logging)
-        Route::get('/unused', function (\Illuminate\Http\Request $request) {
-            $requests = \App\Models\MaterialRequest::where('chef_id', $request->user()->id)
-                ->where('status', 'fulfilled')
-                ->where('used_in_production', false)
-                ->with('items.rawMaterial')
-                ->latest()
-                ->get();
-
-            return response()->json(['data' => $requests]);
-        });
-
         Route::get('/{materialRequest}', [MaterialRequestController::class, 'show']);
         Route::post('/{materialRequest}/approve', [MaterialRequestController::class, 'approve'])
             ->middleware(['role:Manager,Admin', 'throttle.custom:api.write']);

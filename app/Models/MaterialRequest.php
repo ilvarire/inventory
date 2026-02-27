@@ -12,7 +12,6 @@ class MaterialRequest extends Model
         'chef_id',
         'section_id',
         'status',
-        'used_in_production',
         'approved_by',
         'approved_at',
         'fulfilled_by',
@@ -21,7 +20,6 @@ class MaterialRequest extends Model
 
     protected $casts = [
         'chef_id' => 'integer',
-        'used_in_production' => 'boolean',
         'approved_at' => 'datetime',
         'fulfilled_at' => 'datetime'
     ];
@@ -49,10 +47,5 @@ class MaterialRequest extends Model
     public function fulfiller()
     {
         return $this->belongsTo(User::class, 'fulfilled_by');
-    }
-
-    public function productionLog()
-    {
-        return $this->hasOne(ProductionLog::class);
     }
 }

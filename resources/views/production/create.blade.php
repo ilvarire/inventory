@@ -32,45 +32,45 @@
                             Recipe <span class="text-red-500">*</span>
                         </label>
                         <div x-data="{
-                                        open: false,
-                                        search: '',
-                                        filteredRecipes: [],
-                                        init() {
-                                            this.filteredRecipes = recipes;
-                                            this.$watch('recipes', value => {
-                                                this.filteredRecipes = value;
-                                                // If ID is already set (e.g. from URL), set the name
-                                                if (formData.recipe_id) {
-                                                    const selected = value.find(r => r.id == formData.recipe_id);
-                                                    if (selected) this.search = selected.name;
-                                                }
-                                            });
-                                        },
-                                        filterRecipes() {
-                                            if (this.search === '') {
+                                            open: false,
+                                            search: '',
+                                            filteredRecipes: [],
+                                            init() {
                                                 this.filteredRecipes = recipes;
-                                            } else {
-                                                this.filteredRecipes = recipes.filter(r => 
-                                                    r.name.toLowerCase().includes(this.search.toLowerCase())
-                                                );
+                                                this.$watch('recipes', value => {
+                                                    this.filteredRecipes = value;
+                                                    // If ID is already set (e.g. from URL), set the name
+                                                    if (formData.recipe_id) {
+                                                        const selected = value.find(r => r.id == formData.recipe_id);
+                                                        if (selected) this.search = selected.name;
+                                                    }
+                                                });
+                                            },
+                                            filterRecipes() {
+                                                if (this.search === '') {
+                                                    this.filteredRecipes = recipes;
+                                                } else {
+                                                    this.filteredRecipes = recipes.filter(r => 
+                                                        r.name.toLowerCase().includes(this.search.toLowerCase())
+                                                    );
+                                                }
+                                            },
+                                            selectRecipe(recipe) {
+                                                formData.recipe_id = recipe.id;
+                                                this.search = recipe.name;
+                                                this.open = false;
+                                                updateExpectedYield();
+                                            },
+                                            handleClickOutside() {
+                                                this.open = false;
+                                                const selected = recipes.find(r => r.id == formData.recipe_id);
+                                                if (selected) {
+                                                    this.search = selected.name;
+                                                } else {
+                                                    this.search = '';
+                                                }
                                             }
-                                        },
-                                        selectRecipe(recipe) {
-                                            formData.recipe_id = recipe.id;
-                                            this.search = recipe.name;
-                                            this.open = false;
-                                            updateExpectedYield();
-                                        },
-                                        handleClickOutside() {
-                                            this.open = false;
-                                            const selected = recipes.find(r => r.id == formData.recipe_id);
-                                            if (selected) {
-                                                this.search = selected.name;
-                                            } else {
-                                                this.search = '';
-                                            }
-                                        }
-                                    }" class="relative" @click.outside="handleClickOutside()">
+                                        }" class="relative" @click.outside="handleClickOutside()">
                             <input type="text" x-model="search" @input="filterRecipes(); open = true" @click="open = true"
                                 @focus="open = true" placeholder="Search recipe..."
                                 class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
@@ -91,149 +91,81 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Material Request Selection -->
-                    <div class="mb-3">
-                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                            Material Request <span class="text-red-500">*</span>
-                        </label>
-                        <div x-data="{
-                                        open: false,
-                                        search: '',
-                                        filteredRequests: [],
-                                        init() {
-                                            this.filteredRequests = materialRequests;
-                                            this.$watch('materialRequests', value => {
-                                                this.filteredRequests = value;
-                                            });
-                                        },
-                                        filterRequests() {
-                                            if (this.search === '') {
-                                                this.filteredRequests = materialRequests;
-                                            } else {
-                                                this.filteredRequests = materialRequests.filter(r =>
-                                                    this.getLabel(r).toLowerCase().includes(this.search.toLowerCase())
-                                                );
-                                            }
-                                        },
-                                        getLabel(req) {
-                                            const items = (req.items || []).map(i => i.raw_material?.name || 'Unknown').join(', ');
-                                            const date = new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                                            return '#' + req.id + ' — ' + items + ' — ' + date;
-                                        },
-                                        selectRequest(req) {
-                                            formData.material_request_id = req.id;
-                                            this.search = this.getLabel(req);
-                                            this.open = false;
-                                        },
-                                        handleClickOutside() {
-                                            this.open = false;
-                                            const selected = materialRequests.find(r => r.id == formData.material_request_id);
-                                            if (selected) {
-                                                this.search = this.getLabel(selected);
-                                            } else {
-                                                this.search = '';
-                                            }
-                                        }
-                                    }" class="relative" @click.outside="handleClickOutside()">
-                            <input type="text" x-model="search" @input="filterRequests(); open = true" @click="open = true"
-                                @focus="open = true" placeholder="Search material request..."
-                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-
-                            <div x-show="open"
-                                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
-                                style="display: none;">
-                                <template x-for="req in filteredRequests" :key="req.id">
-                                    <div @click="selectRequest(req)"
-                                        class="cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
-                                        <span x-text="getLabel(req)"></span>
-                                    </div>
-                                </template>
-                                <div x-show="filteredRequests.length === 0" class="px-4 py-2 text-sm text-gray-500">
-                                    No unused material requests found
-                                </div>
-                            </div>
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Select a fulfilled material request that matches the recipe ingredients
-                        </p>
-                    </div>
-
-                    <!-- Expected Yield Display -->
-                    <div x-show="selectedRecipe"
-                        class="mb-3 rounded border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-                        <p class="text-sm text-blue-800 dark:text-blue-200">
-                            Expected Yield: <span class="font-medium"
-                                x-text="selectedRecipe?.expected_yield + ' ' + (selectedRecipe?.yield_unit || '')"></span>
-                        </p>
-                    </div>
-
-                    <!-- Production Date & Actual Yield -->
-                    <div class="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                                Production Date <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" x-model="formData.production_date" required
-                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                                Actual Yield/amount collected <span class="text-red-500">*</span>
-                            </label>
-                            <input type="number" x-model="formData.actual_yield" required min="0.01" step="0.01"
-                                placeholder="Enter actual yield"
-                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-                        </div>
-                    </div>
-
-                    <!-- Variance Display -->
-                    <div x-show="formData.actual_yield && selectedRecipe" class="mb-5.5">
-                        <div class="rounded border p-4" :class="{
-                                                                                                'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': variance >= 0,
-                                                                                                'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': variance < 0
-                                                                                            }">
-                            <p class="text-sm" :class="{
-                                                                                                    'text-green-800 dark:text-green-200': variance >= 0,
-                                                                                                    'text-red-800 dark:text-red-200': variance < 0
-                                                                                                }">
-                                Variance: <span class="font-medium"
-                                    x-text="(variance >= 0 ? '+' : '') + variance + ' ' + (selectedRecipe?.yield_unit || '')"></span>
-                                <span x-show="variance < 0"> - Please explain the shortfall in notes</span>
+                        <!-- Expected Yield Display -->
+                        <div x-show="selectedRecipe"
+                            class="mb-3 rounded border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                            <p class="text-sm text-blue-800 dark:text-blue-200">
+                                Expected Yield: <span class="font-medium"
+                                    x-text="selectedRecipe?.expected_yield + ' ' + (selectedRecipe?.yield_unit || '')"></span>
                             </p>
                         </div>
-                    </div>
 
-                    <!-- Notes -->
-                    <div class="mb-3">
-                        <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                            Notes
-                        </label>
-                        <textarea x-model="formData.notes" rows="4"
-                            placeholder="Add any notes about this production batch (e.g., reasons for variance)..."
-                            class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
-                    </div>
+                        <!-- Production Date & Actual Yield -->
+                        <div class="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 dark:text-white">
+                                    Production Date <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" x-model="formData.production_date" required
+                                    class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                            </div>
 
-                    <!-- Error Message -->
-                    <div x-show="error"
-                        class="mb-5.5 rounded-sm border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-                        <p class="text-sm text-red-800 dark:text-red-200" x-text="error"></p>
-                    </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 dark:text-white">
+                                    Actual Yield/amount collected <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" x-model="formData.actual_yield" required min="0.01" step="0.01"
+                                    placeholder="Enter actual yield"
+                                    class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                            </div>
+                        </div>
 
-                    <!-- Submit Button -->
-                    <div class="flex justify-end gap-4">
-                        <a href="{{ route('production.index') }}"
-                            class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-center font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-                            Cancel
-                        </a>
-                        <button type="submit" :disabled="loading"
-                            class="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span x-show="!loading">Log Production</span>
-                            <span x-show="loading">Logging...</span>
-                        </button>
-                    </div>
+                        <!-- Variance Display -->
+                        <div x-show="formData.actual_yield && selectedRecipe" class="mb-5.5">
+                            <div class="rounded border p-4" :class="{
+                                                                                                    'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20': variance >= 0,
+                                                                                                    'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': variance < 0
+                                                                                                }">
+                                <p class="text-sm" :class="{
+                                                                                                        'text-green-800 dark:text-green-200': variance >= 0,
+                                                                                                        'text-red-800 dark:text-red-200': variance < 0
+                                                                                                    }">
+                                    Variance: <span class="font-medium"
+                                        x-text="(variance >= 0 ? '+' : '') + variance + ' ' + (selectedRecipe?.yield_unit || '')"></span>
+                                    <span x-show="variance < 0"> - Please explain the shortfall in notes</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white">
+                                Notes
+                            </label>
+                            <textarea x-model="formData.notes" rows="4"
+                                placeholder="Add any notes about this production batch (e.g., reasons for variance)..."
+                                class="w-full rounded border border-gray-300 bg-transparent px-5 py-3 text-gray-900 outline-none transition focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
+                        </div>
+
+                        <!-- Error Message -->
+                        <div x-show="error"
+                            class="mb-5.5 rounded-sm border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+                            <p class="text-sm text-red-800 dark:text-red-200" x-text="error"></p>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="flex justify-end gap-4">
+                            <a href="{{ route('production.index') }}"
+                                class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-center font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                                Cancel
+                            </a>
+                            <button type="submit" :disabled="loading"
+                                class="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-center font-medium text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span x-show="!loading">Log Production</span>
+                                <span x-show="loading">Logging...</span>
+                            </button>
+                        </div>
                 </form>
             </div>
         </div>
@@ -246,10 +178,8 @@
                     loading: false,
                     error: '',
                     recipes: [],
-                    materialRequests: [],
                     formData: {
                         recipe_id: '',
-                        material_request_id: '',
                         production_date: '',
                         actual_yield: '',
                         notes: ''
@@ -263,10 +193,7 @@
                         const urlParams = new URLSearchParams(window.location.search);
                         const recipeId = urlParams.get('recipe');
 
-                        await Promise.all([
-                            this.fetchRecipes(),
-                            this.fetchMaterialRequests()
-                        ]);
+                        await this.fetchRecipes();
 
                         if (recipeId) {
                             this.formData.recipe_id = recipeId;
@@ -281,15 +208,6 @@
                             this.recipes = response.data?.data ? response.data.data : (response.data || []);
                         } catch (error) {
                             console.error('Failed to fetch recipes:', error);
-                        }
-                    },
-
-                    async fetchMaterialRequests() {
-                        try {
-                            const response = await API.get('/material-requests/unused');
-                            this.materialRequests = response.data || [];
-                        } catch (error) {
-                            console.error('Failed to fetch material requests:', error);
                         }
                     },
 

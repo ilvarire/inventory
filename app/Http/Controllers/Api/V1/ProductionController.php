@@ -66,7 +66,6 @@ class ProductionController extends Controller
         // Authorization handled by route middleware
         $validated = $request->validate([
             'recipe_id' => 'required|exists:recipes,id',
-            'material_request_id' => 'required|exists:material_requests,id',
             'production_date' => 'required|date',
             'actual_yield' => 'required|numeric|min:0.01',
             'notes' => 'nullable|string',
@@ -84,48 +83,6 @@ class ProductionController extends Controller
                 ]);
             }
 
-            // --- Material Request Validation ---
-            $materialRequest = \App\Models\MaterialRequest::with('items')
-                ->findOrFail($validated['material_request_id']);
-
-            // Must belong to the authenticated chef
-            if ($materialRequest->chef_id !== auth()->id()) {
-                throw ValidationException::withMessages([
-                    'material_request_id' => 'This material request does not belong to you'
-                ]);
-            }
-
-            // Must be fulfilled
-            if ($materialRequest->status !== 'fulfilled') {
-                throw ValidationException::withMessages([
-                    'material_request_id' => 'This material request has not been fulfilled yet'
-                ]);
-            }
-
-            // Must be unused
-            if ($materialRequest->used_in_production) {
-                throw ValidationException::withMessages([
-                    'material_request_id' => 'This material request has already been used in production'
-                ]);
-            }
-
-            // --- Ingredient Match Validation ---
-            $recipeRawMaterialIds = $recipe->items->pluck('raw_material_id')->sort()->values()->toArray();
-            $requestRawMaterialIds = $materialRequest->items->pluck('raw_material_id')->unique()->sort()->values()->toArray();
-
-            $missingIngredients = array_diff($recipeRawMaterialIds, $requestRawMaterialIds);
-
-            if (!empty($missingIngredients)) {
-                // Get names of missing ingredients for a helpful error message
-                $missingNames = \App\Models\RawMaterial::whereIn('id', $missingIngredients)
-                    ->pluck('name')
-                    ->toArray();
-
-                throw ValidationException::withMessages([
-                    'material_request_id' => 'Material request is missing ingredients required by the recipe: ' . implode(', ', $missingNames)
-                ]);
-            }
-
             // Calculate variance
             $variance = $validated['actual_yield'] - ($recipe->expected_yield ?? 0);
 
@@ -134,7 +91,6 @@ class ProductionController extends Controller
                 'recipe_id' => $recipe->id,
                 'section_id' => $recipe->section_id,
                 'chef_id' => auth()->id(),
-                'material_request_id' => $materialRequest->id,
                 'quantity_produced' => $validated['actual_yield'],
                 'production_date' => $validated['production_date'],
                 'variance' => $variance,
@@ -191,9 +147,6 @@ class ProductionController extends Controller
                     'expiry_date' => $validated['expiry_date'] ?? null,
                 ]);
             }
-
-            // Mark the material request as used
-            $materialRequest->update(['used_in_production' => true]);
 
             DB::commit();
 
